@@ -13,3 +13,4 @@
 
 .bitrise.secrets.yml
 gin-bin
+_coverage

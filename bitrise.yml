@@ -7,6 +7,9 @@ app:
   - DB_NAME: addons_ship_dev
   - DB_USER: postgres
   - DB_PWD: postgres
+  - CODE_COV_DIR: ./_coverage
+  - CODE_COV_TXT_REPORT_FILE: ${CODE_COV_DIR}/coverage.txt
+  - PORT: 3003
 workflows:
   _collect_package_list_without_vendor:
     steps:
@@ -17,6 +20,20 @@ workflows:
             set -ex
             no_vendor_paths="$(go list ./... | grep -v vendor)"
             envman add --key GOLIST_WITHOUT_VENDOR --value "$no_vendor_paths"
+  code-coverage:
+    description: |
+      Generates code coverage report
+    steps:
+    - script:
+        title: Code coverage TXT report
+        inputs:
+        - content: |
+            #!/bin/bash
+            set -ex
+            mkdir ./_coverage
+            touch ./_coverage/coverage.txt
+            go test -race -coverprofile="${CODE_COV_TXT_REPORT_FILE}" -covermode=atomic ./...
+            cp "${CODE_COV_TXT_REPORT_FILE}" "${BITRISE_DEPLOY_DIR}/"
   up:
     steps:
     - script@1.1.5:
@@ -42,6 +59,8 @@ workflows:
             docker-compose exec db psql -U $DB_USER -c "drop database if exists $DB_NAME;"
             docker-compose exec db psql -U $DB_USER -c "create database $DB_NAME;"
   test:
+    before_run:
+      - _collect_package_list_without_vendor
     steps:
     - script@1.1.5:
         title: Go test
