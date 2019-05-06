@@ -14,7 +14,7 @@ func Test_RootHandler(t *testing.T) {
 	require.NoError(t, err)
 
 	rr := httptest.NewRecorder()
-	services.RootHandler(rr, req)
+	require.NoError(t, services.RootHandler(rr, req))
 
 	require.Equal(t, http.StatusOK, rr.Code)
 	require.Equal(t, `{"message":"Welcome to Bitrise Ship Addon!"}`+"\n", rr.Body.String())
