@@ -1,0 +1,22 @@
+version: '3'
+services:
+  db:
+    image: postgres
+    ports:
+      - "5432:5432"
+  app:
+    build: .
+    volumes:
+      - .:/src
+    command: go run main.go
+    ports:
+      - "80:80"
+    links:
+      - db:postgres
+    environment:
+      PORT: 80
+      DB_HOST: postgres
+      DB_NAME: attendborough_dev
+      DB_USER: postgres
+      DB_PWD: postgres
+      DB_SSL_MODE: disable
