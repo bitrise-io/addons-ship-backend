@@ -12,7 +12,7 @@ func New() *mux.Router {
 	// StrictSlash: allow "trim slash"; /x/ REDIRECTS to /x
 	r := mux.NewRouter(mux.WithServiceName("addons-ship-mux")).StrictSlash(true)
 
-	r.Handle("", middleware.CommonMiddleware().Then(
+	r.Handle("/", middleware.CommonMiddleware().Then(
 		httpresponse.InternalErrHandlerFuncAdapter(services.RootHandler))).Methods("GET", "OPTIONS")
 	return r
 }
