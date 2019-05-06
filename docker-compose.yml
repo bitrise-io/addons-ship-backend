@@ -8,15 +8,15 @@ services:
     build: .
     volumes:
       - .:/src
-    command: go run main.go
+    command: gin --immediate --appPort=3003
     ports:
-      - "80:80"
+      - "3003:3003"
     links:
       - db:postgres
     environment:
-      PORT: 80
+      PORT: 3003
       DB_HOST: postgres
-      DB_NAME: attendborough_dev
+      DB_NAME: addons_ship_dev
       DB_USER: postgres
       DB_PWD: postgres
       DB_SSL_MODE: disable

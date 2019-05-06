@@ -12,3 +12,4 @@
 *.out
 
 .bitrise.secrets.yml
+gin-bin
