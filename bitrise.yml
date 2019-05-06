@@ -97,4 +97,6 @@ workflows:
               echo "-> Linting: $line"
               golint -set_exit_status $line
             done <<< "$GOLIST_WITHOUT_VENDOR"
+    after_run:
+      - code-coverage
 
