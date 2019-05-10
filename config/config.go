@@ -3,13 +3,15 @@ package config
 import (
 	"os"
 
+	"github.com/bitrise-io/addons-ship-backend/dataservices"
+	"github.com/bitrise-io/addons-ship-backend/models"
 	"github.com/jinzhu/gorm"
 )
 
 // AppConfig ...
 type AppConfig struct {
-	DB   *gorm.DB
-	Port string
+	AppService dataservices.AppService
+	Port       string
 }
 
 // New ...
@@ -19,6 +21,6 @@ func New(db *gorm.DB) (conf AppConfig) {
 	if !ok {
 		conf.Port = "80"
 	}
-	conf.DB = db
+	conf.AppService = &models.AppService{DB: db}
 	return
 }

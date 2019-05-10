@@ -1,6 +1,7 @@
 package router
 
 import (
+	"github.com/bitrise-io/addons-ship-backend/config"
 	"github.com/bitrise-io/addons-ship-backend/services"
 	"github.com/bitrise-io/api-utils/httpresponse"
 	"github.com/bitrise-io/api-utils/middleware"
@@ -8,7 +9,7 @@ import (
 )
 
 // New ...
-func New() *mux.Router {
+func New(conf *config.AppConfig) *mux.Router {
 	// StrictSlash: allow "trim slash"; /x/ REDIRECTS to /x
 	r := mux.NewRouter(mux.WithServiceName("addons-ship-mux")).StrictSlash(true)
 
