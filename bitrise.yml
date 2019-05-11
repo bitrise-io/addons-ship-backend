@@ -55,7 +55,6 @@ workflows:
             docker-compose build
             docker-compose up --no-start
             docker-compose start db
-            docker-compose run --rm db sleep 1
             docker-compose exec db psql -U $DB_USER -c "drop database if exists $DB_NAME;"
             docker-compose exec db psql -U $DB_USER -c "create database $DB_NAME;"
   test:
@@ -99,4 +98,25 @@ workflows:
             done <<< "$GOLIST_WITHOUT_VENDOR"
     after_run:
       - code-coverage
+  _dev-cleanup:
+    steps:
+    - script:
+        title: Migrate latest database migration
+        inputs:
+        - content: |
+            #!/bin/bash
+            set -ex
 
+            docker-compose run --rm app bash -c '. _scripts/_dev_cleanup.sh'
+  dev-console:
+    after_run:
+      - _dev-cleanup
+    steps:
+    - script:
+        title: Migrate latest database migration
+        inputs:
+        - content: |
+            #!/bin/bash
+            set -ex
+
+            docker-compose run --rm app bash -c '. _scripts/_dev_setup.sh && cd migrations && bash'

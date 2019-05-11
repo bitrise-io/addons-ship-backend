@@ -8,9 +8,11 @@ require (
 	github.com/gorilla/mux v1.7.1 // indirect
 	github.com/jinzhu/gorm v1.9.8
 	github.com/justinas/alice v0.0.0-20171023064455-03f45bd4b7da // indirect
+	github.com/lib/pq v1.1.0
 	github.com/opentracing/opentracing-go v1.1.0 // indirect
 	github.com/philhofer/fwd v1.0.0 // indirect
 	github.com/pkg/errors v0.8.1
+	github.com/pressly/goose v2.6.0+incompatible
 	github.com/rs/cors v1.6.0 // indirect
 	github.com/stretchr/testify v1.3.0 // indirect
 	github.com/tinylib/msgp v1.1.0 // indirect
