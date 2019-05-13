@@ -10,6 +10,7 @@ import (
 type AppVersion struct {
 	Record
 	Version     string    `json:"version"`
+	Platform    string    `json:"platform"`
 	BuildNumber string    `json:"build_number"`
 	LastUpdate  time.Time `json:"last_update"`
 	Description string    `json:"description"`

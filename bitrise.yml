@@ -50,7 +50,7 @@ workflows:
     - _dev-cleanup
     steps:
     - script:
-        title: Migrate latest database migration
+        title: Run development console
         inputs:
         - content: |
             #!/bin/bash
@@ -75,16 +75,10 @@ workflows:
   test:
     before_run:
     - _collect_package_list_without_vendor
+    - test-with-docker
     after_run:
     - code-coverage
     steps:
-    - script@1.1.5:
-        title: Go test
-        inputs:
-        - content: |
-            #!/bin/bash
-            set -ex
-            go test ./...
     - script:
         title: Go Vet
         inputs:

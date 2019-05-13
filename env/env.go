@@ -11,10 +11,11 @@ import (
 
 // AppEnv ...
 type AppEnv struct {
-	AppService    dataservices.AppService
-	Port          string
-	Environment   string
-	RequestParams providers.RequestParamsInterface
+	AppService        dataservices.AppService
+	AppVersionService dataservices.AppVersionService
+	Port              string
+	Environment       string
+	RequestParams     providers.RequestParamsInterface
 }
 
 // New ...
@@ -29,6 +30,7 @@ func New(db *gorm.DB) (env AppEnv) {
 		env.Environment = "development"
 	}
 	env.AppService = &models.AppService{DB: db}
+	env.AppVersionService = &models.AppVersionService{DB: db}
 	env.RequestParams = &providers.RequestParamsProvider{}
 	return
 }

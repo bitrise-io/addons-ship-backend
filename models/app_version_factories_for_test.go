@@ -10,7 +10,7 @@ import (
 	"github.com/c2fo/testify/require"
 )
 
-func testAppVersion(t *testing.T, appVersion *models.AppVersion) *models.AppVersion {
+func createTestAppVersion(t *testing.T, appVersion *models.AppVersion) *models.AppVersion {
 	err := dataservices.GetDB().Create(appVersion).Error
 	require.NoError(t, err)
 	return appVersion

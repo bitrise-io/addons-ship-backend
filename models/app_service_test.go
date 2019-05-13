@@ -30,7 +30,7 @@ func Test_AppService_Find(t *testing.T) {
 	defer dbCloseCallbackMethod()
 
 	appService := models.AppService{DB: dataservices.GetDB()}
-	testApp := testApp(t, &models.App{
+	testApp := createTestApp(t, &models.App{
 		AppSlug: "test-app_slug",
 	})
 

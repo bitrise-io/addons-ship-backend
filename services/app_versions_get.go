@@ -20,12 +20,15 @@ func AppVersionsGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Reque
 		return errors.New("No App Service defined for handler")
 	}
 
-	app, err := env.AppService.Find(&models.App{Record: models.Record{ID: authorizedAppID}})
+	appVersions, err := env.AppVersionService.FindAll(
+		&models.App{Record: models.Record{ID: authorizedAppID}},
+		map[string]interface{}{},
+	)
 	switch {
 	case errors.Cause(err) == gorm.ErrRecordNotFound:
 		return httpresponse.RespondWithNotFoundError(w)
 	case err != nil:
 		return errors.WithStack(err)
 	}
-	return httpresponse.RespondWithSuccess(w, app)
+	return httpresponse.RespondWithSuccess(w, appVersions)
 }
