@@ -5,14 +5,16 @@ import (
 
 	"github.com/bitrise-io/addons-ship-backend/dataservices"
 	"github.com/bitrise-io/addons-ship-backend/models"
+	"github.com/bitrise-io/api-utils/providers"
 	"github.com/jinzhu/gorm"
 )
 
 // AppEnv ...
 type AppEnv struct {
-	AppService  dataservices.AppService
-	Port        string
-	Environment string
+	AppService    dataservices.AppService
+	Port          string
+	Environment   string
+	RequestParams providers.RequestParamsInterface
 }
 
 // New ...
@@ -27,5 +29,6 @@ func New(db *gorm.DB) (env AppEnv) {
 		env.Environment = "development"
 	}
 	env.AppService = &models.AppService{DB: db}
+	env.RequestParams = &providers.RequestParamsProvider{}
 	return
 }
