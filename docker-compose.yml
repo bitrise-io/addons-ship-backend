@@ -17,6 +17,7 @@ services:
       PORT: 3003
       DB_HOST: postgres
       DB_NAME: addons_ship_dev
+      TEST_DB_NAME: addons_ship_test
       DB_USER: postgres
       DB_PWD: postgres
       DB_SSL_MODE: disable

@@ -2,6 +2,9 @@ package main
 
 import (
 	"database/sql"
+
+	"github.com/bitrise-io/addons-ship-backend/dataservices"
+	"github.com/bitrise-io/addons-ship-backend/models"
 	"github.com/pressly/goose"
 )
 
@@ -10,11 +13,19 @@ func init() {
 }
 
 func upCreateApps(tx *sql.Tx) error {
-	// This code is executed when the migration is applied.
-	return nil
+	var err error
+	db := dataservices.GetDB()
+	if !db.HasTable(&models.App{}) {
+		err = db.CreateTable(&models.App{}).Error
+	}
+	return err
 }
 
 func downCreateApps(tx *sql.Tx) error {
-	// This code is executed when the migration is rolled back.
-	return nil
+	var err error
+	db := dataservices.GetDB()
+	if db.HasTable(&models.App{}) {
+		err = db.DropTable(&models.App{}).Error
+	}
+	return err
 }

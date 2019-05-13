@@ -4,8 +4,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/bitrise-io/addons-ship-backend/config"
 	"github.com/bitrise-io/addons-ship-backend/dataservices"
+	"github.com/bitrise-io/addons-ship-backend/env"
 	"github.com/bitrise-io/addons-ship-backend/router"
 	"github.com/bitrise-io/api-utils/logging"
 	"go.uber.org/zap"
@@ -17,19 +17,20 @@ func main() {
 	tracer.Start(tracer.WithServiceName("addons-ship"))
 	defer tracer.Stop()
 
-	err := dataservices.InitializeConnection(dataservices.ConnectionParams{})
+	err := dataservices.InitializeConnection(dataservices.ConnectionParams{}, true)
 	if err != nil {
 		logger.Error("Failed to initialize DB connection", zap.Any("error", err))
 	}
 	defer dataservices.Close()
 	log.Println(" [OK] Database connection established")
 
-	// Routing
-	http.Handle("/", router.New())
+	appEnv := env.New(dataservices.GetDB())
 
-	appConfig := config.New(dataservices.GetDB())
-	log.Println("Starting - using port:", appConfig.Port)
-	if err := http.ListenAndServe(":"+appConfig.Port, nil); err != nil {
+	// Routing
+	http.Handle("/", router.New(&appEnv))
+
+	log.Println("Starting - using port:", appEnv.Port)
+	if err := http.ListenAndServe(":"+appEnv.Port, nil); err != nil {
 		logger.Error("Failed to initialize Ship Addon Backend", zap.Any("error", err))
 	}
 }

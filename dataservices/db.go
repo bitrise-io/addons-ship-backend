@@ -8,6 +8,9 @@ import (
 
 	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
+
+	// Postgres driver
+	_ "github.com/lib/pq"
 )
 
 const (
@@ -20,11 +23,11 @@ var (
 
 // ConnectionParams ...
 type ConnectionParams struct {
-	host     string
-	user     string
-	dbName   string
-	password string
-	sslMode  string
+	Host     string
+	User     string
+	DBName   string
+	Password string
+	SSLMode  string
 }
 
 // GetDB ...
@@ -39,8 +42,8 @@ func Close() {
 }
 
 // InitializeConnection ...
-func InitializeConnection(defaultParams ConnectionParams) error {
-	connString, err := connectionString(defaultParams)
+func InitializeConnection(defaultParams ConnectionParams, withDB bool) error {
+	connString, err := connectionString(defaultParams, withDB)
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -57,7 +60,6 @@ func InitializeConnection(defaultParams ConnectionParams) error {
 	if err == nil && isLogModeEnabled {
 		sqlDB.LogMode(true)
 	}
-	sqlDB.LogMode(true)
 	return nil
 }
 
@@ -74,46 +76,49 @@ func closeDB(dbToClose *gorm.DB) {
 }
 
 func (cp ConnectionParams) validate() error {
-	if cp.host == "" {
+	if cp.Host == "" {
 		return errors.New("No database host specified")
 	}
-	if cp.dbName == "" {
+	if cp.DBName == "" {
 		return errors.New("No database name specified")
 	}
-	if cp.user == "" {
+	if cp.User == "" {
 		return errors.New("No database user specified")
 	}
-	if cp.password == "" {
+	if cp.Password == "" {
 		return errors.New("No database password specified")
 	}
 	return nil
 }
 
-func connectionString(defaultParams ConnectionParams) (string, error) {
+func connectionString(defaultParams ConnectionParams, withDB bool) (string, error) {
 	connParams := defaultParams
-	if connParams.host == "" {
-		connParams.host = os.Getenv("DB_HOST")
+	if connParams.Host == "" {
+		connParams.Host = os.Getenv("DB_HOST")
 	}
-	if connParams.dbName == "" {
-		connParams.dbName = os.Getenv("DB_NAME")
+	if connParams.DBName == "" {
+		connParams.DBName = os.Getenv("DB_NAME")
 	}
-	if connParams.user == "" {
-		connParams.user = os.Getenv("DB_USER")
+	if connParams.User == "" {
+		connParams.User = os.Getenv("DB_USER")
 	}
-	if connParams.password == "" {
-		connParams.password = os.Getenv("DB_PWD")
+	if connParams.Password == "" {
+		connParams.Password = os.Getenv("DB_PWD")
 	}
-	if connParams.sslMode == "" {
-		connParams.sslMode = os.Getenv("DB_SSL_MODE")
+	if connParams.SSLMode == "" {
+		connParams.SSLMode = os.Getenv("DB_SSL_MODE")
 	}
 	if err := connParams.validate(); err != nil {
 		return "", err
 	}
-	connString := fmt.Sprintf("host=%s dbname=%s user=%s password=%s",
-		connParams.host, connParams.dbName, connParams.user, connParams.password)
+	connString := fmt.Sprintf("host=%s user=%s password=%s",
+		connParams.Host, connParams.User, connParams.Password)
+	if withDB {
+		connString += " dbname=" + connParams.DBName
+	}
 	// optionals
-	if connParams.sslMode != "" {
-		connString += " sslmode=" + connParams.sslMode
+	if connParams.SSLMode != "" {
+		connString += " sslmode=" + connParams.SSLMode
 	}
 	return connString, nil
 }

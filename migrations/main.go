@@ -1,11 +1,11 @@
 package main
 
 import (
-	"database/sql"
 	"flag"
 	"log"
 	"os"
 
+	"github.com/bitrise-io/addons-ship-backend/dataservices"
 	"github.com/pressly/goose"
 
 	_ "github.com/lib/pq"
@@ -25,9 +25,9 @@ func main() {
 		return
 	}
 
-	db, err := sql.Open("postgres", os.Getenv("DB_CONN_STRING"))
+	err := dataservices.InitializeConnection(dataservices.ConnectionParams{}, true)
 	if err != nil {
-		log.Fatalf("goose: failed to open DB: %v\n", err)
+		return
 	}
 
 	arguments := []string{}
@@ -36,7 +36,7 @@ func main() {
 	}
 
 	command := args[0]
-	if err := goose.Run(command, db, *dir, arguments...); err != nil {
+	if err := goose.Run(command, dataservices.GetDB().DB(), *dir, arguments...); err != nil {
 		log.Fatalf("goose %v: %v", command, err)
 	}
 }

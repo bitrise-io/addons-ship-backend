@@ -9,5 +9,5 @@ type AppService struct {
 
 // Create ...
 func (a *AppService) Create(app *App) (*App, error) {
-	return &App{}, nil
+	return app, a.DB.Create(app).Error
 }
