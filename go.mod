@@ -3,11 +3,11 @@ module github.com/bitrise-io/addons-ship-backend
 go 1.12
 
 require (
-	github.com/bitrise-io/api-utils v0.0.0-20190506075124-46f525f031a3
+	github.com/bitrise-io/api-utils v0.0.0-20190513112909-b59dd7946e5e
 	github.com/c2fo/testify v0.0.0-20150827203832-fba96363964a
 	github.com/gorilla/mux v1.7.1 // indirect
 	github.com/jinzhu/gorm v1.9.8
-	github.com/justinas/alice v0.0.0-20171023064455-03f45bd4b7da // indirect
+	github.com/justinas/alice v0.0.0-20171023064455-03f45bd4b7da
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/lib/pq v1.1.0
 	github.com/opentracing/opentracing-go v1.1.0 // indirect

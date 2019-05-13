@@ -8,12 +8,13 @@ import (
 	"github.com/bitrise-io/addons-ship-backend/dataservices"
 	"github.com/pressly/goose"
 
+	_ "github.com/bitrise-io/addons-ship-backend/db/migrate"
 	_ "github.com/lib/pq"
 )
 
 var (
 	flags = flag.NewFlagSet("goose", flag.ExitOnError)
-	dir   = flags.String("dir", ".", "directory with migration files")
+	dir   = flags.String("dir", "./migrate", "directory with migration files")
 )
 
 func main() {
@@ -31,8 +32,8 @@ func main() {
 	}
 
 	arguments := []string{}
-	if len(args) > 3 {
-		arguments = append(arguments, args[3:]...)
+	if len(args) > 1 {
+		arguments = append(arguments, args[1:]...)
 	}
 
 	command := args[0]

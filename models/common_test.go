@@ -16,7 +16,7 @@ func panicIfErr(err error) {
 	}
 }
 
-func recreateTestDB() {
+func recreateTestDB(t *testing.T) {
 	dataservices.Close()
 
 	err := dataservices.InitializeConnection(dataservices.ConnectionParams{}, false)
@@ -43,12 +43,12 @@ func recreateTestDB() {
 
 	db = dataservices.GetDB()
 
-	runTestMigrations(db)
+	runTestMigrations(t, db)
 }
 
-func recreateAndInitTestDB() {
+func recreateAndInitTestDB(t *testing.T) {
 	// create an empty database for tests
-	recreateTestDB()
+	recreateTestDB(t)
 
 	testDBName := os.Getenv("TEST_DB_NAME")
 	// re-init db connection, this time with the test db name
@@ -62,15 +62,17 @@ func closeTestDB() {
 
 func prepareDB(t *testing.T) func() {
 	t.Log("prepare DB")
-	recreateAndInitTestDB()
+	recreateAndInitTestDB(t)
 	return closeTestDB
 }
 
-func runTestMigrations(db *gorm.DB) {
+func runTestMigrations(t *testing.T, db *gorm.DB) {
 	for _, migration := range []struct {
-		fn func() error
+		message string
+		fn      func() error
 	}{
 		{
+			message: "create apps table",
 			fn: func() error {
 				if !db.HasTable(&models.App{}) {
 					return db.CreateTable(&models.App{}).Error
@@ -78,7 +80,17 @@ func runTestMigrations(db *gorm.DB) {
 				return nil
 			},
 		},
+		{
+			message: "create app versions table",
+			fn: func() error {
+				if !db.HasTable(&models.AppVersion{}) {
+					return db.CreateTable(&models.AppVersion{}).Error
+				}
+				return nil
+			},
+		},
 	} {
+		t.Log(migration.message)
 		panicIfErr(migration.fn())
 	}
 }

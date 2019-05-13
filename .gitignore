@@ -15,4 +15,4 @@
 gin-bin
 _coverage
 .vscode
-migrations/goose
+db/goose

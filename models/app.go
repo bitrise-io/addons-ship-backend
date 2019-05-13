@@ -4,11 +4,13 @@ import uuid "github.com/satori/go.uuid"
 
 // App ...
 type App struct {
-	Model
-	AppSlug         string
-	Plan            string
-	BitriseAPIToken string
-	APIToken        string
+	Record
+	AppSlug         string `json:"app_slug"`
+	Plan            string `json:"plan"`
+	BitriseAPIToken string `json:"-"`
+	APIToken        string `json:"-"`
+
+	AppVersions []AppVersion `gorm:"foreignkey:AppID" json:"app_versions"`
 }
 
 // BeforeCreate ...

@@ -11,6 +11,10 @@ github.com/apache/thrift v0.12.0/go.mod h1:cp2SuWMxlEZw2r+iP2GNCdIi4C1qmUzdZFSVb
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
 github.com/bitrise-io/api-utils v0.0.0-20190506075124-46f525f031a3 h1:xkdcr60XrNQdvH5MLGvkOJSPkHBgLMVerrRdXcYskro=
 github.com/bitrise-io/api-utils v0.0.0-20190506075124-46f525f031a3/go.mod h1:FwXTOBcd4twhPfBS61C83oz3QkrUjIawlZc4T/EBqEc=
+github.com/bitrise-io/api-utils v0.0.0-20190513111729-4db3f704a51b h1:/Hj6EjhuYyR/LVjV8hdM7UZ1onGO5oJOOiqE75OBeHE=
+github.com/bitrise-io/api-utils v0.0.0-20190513111729-4db3f704a51b/go.mod h1:FwXTOBcd4twhPfBS61C83oz3QkrUjIawlZc4T/EBqEc=
+github.com/bitrise-io/api-utils v0.0.0-20190513112909-b59dd7946e5e h1:xdXPPjtN8SWy21lX1s99UCz2znNd5oW95HcYEZ2IqxY=
+github.com/bitrise-io/api-utils v0.0.0-20190513112909-b59dd7946e5e/go.mod h1:FwXTOBcd4twhPfBS61C83oz3QkrUjIawlZc4T/EBqEc=
 github.com/c2fo/testify v0.0.0-20150827203832-fba96363964a h1:lXGVReN5qeiyu6AZpIgYJN1PoXSy1koT3nUP3ZRMWm0=
 github.com/c2fo/testify v0.0.0-20150827203832-fba96363964a/go.mod h1:NWprYCk3t+OPBp2UnxQ39EF9vPpUzoMr498TiqMA8jU=
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=

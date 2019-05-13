@@ -1,4 +1,4 @@
-package main
+package migration
 
 import (
 	"database/sql"
@@ -9,10 +9,10 @@ import (
 )
 
 func init() {
-	goose.AddMigration(upCreateApps, downCreateApps)
+	goose.AddMigration(Up20190511090020, Down20190511090020)
 }
 
-func upCreateApps(tx *sql.Tx) error {
+func Up20190511090020(tx *sql.Tx) error {
 	var err error
 	db := dataservices.GetDB()
 	if !db.HasTable(&models.App{}) {
@@ -21,7 +21,7 @@ func upCreateApps(tx *sql.Tx) error {
 	return err
 }
 
-func downCreateApps(tx *sql.Tx) error {
+func Down20190511090020(tx *sql.Tx) error {
 	var err error
 	db := dataservices.GetDB()
 	if db.HasTable(&models.App{}) {

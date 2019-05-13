@@ -1,4 +1,4 @@
 #!/bin/bash
 set -ex
 
-rm migrations/goose
+rm db/goose
