@@ -11,3 +11,12 @@ type AppService struct {
 func (a *AppService) Create(app *App) (*App, error) {
 	return app, a.DB.Create(app).Error
 }
+
+// Find ...
+func (a *AppService) Find(app *App) (*App, error) {
+	err := a.DB.First(app).Error
+	if err != nil {
+		return nil, err
+	}
+	return app, nil
+}
