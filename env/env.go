@@ -5,12 +5,15 @@ import (
 
 	"github.com/bitrise-io/addons-ship-backend/dataservices"
 	"github.com/bitrise-io/addons-ship-backend/models"
+	"github.com/bitrise-io/api-utils/logging"
 	"github.com/bitrise-io/api-utils/providers"
 	"github.com/jinzhu/gorm"
+	"go.uber.org/zap"
 )
 
 // AppEnv ...
 type AppEnv struct {
+	Logger            *zap.Logger
 	AppService        dataservices.AppService
 	AppVersionService dataservices.AppVersionService
 	Port              string
@@ -29,6 +32,7 @@ func New(db *gorm.DB) (env AppEnv) {
 	if !ok {
 		env.Environment = "development"
 	}
+	env.Logger = logging.WithContext(nil)
 	env.AppService = &models.AppService{DB: db}
 	env.AppVersionService = &models.AppVersionService{DB: db}
 	env.RequestParams = &providers.RequestParamsProvider{}

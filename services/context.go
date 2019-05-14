@@ -9,19 +9,20 @@ import (
 )
 
 const (
-	contextKeyAuthorizedAppID ctxpkg.RequestContextKey = "ctx-authorized-app-id"
+	// ContextKeyAuthorizedAppID ...
+	ContextKeyAuthorizedAppID ctxpkg.RequestContextKey = "ctx-authorized-app-id"
 )
 
 // GetAuthorizedAppIDFromContextErr ...
 func GetAuthorizedAppIDFromContextErr(ctx context.Context) (uuid.UUID, error) {
-	id, ok := ctx.Value(contextKeyAuthorizedAppID).(uuid.UUID)
+	id, ok := ctx.Value(ContextKeyAuthorizedAppID).(uuid.UUID)
 	if !ok {
-		return uuid.UUID{}, errors.New("Authenticated User ID not found in Context")
+		return uuid.UUID{}, errors.New("Authorized App ID not found in Context")
 	}
 	return id, nil
 }
 
 // ContextWithAuthorizedAppID ...
 func ContextWithAuthorizedAppID(ctx context.Context, appID uuid.UUID) context.Context {
-	return context.WithValue(ctx, contextKeyAuthorizedAppID, appID)
+	return context.WithValue(ctx, ContextKeyAuthorizedAppID, appID)
 }

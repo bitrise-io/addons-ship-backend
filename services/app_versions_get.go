@@ -10,25 +10,37 @@ import (
 	"github.com/pkg/errors"
 )
 
+// AppVersionsGetRespose ...
+type AppVersionsGetRespose struct {
+	Data []models.AppVersion `json:"data"`
+}
+
 // AppVersionsGetHandler ...
 func AppVersionsGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request) error {
 	authorizedAppID, err := GetAuthorizedAppIDFromContextErr(r.Context())
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	if env.AppService == nil {
-		return errors.New("No App Service defined for handler")
+	if env.AppVersionService == nil {
+		return errors.New("No App Version Service defined for handler")
+	}
+
+	filterParams := map[string]interface{}{}
+	if platformFilter := r.URL.Query().Get("platform"); platformFilter != "" {
+		filterParams["platform"] = platformFilter
 	}
 
 	appVersions, err := env.AppVersionService.FindAll(
 		&models.App{Record: models.Record{ID: authorizedAppID}},
-		map[string]interface{}{},
+		filterParams,
 	)
 	switch {
 	case errors.Cause(err) == gorm.ErrRecordNotFound:
 		return httpresponse.RespondWithNotFoundError(w)
 	case err != nil:
-		return errors.WithStack(err)
+		return errors.Wrap(err, "SQL Error")
 	}
-	return httpresponse.RespondWithSuccess(w, appVersions)
+	return httpresponse.RespondWithSuccess(w, AppVersionsGetRespose{
+		Data: appVersions,
+	})
 }
