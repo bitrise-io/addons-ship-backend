@@ -4,7 +4,7 @@ go 1.12
 
 require (
 	cloud.google.com/go v0.37.4
-	github.com/bitrise-io/api-utils v0.0.0-20190514121632-180adc9f0868
+	github.com/bitrise-io/api-utils v0.0.0-20190514125221-06e4770c9086
 	github.com/c2fo/testify v0.0.0-20150827203832-fba96363964a
 	github.com/gobuffalo/uuid v2.0.5+incompatible
 	github.com/gofrs/uuid v3.2.0+incompatible // indirect
