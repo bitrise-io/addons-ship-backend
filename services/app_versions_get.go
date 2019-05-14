@@ -17,7 +17,7 @@ type AppVersionsGetRespose struct {
 
 // AppVersionsGetHandler ...
 func AppVersionsGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request) error {
-	authorizedAppID, err := GetAuthorizedAppIDFromContextErr(r.Context())
+	authorizedAppID, err := GetAuthorizedAppIDFromContext(r.Context())
 	if err != nil {
 		return errors.WithStack(err)
 	}

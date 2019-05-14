@@ -13,8 +13,8 @@ const (
 	ContextKeyAuthorizedAppID ctxpkg.RequestContextKey = "ctx-authorized-app-id"
 )
 
-// GetAuthorizedAppIDFromContextErr ...
-func GetAuthorizedAppIDFromContextErr(ctx context.Context) (uuid.UUID, error) {
+// GetAuthorizedAppIDFromContext ...
+func GetAuthorizedAppIDFromContext(ctx context.Context) (uuid.UUID, error) {
 	id, ok := ctx.Value(ContextKeyAuthorizedAppID).(uuid.UUID)
 	if !ok {
 		return uuid.UUID{}, errors.New("Authorized App ID not found in Context")
