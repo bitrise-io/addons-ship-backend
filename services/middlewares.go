@@ -15,8 +15,17 @@ func createAuthorizeForAppAccessMiddleware(env *env.AppEnv) func(http.Handler) h
 }
 
 // AutorizedAppMiddleware ...
-func AutorizedAppMiddleware(env *env.AppEnv) alice.Chain {
+func AutorizedAppMiddleware(appEnv *env.AppEnv) alice.Chain {
+	commonMiddleware := middleware.CommonMiddleware()
+
+	if appEnv.Environment == env.ServerEnvProduction {
+		commonMiddleware = commonMiddleware.Append(
+			middleware.CreateRedirectToHTTPSMiddleware(),
+		)
+	}
+
 	return middleware.CommonMiddleware().Append(
-		createAuthorizeForAppAccessMiddleware(env),
+		middleware.CreateOptionsRequestTerminatorMiddleware(),
+		createAuthorizeForAppAccessMiddleware(appEnv),
 	)
 }

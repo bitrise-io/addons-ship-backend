@@ -11,6 +11,13 @@ import (
 	"go.uber.org/zap"
 )
 
+const (
+	// ServerEnvProduction ...
+	ServerEnvProduction = "production"
+	// ServerEnvDevelopment ...
+	ServerEnvDevelopment = "development"
+)
+
 // AppEnv ...
 type AppEnv struct {
 	Logger            *zap.Logger
@@ -30,7 +37,7 @@ func New(db *gorm.DB) (env AppEnv) {
 	}
 	env.Environment, ok = os.LookupEnv("ENVIRONMENT")
 	if !ok {
-		env.Environment = "development"
+		env.Environment = ServerEnvDevelopment
 	}
 	env.Logger = logging.WithContext(nil)
 	env.AppService = &models.AppService{DB: db}
