@@ -43,7 +43,7 @@ workflows:
             set -ex
             mkdir ./_coverage
             touch ./_coverage/coverage.txt
-            go test -race -coverprofile="${CODE_COV_TXT_REPORT_FILE}" -covermode=atomic ./...
+            go test -race -coverprofile="${CODE_COV_TXT_REPORT_FILE}" -covermode=atomic -tags=database ./...
             cp "${CODE_COV_TXT_REPORT_FILE}" "${BITRISE_DEPLOY_DIR}/"
   dev-console:
     after_run:
@@ -72,10 +72,22 @@ workflows:
             docker-compose exec db psql -U $DB_USER -c "drop database if exists $DB_NAME;"
             docker-compose exec db psql -U $DB_USER -c "create database $DB_NAME;"
             docker-compose run --rm app bash -c '. _scripts/_dev_setup.sh && db/goose up'
+  ci:
+    after_run:
+    - test
+    steps:
+    - script:
+        title: Run CI
+        inputs:
+        - content: |
+            #!/bin/bash
+            set -ex
+
+            docker-compose run --rm app bash -c 'sleep 5'
+            docker-compose run --rm app bash -c 'bitrise run test'
   test:
     before_run:
     - _collect_package_list_without_vendor
-    - test-with-docker
     after_run:
     - code-coverage
     steps:
