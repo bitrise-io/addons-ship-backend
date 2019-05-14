@@ -7,7 +7,7 @@ services:
   app:
     build: .
     volumes:
-      - .:/src
+      - .:/bitrise/src
     command: gin --immediate --appPort=3003
     ports:
       - "3003:3003"

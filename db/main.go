@@ -6,10 +6,9 @@ import (
 	"os"
 
 	"github.com/bitrise-io/addons-ship-backend/dataservices"
-	"github.com/pressly/goose"
-
 	_ "github.com/bitrise-io/addons-ship-backend/db/migrate"
 	_ "github.com/lib/pq"
+	"github.com/pressly/goose"
 )
 
 var (
@@ -18,7 +17,10 @@ var (
 )
 
 func main() {
-	flags.Parse(os.Args[1:])
+	err := flags.Parse(os.Args[1:])
+	if err != nil {
+		log.Fatalf("goose: %v", err)
+	}
 	args := flags.Args()
 
 	if len(args) < 1 {
@@ -26,7 +28,7 @@ func main() {
 		return
 	}
 
-	err := dataservices.InitializeConnection(dataservices.ConnectionParams{}, true)
+	err = dataservices.InitializeConnection(dataservices.ConnectionParams{}, true)
 	if err != nil {
 		return
 	}

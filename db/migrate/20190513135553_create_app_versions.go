@@ -9,10 +9,10 @@ import (
 )
 
 func init() {
-	goose.AddMigration(Up20190513135553, Down20190513135553)
+	goose.AddMigration(up20190513135553, down20190513135553)
 }
 
-func Up20190513135553(tx *sql.Tx) error {
+func up20190513135553(tx *sql.Tx) error {
 	var err error
 	db := dataservices.GetDB()
 	if !db.HasTable(&models.AppVersion{}) {
@@ -21,7 +21,7 @@ func Up20190513135553(tx *sql.Tx) error {
 	return err
 }
 
-func Down20190513135553(tx *sql.Tx) error {
+func down20190513135553(tx *sql.Tx) error {
 	var err error
 	db := dataservices.GetDB()
 	if db.HasTable(&models.AppVersion{}) {
