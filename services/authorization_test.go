@@ -12,6 +12,7 @@ import (
 	"github.com/bitrise-io/addons-ship-backend/models"
 	"github.com/bitrise-io/addons-ship-backend/services"
 	ctxpkg "github.com/bitrise-io/api-utils/context"
+	"github.com/bitrise-io/api-utils/handlers"
 	"github.com/bitrise-io/api-utils/providers"
 	"github.com/c2fo/testify/require"
 	"github.com/jinzhu/gorm"
@@ -59,7 +60,7 @@ func performAuthorizationTest(t *testing.T,
 }
 
 func Test_AuthorizeForAppAccessHandlerFunc(t *testing.T) {
-	authHandler := &testAuthHandler{
+	authHandler := &handlers.TestAuthHandler{
 		ContextElementList: map[string]ctxpkg.RequestContextKey{
 			"authorizedAppID": services.ContextKeyAuthorizedAppID,
 		},
