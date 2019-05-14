@@ -7,6 +7,8 @@ import (
 	"github.com/bitrise-io/addons-ship-backend/models"
 	"github.com/bitrise-io/api-utils/httprequest"
 	"github.com/bitrise-io/api-utils/httpresponse"
+	"github.com/jinzhu/gorm"
+	"github.com/pkg/errors"
 )
 
 // AuthorizeForAppAccessHandlerFunc ...
@@ -17,6 +19,10 @@ func AuthorizeForAppAccessHandlerFunc(env *env.AppEnv, h http.Handler) http.Hand
 			httpresponse.RespondWithUnauthorizedNoErr(w)
 			return
 		}
+		if env.RequestParams == nil {
+			httpresponse.RespondWithInternalServerError(w, errors.New("No Request Params provided"))
+			return
+		}
 		urlVars := env.RequestParams.Get(r)
 		appSlug := urlVars["app-slug"]
 		if appSlug == "" {
@@ -25,8 +31,12 @@ func AuthorizeForAppAccessHandlerFunc(env *env.AppEnv, h http.Handler) http.Hand
 		}
 
 		app, err := env.AppService.Find(&models.App{AppSlug: appSlug, APIToken: authToken})
-		if err != nil {
+		switch {
+		case errors.Cause(err) == gorm.ErrRecordNotFound:
 			httpresponse.RespondWithNotFoundErrorNoErr(w)
+			return
+		case err != nil:
+			httpresponse.RespondWithInternalServerError(w, errors.WithStack(err))
 			return
 		}
 

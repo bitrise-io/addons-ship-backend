@@ -15,9 +15,9 @@ func New(env *env.AppEnv) *mux.Router {
 
 	r.Handle("/", middleware.CommonMiddleware().Then(
 		services.Handler{Env: env, H: services.RootHandler})).Methods("GET", "OPTIONS")
-	r.Handle("/apps/{app-slug}", services.AutorizedAppMiddleware(env).Then(
+	r.Handle("/apps/{app-slug}", services.AuthorizedAppMiddleware(env).Then(
 		services.Handler{Env: env, H: services.AppGetHandler})).Methods("GET", "OPTIONS")
-	r.Handle("/apps/{app-slug}/versions", services.AutorizedAppMiddleware(env).Then(
+	r.Handle("/apps/{app-slug}/versions", services.AuthorizedAppMiddleware(env).Then(
 		services.Handler{Env: env, H: services.AppVersionsGetHandler})).Methods("GET", "OPTIONS")
 	r.NotFoundHandler = middleware.CommonMiddleware().Then(&handlers.NotFoundHandler{})
 	return r

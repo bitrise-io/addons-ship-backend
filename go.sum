@@ -15,6 +15,10 @@ github.com/bitrise-io/api-utils v0.0.0-20190513111729-4db3f704a51b h1:/Hj6EjhuYy
 github.com/bitrise-io/api-utils v0.0.0-20190513111729-4db3f704a51b/go.mod h1:FwXTOBcd4twhPfBS61C83oz3QkrUjIawlZc4T/EBqEc=
 github.com/bitrise-io/api-utils v0.0.0-20190513112909-b59dd7946e5e h1:xdXPPjtN8SWy21lX1s99UCz2znNd5oW95HcYEZ2IqxY=
 github.com/bitrise-io/api-utils v0.0.0-20190513112909-b59dd7946e5e/go.mod h1:FwXTOBcd4twhPfBS61C83oz3QkrUjIawlZc4T/EBqEc=
+github.com/bitrise-io/api-utils v0.0.0-20190514120041-c305e27a295a h1:OECIWgusj24O+LMnvbODxdvd19x/nGIgJob+bwDfj2U=
+github.com/bitrise-io/api-utils v0.0.0-20190514120041-c305e27a295a/go.mod h1:FwXTOBcd4twhPfBS61C83oz3QkrUjIawlZc4T/EBqEc=
+github.com/bitrise-io/api-utils v0.0.0-20190514120205-22cddf403be7 h1:P/s/u1mxa98YBXKFLFn5FrZBb7h7pCuLrN7/d+pFjw0=
+github.com/bitrise-io/api-utils v0.0.0-20190514120205-22cddf403be7/go.mod h1:FwXTOBcd4twhPfBS61C83oz3QkrUjIawlZc4T/EBqEc=
 github.com/c2fo/testify v0.0.0-20150827203832-fba96363964a h1:lXGVReN5qeiyu6AZpIgYJN1PoXSy1koT3nUP3ZRMWm0=
 github.com/c2fo/testify v0.0.0-20150827203832-fba96363964a/go.mod h1:NWprYCk3t+OPBp2UnxQ39EF9vPpUzoMr498TiqMA8jU=
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
