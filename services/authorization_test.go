@@ -28,6 +28,36 @@ type AuthorizationTestCase struct {
 	contextElements map[ctxpkg.RequestContextKey]interface{}
 }
 
+func performAuthorizationTest(t *testing.T,
+	httpMethod, url string,
+	handler http.Handler,
+	tc AuthorizationTestCase,
+) {
+	t.Helper()
+
+	r, err := http.NewRequest(httpMethod, url, nil)
+	require.NoError(t, err)
+
+	for headerKey, headerValue := range tc.requestHeaders {
+		r.Header.Set(headerKey, headerValue)
+	}
+
+	for key, val := range tc.contextElements {
+		r = r.WithContext(context.WithValue(r.Context(), key, val))
+	}
+
+	rr := httptest.NewRecorder()
+	handler.ServeHTTP(rr, r)
+
+	if tc.expectedResponse != nil {
+		expectedBytes, err := json.Marshal(tc.expectedResponse)
+		require.NoError(t, err)
+		require.Equal(t, string(expectedBytes), strings.Trim(rr.Body.String(), "\n"))
+	}
+
+	require.Equal(t, tc.expectedStatusCode, rr.Code)
+}
+
 func Test_AuthorizeForAppAccessHandlerFunc(t *testing.T) {
 	authHandler := &testAuthHandler{
 		ContextElementList: map[string]ctxpkg.RequestContextKey{
@@ -215,34 +245,4 @@ func Test_AuthorizeForAppAccessHandlerFunc(t *testing.T) {
 			},
 		})
 	})
-}
-
-func performAuthorizationTest(t *testing.T,
-	httpMethod, url string,
-	handler http.Handler,
-	tc AuthorizationTestCase,
-) {
-	t.Helper()
-
-	r, err := http.NewRequest(httpMethod, url, nil)
-	require.NoError(t, err)
-
-	for headerKey, headerValue := range tc.requestHeaders {
-		r.Header.Set(headerKey, headerValue)
-	}
-
-	for key, val := range tc.contextElements {
-		r = r.WithContext(context.WithValue(r.Context(), key, val))
-	}
-
-	rr := httptest.NewRecorder()
-	handler.ServeHTTP(rr, r)
-
-	if tc.expectedResponse != nil {
-		expectedBytes, err := json.Marshal(tc.expectedResponse)
-		require.NoError(t, err)
-		require.Equal(t, string(expectedBytes), strings.Trim(rr.Body.String(), "\n"))
-	}
-
-	require.Equal(t, tc.expectedStatusCode, rr.Code)
 }
