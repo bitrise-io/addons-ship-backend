@@ -73,8 +73,6 @@ workflows:
             docker-compose exec db psql -U $DB_USER -c "create database $DB_NAME;"
             docker-compose run --rm app bash -c '. _scripts/_dev_setup.sh && db/goose up'
   ci:
-    after_run:
-    - test
     steps:
     - script:
         title: Run CI
