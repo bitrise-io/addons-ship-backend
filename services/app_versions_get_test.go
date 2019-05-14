@@ -53,7 +53,7 @@ func Test_AppVersionsGetHandler(t *testing.T) {
 				},
 			},
 			expectedStatusCode: http.StatusOK,
-			expectedResponse: services.AppVersionsGetRespose{
+			expectedResponse: services.AppVersionsGetResponse{
 				Data: []models.AppVersion{},
 			},
 		})
@@ -81,7 +81,7 @@ func Test_AppVersionsGetHandler(t *testing.T) {
 				},
 			},
 			expectedStatusCode: http.StatusOK,
-			expectedResponse: services.AppVersionsGetRespose{
+			expectedResponse: services.AppVersionsGetResponse{
 				Data: []models.AppVersion{
 					models.AppVersion{
 						Version:  "v1.0",
@@ -119,7 +119,7 @@ func Test_AppVersionsGetHandler(t *testing.T) {
 				},
 			},
 			expectedStatusCode: http.StatusOK,
-			expectedResponse: services.AppVersionsGetRespose{
+			expectedResponse: services.AppVersionsGetResponse{
 				Data: []models.AppVersion{
 					models.AppVersion{
 						Version:  "v1.0",

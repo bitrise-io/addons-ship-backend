@@ -10,8 +10,8 @@ import (
 	"github.com/pkg/errors"
 )
 
-// AppVersionsGetRespose ...
-type AppVersionsGetRespose struct {
+// AppVersionsGetResponse ...
+type AppVersionsGetResponse struct {
 	Data []models.AppVersion `json:"data"`
 }
 
@@ -40,7 +40,7 @@ func AppVersionsGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Reque
 	case err != nil:
 		return errors.Wrap(err, "SQL Error")
 	}
-	return httpresponse.RespondWithSuccess(w, AppVersionsGetRespose{
+	return httpresponse.RespondWithSuccess(w, AppVersionsGetResponse{
 		Data: appVersions,
 	})
 }

@@ -10,6 +10,11 @@ import (
 	"github.com/pkg/errors"
 )
 
+// AppGetResponse ...
+type AppGetResponse struct {
+	Data *models.App `json:"data"`
+}
+
 // AppGetHandler ...
 func AppGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request) error {
 	authorizedAppID, err := GetAuthorizedAppIDFromContext(r.Context())
@@ -25,7 +30,9 @@ func AppGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request) erro
 	case errors.Cause(err) == gorm.ErrRecordNotFound:
 		return httpresponse.RespondWithNotFoundError(w)
 	case err != nil:
-		return errors.WithStack(err)
+		return errors.Wrap(err, "SQL Error")
 	}
-	return httpresponse.RespondWithSuccess(w, app)
+	return httpresponse.RespondWithSuccess(w, AppGetResponse{
+		Data: app,
+	})
 }
