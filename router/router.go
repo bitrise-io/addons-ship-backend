@@ -16,14 +16,6 @@ func New(appEnv *env.AppEnv) *mux.Router {
 	// StrictSlash: allow "trim slash"; /x/ REDIRECTS to /x
 	r := mux.NewRouter(mux.WithServiceName("addons-ship-mux")).StrictSlash(true)
 
-	r.Handle("/", middleware.CommonMiddleware().Then(
-		services.Handler{Env: appEnv, H: services.RootHandler})).Methods("GET", "OPTIONS")
-	r.Handle("/apps/{app-slug}", services.AuthorizedAppMiddleware(appEnv).Then(
-		services.Handler{Env: appEnv, H: services.AppGetHandler})).Methods("GET", "OPTIONS")
-	r.Handle("/apps/{app-slug}/versions", services.AuthorizedAppMiddleware(appEnv).Then(
-		services.Handler{Env: appEnv, H: services.AppVersionsGetHandler})).Methods("GET", "OPTIONS")
-	r.NotFoundHandler = middleware.CommonMiddleware().Then(&handlers.NotFoundHandler{})
-
 	for _, route := range []struct {
 		path           string
 		middleware     alice.Chain
@@ -46,5 +38,7 @@ func New(appEnv *env.AppEnv) *mux.Router {
 		r.Handle(route.path, route.middleware.Then(services.Handler{Env: appEnv, H: route.handler})).
 			Methods(route.allowedMethods...)
 	}
+
+	r.NotFoundHandler = middleware.CommonMiddleware().Then(&handlers.NotFoundHandler{})
 	return r
 }
