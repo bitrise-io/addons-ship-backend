@@ -20,6 +20,17 @@ workflows:
             set -ex
             no_vendor_paths="$(go list ./... | grep -v vendor)"
             envman add --key GOLIST_WITHOUT_VENDOR --value "$no_vendor_paths"
+  _dev-cleanup:
+    steps:
+    - script:
+        title: Clean up Goose binary
+        is_always_run: true
+        inputs:
+        - content: |
+            #!/bin/bash
+            set -ex
+
+            docker-compose run --rm app bash -c '. _scripts/_dev_cleanup.sh'
   code-coverage:
     description: |
       Generates code coverage report
@@ -32,17 +43,20 @@ workflows:
             set -ex
             mkdir ./_coverage
             touch ./_coverage/coverage.txt
-            go test -race -coverprofile="${CODE_COV_TXT_REPORT_FILE}" -covermode=atomic ./...
+            go test -race -coverprofile="${CODE_COV_TXT_REPORT_FILE}" -covermode=atomic -tags=database ./...
             cp "${CODE_COV_TXT_REPORT_FILE}" "${BITRISE_DEPLOY_DIR}/"
-  up:
+  dev-console:
+    after_run:
+    - _dev-cleanup
     steps:
-    - script@1.1.5:
-        title: Start server
+    - script:
+        title: Run development console
         inputs:
         - content: |
             #!/bin/bash
             set -ex
-            docker-compose up
+
+            docker-compose run --rm app bash -c '. _scripts/_dev_setup.sh && cd db && bash'
   setup:
     steps:
     - script@1.1.5:
@@ -55,20 +69,26 @@ workflows:
             docker-compose build
             docker-compose up --no-start
             docker-compose start db
-            docker-compose run --rm db sleep 1
             docker-compose exec db psql -U $DB_USER -c "drop database if exists $DB_NAME;"
             docker-compose exec db psql -U $DB_USER -c "create database $DB_NAME;"
-  test:
-    before_run:
-      - _collect_package_list_without_vendor
+            docker-compose run --rm app bash -c '. _scripts/_dev_setup.sh && cd db && ./goose up'
+  ci:
     steps:
-    - script@1.1.5:
-        title: Go test
+    - script:
+        title: Run CI
         inputs:
         - content: |
             #!/bin/bash
             set -ex
-            go test ./...
+
+            docker-compose run --rm app bash -c 'sleep 5'
+            docker-compose run --rm app bash -c 'bitrise run test'
+  test:
+    before_run:
+    - _collect_package_list_without_vendor
+    after_run:
+    - code-coverage
+    steps:
     - script:
         title: Go Vet
         inputs:
@@ -97,6 +117,23 @@ workflows:
               echo "-> Linting: $line"
               golint -set_exit_status $line
             done <<< "$GOLIST_WITHOUT_VENDOR"
-    after_run:
-      - code-coverage
+  test-with-docker:
+    steps:
+    - script@1.1.5:
+        title: Go test (with DB)
+        inputs:
+        - content: |
+            #!/bin/bash
+            set -ex
 
+            docker-compose run --rm app bash -c 'sleep 5'
+            docker-compose run --rm app bash -c 'go test ./... -tags=database'
+  up:
+    steps:
+    - script@1.1.5:
+        title: Start server
+        inputs:
+        - content: |
+            #!/bin/bash
+            set -ex
+            docker-compose up

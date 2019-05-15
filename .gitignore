@@ -14,3 +14,5 @@
 .bitrise.secrets.yml
 gin-bin
 _coverage
+.vscode
+db/goose
