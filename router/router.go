@@ -31,8 +31,12 @@ func New(appEnv *env.AppEnv) *mux.Router {
 			handler: services.AppGetHandler, allowedMethods: []string{"GET", "OPTIONS"},
 		},
 		{
-			path: "/apps/{app-slug}/version", middleware: services.AuthorizedAppMiddleware(appEnv),
+			path: "/apps/{app-slug}/versions", middleware: services.AuthorizedAppMiddleware(appEnv),
 			handler: services.AppVersionsGetHandler, allowedMethods: []string{"GET", "OPTIONS"},
+		},
+		{
+			path: "/apps/{app-slug}/versions/{version-id}", middleware: services.AuthorizedAppVersionMiddleware(appEnv),
+			handler: services.AppVersionGetHandler, allowedMethods: []string{"GET", "OPTIONS"},
 		},
 	} {
 		r.Handle(route.path, route.middleware.Then(services.Handler{Env: appEnv, H: route.handler})).

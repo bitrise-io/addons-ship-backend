@@ -35,7 +35,7 @@ func Test_AuthorizedAppMiddleware(t *testing.T) {
 	})
 }
 
-func Test_AuthorizationAppVersionMiddleware(t *testing.T) {
+func Test_AuthorizedAppVersionMiddleware(t *testing.T) {
 	middleware.PerformTest(t, "GET", "/...", middleware.TestCase{
 		RequestHeaders: map[string]string{
 			"Authorization": "token ADDON_AUTH_TOKEN",
@@ -44,7 +44,7 @@ func Test_AuthorizationAppVersionMiddleware(t *testing.T) {
 		ExpectedResponse: map[string]interface{}{
 			"message": "Success",
 		},
-		Middleware: services.AuthorizationAppVersionMiddleware(&env.AppEnv{
+		Middleware: services.AuthorizedAppVersionMiddleware(&env.AppEnv{
 			RequestParams: &providers.RequestParamsProviderMock{
 				Params: map[string]string{
 					"app-slug":   "test_app_slug",
