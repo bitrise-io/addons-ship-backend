@@ -98,6 +98,9 @@ func behavesAsContextCravingHandler(t *testing.T, method, url string, handler fu
 			if ck == services.ContextKeyAuthorizedAppID {
 				controllerTestCase.contextElements[ck] = nil
 				controllerTestCase.expectedInternalErr = "Authorized App ID not found in Context"
+			} else if ck == services.ContextKeyAuthorizedAppVersionID {
+				controllerTestCase.contextElements[ck] = nil
+				controllerTestCase.expectedInternalErr = "Authorized App Version ID not found in Context"
 			} else {
 
 				t.Fatalf("Invalid context element name defined: %s", ck)
