@@ -31,6 +31,11 @@ func AuthorizeForAppAccessHandlerFunc(env *env.AppEnv, h http.Handler) http.Hand
 			return
 		}
 
+		if env.AppService == nil {
+			httpresponse.RespondWithInternalServerError(w, errors.New("No App Service provided"))
+			return
+		}
+
 		app, err := env.AppService.Find(&models.App{AppSlug: appSlug, APIToken: authToken})
 		switch {
 		case errors.Cause(err) == gorm.ErrRecordNotFound:
