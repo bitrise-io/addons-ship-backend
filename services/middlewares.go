@@ -14,6 +14,12 @@ func createAuthorizeForAppAccessMiddleware(env *env.AppEnv) func(http.Handler) h
 	}
 }
 
+func createAuthorizeForAppVersionAccessMiddleware(env *env.AppEnv) func(http.Handler) http.Handler {
+	return func(h http.Handler) http.Handler {
+		return AuthorizeForAppVersionAccessHandlerFunc(env, h)
+	}
+}
+
 // AuthorizedAppMiddleware ...
 func AuthorizedAppMiddleware(appEnv *env.AppEnv) alice.Chain {
 	commonMiddleware := middleware.CommonMiddleware()
@@ -32,5 +38,7 @@ func AuthorizedAppMiddleware(appEnv *env.AppEnv) alice.Chain {
 
 // AuthorizationAppVersionMiddleware ...
 func AuthorizationAppVersionMiddleware(appEnv *env.AppEnv) alice.Chain {
-	return AuthorizedAppMiddleware(appEnv).Append()
+	return AuthorizedAppMiddleware(appEnv).Append(
+		createAuthorizeForAppVersionAccessMiddleware(appEnv),
+	)
 }
