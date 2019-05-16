@@ -55,7 +55,7 @@ func AuthorizeForAppVersionAccessHandlerFunc(env *env.AppEnv, h http.Handler) ht
 			return
 		}
 		urlVars := env.RequestParams.Get(r)
-		appVersionParam := urlVars["app-version-id"]
+		appVersionParam := urlVars["version-id"]
 		if appVersionParam == "" {
 			httpresponse.RespondWithBadRequestErrorNoErr(w, "App Version ID not provided")
 			return
