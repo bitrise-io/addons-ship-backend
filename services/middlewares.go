@@ -29,3 +29,8 @@ func AuthorizedAppMiddleware(appEnv *env.AppEnv) alice.Chain {
 		createAuthorizeForAppAccessMiddleware(appEnv),
 	)
 }
+
+// AuthorizationAppVersionMiddleware ...
+func AuthorizationAppVersionMiddleware(appEnv *env.AppEnv) alice.Chain {
+	return AuthorizedAppMiddleware(appEnv).Append()
+}
