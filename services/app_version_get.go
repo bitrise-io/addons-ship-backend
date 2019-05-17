@@ -2,7 +2,10 @@ package services
 
 import (
 	"net/http"
+	"strconv"
+	"time"
 
+	"github.com/bitrise-io/addons-ship-backend/bitrise"
 	"github.com/bitrise-io/addons-ship-backend/env"
 	"github.com/bitrise-io/addons-ship-backend/models"
 	"github.com/bitrise-io/api-utils/httpresponse"
@@ -12,7 +15,49 @@ import (
 
 // AppVersionGetResponse ...
 type AppVersionGetResponse struct {
-	Data *models.AppVersion `json:"data"`
+	Data AppVersionData `json:"data"`
+}
+
+// AppVersionData ...
+type AppVersionData struct {
+	*models.AppVersion
+	MinimumOS            string    `json:"minimum_os"`
+	MinimumSDK           string    `json:"minimum_sdk"`
+	PackageName          string    `json:"package_name"`
+	CertificateExpires   time.Time `json:"certificate_expires"`
+	BundleID             string    `json:"bundle_id"`
+	Size                 int64     `json:"size"`
+	SupportedDeviceTypes []string  `json:"supported_device_types"`
+	DistributionType     string    `json:"distribution_type"`
+}
+
+func newArtifactVersionGetResponse(appVersion *models.AppVersion, artifact *bitrise.ArtifactMeta) (AppVersionData, error) {
+	var supportedDeviceTypes []string
+	for _, familyID := range artifact.AppInfo.DeviceFamilyList {
+		switch familyID {
+		case 1:
+			supportedDeviceTypes = append(supportedDeviceTypes, "iPhone", "iPod Touch")
+		case 2:
+			supportedDeviceTypes = append(supportedDeviceTypes, "iPad")
+		default:
+			supportedDeviceTypes = append(supportedDeviceTypes, "Unknown")
+		}
+	}
+	size, err := strconv.ParseInt(artifact.Size, 10, 64)
+	if err != nil {
+		return AppVersionData{}, err
+	}
+	return AppVersionData{
+		AppVersion:           appVersion,
+		MinimumOS:            artifact.AppInfo.MinimumOS,
+		MinimumSDK:           artifact.AppInfo.MinimumSDKVersion,
+		PackageName:          artifact.AppInfo.PackageName,
+		CertificateExpires:   artifact.ProvisioningInfo.ExpireDate,
+		BundleID:             artifact.AppInfo.BundleID,
+		Size:                 size,
+		SupportedDeviceTypes: supportedDeviceTypes,
+		DistributionType:     artifact.ProvisioningInfo.DistributionType,
+	}, nil
 }
 
 // AppVersionGetHandler ...
@@ -34,7 +79,18 @@ func AppVersionGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Reques
 	case err != nil:
 		return errors.Wrap(err, "SQL Error")
 	}
+
+	artifact, err := bitrise.New(appVersion.App.BitriseAPIToken).GetArtifactMetadata(appVersion.App.AppSlug, appVersion.BuildSlug)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	responseData, err := newArtifactVersionGetResponse(appVersion, artifact)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
 	return httpresponse.RespondWithSuccess(w, AppVersionGetResponse{
-		Data: appVersion,
+		Data: responseData,
 	})
 }

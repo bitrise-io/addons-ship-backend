@@ -5,14 +5,18 @@ go 1.12
 require (
 	cloud.google.com/go v0.37.4
 	github.com/bitrise-io/api-utils v0.0.0-20190514125221-06e4770c9086
+	github.com/bitrise-io/bitrise-api-client v0.0.0-20190516082610-662f0949eedd
 	github.com/c2fo/testify v0.0.0-20150827203832-fba96363964a
+	github.com/go-openapi/errors v0.19.0 // indirect
+	github.com/go-openapi/runtime v0.19.0
+	github.com/go-openapi/strfmt v0.19.0 // indirect
+	github.com/go-openapi/swag v0.19.0 // indirect
 	github.com/gobuffalo/uuid v2.0.5+incompatible
 	github.com/gofrs/uuid v3.2.0+incompatible // indirect
 	github.com/gorilla/mux v1.7.1 // indirect
 	github.com/jinzhu/gorm v1.9.8
 	github.com/justinas/alice v0.0.0-20171023064455-03f45bd4b7da
 	github.com/kisielk/errcheck v1.2.0 // indirect
-	github.com/kr/pretty v0.1.0 // indirect
 	github.com/lib/pq v1.1.0
 	github.com/opentracing/opentracing-go v1.1.0 // indirect
 	github.com/philhofer/fwd v1.0.0 // indirect
@@ -20,7 +24,6 @@ require (
 	github.com/pressly/goose v2.6.0+incompatible
 	github.com/rs/cors v1.6.0 // indirect
 	github.com/satori/go.uuid v1.2.0
-	github.com/stretchr/testify v1.3.0 // indirect
 	github.com/tinylib/msgp v1.1.0 // indirect
 	go.uber.org/atomic v1.4.0 // indirect
 	go.uber.org/multierr v1.1.0 // indirect
