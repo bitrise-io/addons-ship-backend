@@ -43,7 +43,7 @@ workflows:
             #!/bin/bash
             set -ex
 
-            docker-compose run --rm app bash -c '. _scripts/_dev_setup.sh && cd db && bash'
+            docker-compose run --rm app bash -c '. _scripts/compile_goose.sh && cd db && bash'
   setup:
     steps:
     - script@1.1.5:
@@ -58,7 +58,7 @@ workflows:
             docker-compose start db
             docker-compose exec db psql -U $DB_USER -c "drop database if exists $DB_NAME;"
             docker-compose exec db psql -U $DB_USER -c "create database $DB_NAME;"
-            docker-compose run --rm app bash -c '. _scripts/_dev_setup.sh && cd db && ./goose up'
+            docker-compose run --rm app bash -c '. _scripts/compile_goose.sh && cd db && ./goose up'
   ci:
     steps:
     - script:
@@ -70,6 +70,10 @@ workflows:
 
             docker-compose run --rm app bash -c 'sleep 5'
             docker-compose run --rm app bash -c 'bitrise run test'
+            . _scripts/compile_goose.sh
+            git add .
+            git commit -m 'Update goose binary [ci skip]'
+            git push
   test:
     before_run:
     - _collect_package_list_without_vendor
