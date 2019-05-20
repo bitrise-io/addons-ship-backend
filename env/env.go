@@ -3,6 +3,7 @@ package env
 import (
 	"os"
 
+	"github.com/bitrise-io/addons-ship-backend/bitrise"
 	"github.com/bitrise-io/addons-ship-backend/dataservices"
 	"github.com/bitrise-io/addons-ship-backend/models"
 	"github.com/bitrise-io/api-utils/logging"
@@ -26,6 +27,7 @@ type AppEnv struct {
 	Port              string
 	Environment       string
 	RequestParams     providers.RequestParamsInterface
+	BitriseAPI        bitrise.APIInterface
 }
 
 // New ...
@@ -43,5 +45,6 @@ func New(db *gorm.DB) (env AppEnv) {
 	env.AppService = &models.AppService{DB: db}
 	env.AppVersionService = &models.AppVersionService{DB: db}
 	env.RequestParams = &providers.RequestParamsProvider{}
+	env.BitriseAPI = bitrise.New()
 	return
 }

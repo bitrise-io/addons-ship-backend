@@ -6,24 +6,26 @@ import (
 	bitriseapiclient "github.com/bitrise-io/bitrise-api-client/client"
 	"github.com/bitrise-io/bitrise-api-client/client/build_artifact"
 	"github.com/bitrise-io/bitrise-api-client/models"
-	"github.com/go-openapi/runtime"
 	httptransport "github.com/go-openapi/runtime/client"
 	"github.com/pkg/errors"
 )
 
 var validArtifactTypes = [...]string{"android-apk", "ios-ipa"}
 
+// APIInterface ...
+type APIInterface interface {
+	GetArtifactMetadata(authToken, appSlug, buildSlug string) (*ArtifactMeta, error)
+}
+
 // API ...
 type API struct {
 	*bitriseapiclient.Bitrise
-	authToken runtime.ClientAuthInfoWriter
 }
 
 // New ...
-func New(authToken string) *API {
+func New() *API {
 	return &API{
-		Bitrise:   bitriseapiclient.Default,
-		authToken: httptransport.APIKeyAuth("Bitrise-Addon-Auth-Token", "header", authToken),
+		Bitrise: bitriseapiclient.Default,
 	}
 }
 
@@ -37,10 +39,10 @@ func validArtifact(artifact *models.V0ArtifactListElementResponseModel) bool {
 }
 
 // GetArtifactMetadata ...
-func (a *API) GetArtifactMetadata(appSlug, buildSlug string) (*ArtifactMeta, error) {
+func (a *API) GetArtifactMetadata(authToken, appSlug, buildSlug string) (*ArtifactMeta, error) {
 	buildArtifacts, err := a.BuildArtifact.ArtifactList(&build_artifact.ArtifactListParams{
 		AppSlug: appSlug, BuildSlug: buildSlug,
-	}, a.authToken)
+	}, httptransport.APIKeyAuth("Bitrise-Addon-Auth-Token", "header", authToken))
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}

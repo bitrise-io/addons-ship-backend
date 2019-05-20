@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/bitrise-io/addons-ship-backend/bitrise"
 	"github.com/bitrise-io/addons-ship-backend/env"
 	"github.com/bitrise-io/addons-ship-backend/models"
 	"github.com/bitrise-io/addons-ship-backend/services"
@@ -20,12 +21,17 @@ func Test_AppVersionGetHandler(t *testing.T) {
 	url := "/apps/{app-slug}/version{version-id}"
 	handler := services.AppVersionGetHandler
 
-	behavesAsServiceCravingHandler(t, httpMethod, url, handler, []string{"AppVersionService"}, ControllerTestCase{
+	behavesAsServiceCravingHandler(t, httpMethod, url, handler, []string{"AppVersionService", "BitriseAPI"}, ControllerTestCase{
 		contextElements: map[ctxpkg.RequestContextKey]interface{}{
 			services.ContextKeyAuthorizedAppVersionID: uuid.NewV4(),
 		},
 		env: &env.AppEnv{
-			AppVersionService: &testAppVersionService{},
+			AppVersionService: &testAppVersionService{
+				findFn: func(*models.AppVersion) (*models.AppVersion, error) {
+					return nil, nil
+				},
+			},
+			BitriseAPI: &testBitriseAPI{},
 		},
 	})
 
@@ -35,6 +41,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 		},
 		env: &env.AppEnv{
 			AppVersionService: &testAppVersionService{},
+			BitriseAPI:        &testBitriseAPI{},
 		},
 	})
 
@@ -47,12 +54,19 @@ func Test_AppVersionGetHandler(t *testing.T) {
 				AppVersionService: &testAppVersionService{
 					findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
 						require.Equal(t, appVersion.ID.String(), "de438ddc-98e5-4226-a5f4-fd2d53474879")
-						return nil, nil
+						return &models.AppVersion{App: models.App{}}, nil
+					},
+				},
+				BitriseAPI: &testBitriseAPI{
+					getArtifactMetadataFn: func(string, string, string) (*bitrise.ArtifactMeta, error) {
+						return &bitrise.ArtifactMeta{}, nil
 					},
 				},
 			},
 			expectedStatusCode: http.StatusOK,
-			expectedResponse:   services.AppVersionGetResponse{},
+			expectedResponse: services.AppVersionGetResponse{
+				Data: services.AppVersionData{AppVersion: &models.AppVersion{}},
+			},
 		})
 	})
 
@@ -67,15 +81,30 @@ func Test_AppVersionGetHandler(t *testing.T) {
 						return &models.AppVersion{
 							Version:  "v1.0",
 							Platform: "ios",
+							App: models.App{
+								BitriseAPIToken: "test-api-token",
+							},
+						}, nil
+					},
+				},
+				BitriseAPI: &testBitriseAPI{
+					getArtifactMetadataFn: func(string, string, string) (*bitrise.ArtifactMeta, error) {
+						return &bitrise.ArtifactMeta{
+							AppInfo: bitrise.AppInfo{
+								MinimumOS: "11.1",
+							},
 						}, nil
 					},
 				},
 			},
 			expectedStatusCode: http.StatusOK,
 			expectedResponse: services.AppVersionGetResponse{
-				Data: &models.AppVersion{
-					Version:  "v1.0",
-					Platform: "ios",
+				Data: services.AppVersionData{
+					AppVersion: &models.AppVersion{
+						Version:  "v1.0",
+						Platform: "ios",
+					},
+					MinimumOS: "11.1",
 				},
 			},
 		})
@@ -92,6 +121,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 						return nil, gorm.ErrRecordNotFound
 					},
 				},
+				BitriseAPI: &testBitriseAPI{},
 			},
 			expectedStatusCode: http.StatusNotFound,
 			expectedResponse: httpresponse.StandardErrorRespModel{
@@ -111,6 +141,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 						return nil, errors.New("SOME-SQL-ERROR")
 					},
 				},
+				BitriseAPI: &testBitriseAPI{},
 			},
 			expectedStatusCode:  http.StatusNotFound,
 			expectedInternalErr: "SQL Error: SOME-SQL-ERROR",

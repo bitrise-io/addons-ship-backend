@@ -43,9 +43,13 @@ func newArtifactVersionGetResponse(appVersion *models.AppVersion, artifact *bitr
 			supportedDeviceTypes = append(supportedDeviceTypes, "Unknown")
 		}
 	}
-	size, err := strconv.ParseInt(artifact.Size, 10, 64)
-	if err != nil {
-		return AppVersionData{}, err
+	var size int64
+	if artifact.Size != "" {
+		var err error
+		size, err = strconv.ParseInt(artifact.Size, 10, 64)
+		if err != nil {
+			return AppVersionData{}, err
+		}
 	}
 	return AppVersionData{
 		AppVersion:           appVersion,
@@ -80,7 +84,15 @@ func AppVersionGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Reques
 		return errors.Wrap(err, "SQL Error")
 	}
 
-	artifact, err := bitrise.New(appVersion.App.BitriseAPIToken).GetArtifactMetadata(appVersion.App.AppSlug, appVersion.BuildSlug)
+	if env.BitriseAPI == nil {
+		return errors.New("No Bitrise API Service defined for handler")
+	}
+
+	artifact, err := env.BitriseAPI.GetArtifactMetadata(
+		appVersion.App.BitriseAPIToken,
+		appVersion.App.AppSlug,
+		appVersion.BuildSlug,
+	)
 	if err != nil {
 		return errors.WithStack(err)
 	}

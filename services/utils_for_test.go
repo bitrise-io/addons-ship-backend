@@ -50,29 +50,30 @@ func performControllerTest(t *testing.T,
 	rr := httptest.NewRecorder()
 	internalServerError := handler(tc.env, rr, r)
 
-	var expectedBytes []byte
-	if tc.expectedResponse != nil {
-		expectedBytes, err := json.Marshal(tc.expectedResponse)
-		require.NoError(t, err)
-		require.Equal(t, string(expectedBytes), strings.Trim(rr.Body.String(), "\n"))
-	}
-
 	if tc.expectedInternalErr != "" {
 		require.EqualError(t, internalServerError, tc.expectedInternalErr,
-			"Expected internal err: %s | Request Body: %s | Response Code: %d, Expected Response Body: %s | Got Body: %s", tc.expectedInternalErr, tc.requestBody, rr.Code, string(expectedBytes), rr.Body.String())
+			"Expected internal err: %s | Request Body: %s | Response Code: %d, Expected Response Body: %#v | Got Body: %s", tc.expectedInternalErr, tc.requestBody, rr.Code, tc.expectedResponse, rr.Body.String())
 	} else {
 		require.NoError(t, internalServerError)
 		if tc.expectedStatusCode != 0 {
 			require.Equal(t, tc.expectedStatusCode, rr.Code,
-				"Expected body: %s | Got body: %s", string(expectedBytes), rr.Body.String())
+				"Expected body: %#v | Got body: %s", tc.expectedResponse, rr.Body.String())
 		}
+	}
+
+	if tc.expectedResponse != nil {
+		expectedBytes, err := json.Marshal(tc.expectedResponse)
+		require.NoError(t, err)
+		require.Equal(t, string(expectedBytes), strings.Trim(rr.Body.String(), "\n"))
 	}
 }
 
 func behavesAsServiceCravingHandler(t *testing.T, method, url string, handler func(*env.AppEnv, http.ResponseWriter, *http.Request) error, serviceNames []string, baseCT ControllerTestCase) {
 	t.Run("behaves as service craving handler", func(t *testing.T) {
 		for _, sn := range serviceNames {
+			baseEnv := *baseCT.env
 			controllerTestCase := baseCT
+			controllerTestCase.env = &baseEnv
 			if sn == "AppService" {
 				controllerTestCase.env.AppService = nil
 				controllerTestCase.expectedInternalErr = "No App Service defined for handler"
@@ -82,9 +83,11 @@ func behavesAsServiceCravingHandler(t *testing.T, method, url string, handler fu
 			} else if sn == "RequestParams" {
 				controllerTestCase.env.RequestParams = nil
 				controllerTestCase.expectedInternalErr = "No RequestParams defined for handler"
+			} else if sn == "BitriseAPI" {
+				controllerTestCase.env.BitriseAPI = nil
+				controllerTestCase.expectedInternalErr = "No Bitrise API Service defined for handler"
 			} else {
-
-				t.Fatalf("Invalid context element name defined: %s", sn)
+				t.Fatalf("Invalid service element name defined: %s", sn)
 			}
 			performControllerTest(t, method, url, handler, controllerTestCase)
 		}
