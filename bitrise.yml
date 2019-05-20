@@ -70,7 +70,6 @@ workflows:
 
             docker-compose run --rm app bash -c 'sleep 5'
             docker-compose run --rm app bash -c 'bitrise run test'
-            docker-compose run --rm app bash -c 'cd db && ./goose up'
   test:
     before_run:
     - _collect_package_list_without_vendor
@@ -125,3 +124,12 @@ workflows:
             #!/bin/bash
             set -ex
             docker-compose up
+  seed-db:
+    steps:
+    - script@1.1.5:
+        title: Seed development db
+        inputs:
+        - content: |
+            #!/bin/bash
+            set -ex
+            docker-compose run --rm app bash -c 'go run db/seed/main.go'
