@@ -49,8 +49,7 @@ func (a *API) GetArtifactMetadata(authToken, appSlug, buildSlug string) (*Artifa
 	for _, buildArtifact := range buildArtifacts.Payload.Data {
 		if validArtifact(buildArtifact) {
 			var artifactMeta ArtifactMeta
-			// use artifact meta!!!!!
-			err := json.Unmarshal([]byte(buildArtifact.ArtifactType), &artifactMeta)
+			err := json.Unmarshal([]byte(buildArtifact.ArtifactMeta), &artifactMeta)
 			if err != nil {
 				return nil, errors.WithStack(err)
 			}

@@ -20,6 +20,10 @@ github.com/bitrise-io/api-utils v0.0.0-20190514125221-06e4770c9086 h1:whfOvL0puc
 github.com/bitrise-io/api-utils v0.0.0-20190514125221-06e4770c9086/go.mod h1:FwXTOBcd4twhPfBS61C83oz3QkrUjIawlZc4T/EBqEc=
 github.com/bitrise-io/bitrise-api-client v0.0.0-20190520105641-ca8d62cdf466 h1:rUefPovDMt+F4poe4RkXOo7YCCsGl8a6kCRnuYmO2d0=
 github.com/bitrise-io/bitrise-api-client v0.0.0-20190520105641-ca8d62cdf466/go.mod h1:9Pd5DoWOftN2x64i//CF6qIF80+Z861fUX28vLAL5zQ=
+github.com/bitrise-io/bitrise-api-client v0.0.0-20190520120834-f30d027a6ca7 h1:KHRQzdwCtWUAU7MZme0g7g1DCl7OK4qAeIMVITn3I7A=
+github.com/bitrise-io/bitrise-api-client v0.0.0-20190520120834-f30d027a6ca7/go.mod h1:9Pd5DoWOftN2x64i//CF6qIF80+Z861fUX28vLAL5zQ=
+github.com/bitrise-io/go-utils v0.0.0-20190507082533-8898129615c9 h1:/VXAK6LQD11bNkHiz/w0MPeO7y4wPCrsoyPnYJ+0qbA=
+github.com/bitrise-io/go-utils v0.0.0-20190507082533-8898129615c9/go.mod h1:Pp48eQd8BSNEzWWTBxdFUd/ufS5b5Bgkmt9D5NedjWg=
 github.com/c2fo/testify v0.0.0-20150827203832-fba96363964a h1:lXGVReN5qeiyu6AZpIgYJN1PoXSy1koT3nUP3ZRMWm0=
 github.com/c2fo/testify v0.0.0-20150827203832-fba96363964a/go.mod h1:NWprYCk3t+OPBp2UnxQ39EF9vPpUzoMr498TiqMA8jU=
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=

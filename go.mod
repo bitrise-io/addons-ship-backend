@@ -4,7 +4,8 @@ go 1.12
 
 require (
 	github.com/bitrise-io/api-utils v0.0.0-20190514125221-06e4770c9086
-	github.com/bitrise-io/bitrise-api-client v0.0.0-20190520105641-ca8d62cdf466
+	github.com/bitrise-io/bitrise-api-client v0.0.0-20190520120834-f30d027a6ca7
+	github.com/bitrise-io/go-utils v0.0.0-20190507082533-8898129615c9 // indirect
 	github.com/c2fo/testify v0.0.0-20150827203832-fba96363964a
 	github.com/go-openapi/errors v0.19.0 // indirect
 	github.com/go-openapi/runtime v0.19.0
