@@ -15,4 +15,3 @@
 gin-bin
 _coverage
 .vscode
-db/goose

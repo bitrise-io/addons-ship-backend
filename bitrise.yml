@@ -20,17 +20,6 @@ workflows:
             set -ex
             no_vendor_paths="$(go list ./... | grep -v vendor)"
             envman add --key GOLIST_WITHOUT_VENDOR --value "$no_vendor_paths"
-  _dev-cleanup:
-    steps:
-    - script:
-        title: Clean up Goose binary
-        is_always_run: true
-        inputs:
-        - content: |
-            #!/bin/bash
-            set -ex
-
-            docker-compose run --rm app bash -c '. _scripts/_dev_cleanup.sh'
   code-coverage:
     description: |
       Generates code coverage report
@@ -46,8 +35,6 @@ workflows:
             go test -race -coverprofile="${CODE_COV_TXT_REPORT_FILE}" -covermode=atomic -tags=database ./...
             cp "${CODE_COV_TXT_REPORT_FILE}" "${BITRISE_DEPLOY_DIR}/"
   dev-console:
-    after_run:
-    - _dev-cleanup
     steps:
     - script:
         title: Run development console
@@ -56,7 +43,7 @@ workflows:
             #!/bin/bash
             set -ex
 
-            docker-compose run --rm app bash -c '. _scripts/_dev_setup.sh && cd db && bash'
+            docker-compose run --rm app bash -c '. _scripts/compile_goose.sh && cd db && bash'
   setup:
     steps:
     - script@1.1.5:
@@ -71,7 +58,7 @@ workflows:
             docker-compose start db
             docker-compose exec db psql -U $DB_USER -c "drop database if exists $DB_NAME;"
             docker-compose exec db psql -U $DB_USER -c "create database $DB_NAME;"
-            docker-compose run --rm app bash -c '. _scripts/_dev_setup.sh && cd db && ./goose up'
+            docker-compose run --rm app bash -c '. _scripts/compile_goose.sh && cd db && ./goose up'
   ci:
     steps:
     - script:
@@ -83,6 +70,7 @@ workflows:
 
             docker-compose run --rm app bash -c 'sleep 5'
             docker-compose run --rm app bash -c 'bitrise run test'
+            docker-compose run --rm app bash -c 'cd db && ./goose up'
   test:
     before_run:
     - _collect_package_list_without_vendor
