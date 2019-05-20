@@ -58,7 +58,7 @@ workflows:
             docker-compose start db
             docker-compose exec db psql -U $DB_USER -c "drop database if exists $DB_NAME;"
             docker-compose exec db psql -U $DB_USER -c "create database $DB_NAME;"
-            docker-compose run --rm app bash -c '. _scripts/compile_goose.sh && cd db && ./goose up'
+            docker-compose run --rm app bash -c 'go run db/main.go -dir db up'
   ci:
     steps:
     - script:
