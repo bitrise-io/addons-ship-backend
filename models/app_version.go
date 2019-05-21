@@ -15,6 +15,7 @@ type AppVersion struct {
 	BuildSlug   string    `json:"build_slug"`
 	LastUpdate  time.Time `json:"last_update"`
 	Description string    `json:"description"`
+	WhatsNew    string    `json:"whats_new"`
 
 	AppID uuid.UUID `db:"app_id" json:"-"`
 	App   App       `gorm:"foreignkey:AppID" json:"-"`
