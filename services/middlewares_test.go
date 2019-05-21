@@ -21,7 +21,7 @@ func Test_AuthorizedAppMiddleware(t *testing.T) {
 			"message": "Success",
 		},
 		Middleware: services.AuthorizedAppMiddleware(&env.AppEnv{
-			RequestParams: &providers.RequestParamsProviderMock{
+			RequestParams: &providers.RequestParamsMock{
 				Params: map[string]string{
 					"app-slug": "test_app_slug",
 				},
@@ -45,7 +45,7 @@ func Test_AuthorizedAppVersionMiddleware(t *testing.T) {
 			"message": "Success",
 		},
 		Middleware: services.AuthorizedAppVersionMiddleware(&env.AppEnv{
-			RequestParams: &providers.RequestParamsProviderMock{
+			RequestParams: &providers.RequestParamsMock{
 				Params: map[string]string{
 					"app-slug":   "test_app_slug",
 					"version-id": "de438ddc-98e5-4226-a5f4-fd2d53474879",

@@ -44,7 +44,7 @@ func New(db *gorm.DB) (env AppEnv) {
 	env.Logger = logging.WithContext(nil)
 	env.AppService = &models.AppService{DB: db}
 	env.AppVersionService = &models.AppVersionService{DB: db}
-	env.RequestParams = &providers.RequestParamsProvider{}
+	env.RequestParams = &providers.RequestParams{}
 	env.BitriseAPI = bitrise.New()
 	return
 }

@@ -70,7 +70,7 @@ func Test_AuthorizeForAppAccessHandlerFunc(t *testing.T) {
 
 	t.Run("ok", func(t *testing.T) {
 		handler := services.AuthorizeForAppAccessHandlerFunc(&env.AppEnv{
-			RequestParams: &providers.RequestParamsProviderMock{
+			RequestParams: &providers.RequestParamsMock{
 				Params: map[string]string{
 					"app-slug": "test_app_slug",
 				},
@@ -103,7 +103,7 @@ func Test_AuthorizeForAppAccessHandlerFunc(t *testing.T) {
 
 	t.Run("when no auth token provided in header", func(t *testing.T) {
 		handler := services.AuthorizeForAppAccessHandlerFunc(&env.AppEnv{
-			RequestParams: &providers.RequestParamsProviderMock{
+			RequestParams: &providers.RequestParamsMock{
 				Params: map[string]string{
 					"app-slug": "test_app_slug",
 				},
@@ -161,7 +161,7 @@ func Test_AuthorizeForAppAccessHandlerFunc(t *testing.T) {
 
 	t.Run("when no app slug found in url params", func(t *testing.T) {
 		handler := services.AuthorizeForAppAccessHandlerFunc(&env.AppEnv{
-			RequestParams: &providers.RequestParamsProviderMock{
+			RequestParams: &providers.RequestParamsMock{
 				Params: map[string]string{},
 			},
 			AppService: &testAppService{
@@ -192,7 +192,7 @@ func Test_AuthorizeForAppAccessHandlerFunc(t *testing.T) {
 
 	t.Run("when no app service provided in app env", func(t *testing.T) {
 		handler := services.AuthorizeForAppAccessHandlerFunc(&env.AppEnv{
-			RequestParams: &providers.RequestParamsProviderMock{
+			RequestParams: &providers.RequestParamsMock{
 				Params: map[string]string{
 					"app-slug": "test_app_slug",
 				},
@@ -214,7 +214,7 @@ func Test_AuthorizeForAppAccessHandlerFunc(t *testing.T) {
 
 	t.Run("when app no found in database", func(t *testing.T) {
 		handler := services.AuthorizeForAppAccessHandlerFunc(&env.AppEnv{
-			RequestParams: &providers.RequestParamsProviderMock{
+			RequestParams: &providers.RequestParamsMock{
 				Params: map[string]string{
 					"app-slug": "test_app_slug",
 				},
@@ -243,7 +243,7 @@ func Test_AuthorizeForAppAccessHandlerFunc(t *testing.T) {
 
 	t.Run("when unexpected error happens at database query", func(t *testing.T) {
 		handler := services.AuthorizeForAppAccessHandlerFunc(&env.AppEnv{
-			RequestParams: &providers.RequestParamsProviderMock{
+			RequestParams: &providers.RequestParamsMock{
 				Params: map[string]string{
 					"app-slug": "test_app_slug",
 				},
@@ -283,7 +283,7 @@ func Test_AuthorizeForAppVersionAccessHandlerFunc(t *testing.T) {
 
 	t.Run("ok", func(t *testing.T) {
 		handler := services.AuthorizeForAppVersionAccessHandlerFunc(&env.AppEnv{
-			RequestParams: &providers.RequestParamsProviderMock{
+			RequestParams: &providers.RequestParamsMock{
 				Params: map[string]string{
 					"version-id": "de438ddc-98e5-4226-a5f4-fd2d53474879",
 				},
@@ -340,7 +340,7 @@ func Test_AuthorizeForAppVersionAccessHandlerFunc(t *testing.T) {
 
 	t.Run("when no app version id found in url params", func(t *testing.T) {
 		handler := services.AuthorizeForAppVersionAccessHandlerFunc(&env.AppEnv{
-			RequestParams: &providers.RequestParamsProviderMock{
+			RequestParams: &providers.RequestParamsMock{
 				Params: map[string]string{},
 			},
 			AppVersionService: &testAppVersionService{
@@ -368,7 +368,7 @@ func Test_AuthorizeForAppVersionAccessHandlerFunc(t *testing.T) {
 
 	t.Run("when no valid app version id found in url params", func(t *testing.T) {
 		handler := services.AuthorizeForAppVersionAccessHandlerFunc(&env.AppEnv{
-			RequestParams: &providers.RequestParamsProviderMock{
+			RequestParams: &providers.RequestParamsMock{
 				Params: map[string]string{
 					"version-id": "invalid-uuid",
 				},
@@ -398,7 +398,7 @@ func Test_AuthorizeForAppVersionAccessHandlerFunc(t *testing.T) {
 
 	t.Run("when no app version service is provided in app env", func(t *testing.T) {
 		handler := services.AuthorizeForAppVersionAccessHandlerFunc(&env.AppEnv{
-			RequestParams: &providers.RequestParamsProviderMock{
+			RequestParams: &providers.RequestParamsMock{
 				Params: map[string]string{
 					"version-id": "de438ddc-98e5-4226-a5f4-fd2d53474879",
 				},
@@ -420,7 +420,7 @@ func Test_AuthorizeForAppVersionAccessHandlerFunc(t *testing.T) {
 
 	t.Run("when app no found in database", func(t *testing.T) {
 		handler := services.AuthorizeForAppVersionAccessHandlerFunc(&env.AppEnv{
-			RequestParams: &providers.RequestParamsProviderMock{
+			RequestParams: &providers.RequestParamsMock{
 				Params: map[string]string{
 					"version-id": "de438ddc-98e5-4226-a5f4-fd2d53474879",
 				},
@@ -447,7 +447,7 @@ func Test_AuthorizeForAppVersionAccessHandlerFunc(t *testing.T) {
 	})
 	t.Run("when unexpected error happens at database query", func(t *testing.T) {
 		handler := services.AuthorizeForAppVersionAccessHandlerFunc(&env.AppEnv{
-			RequestParams: &providers.RequestParamsProviderMock{
+			RequestParams: &providers.RequestParamsMock{
 				Params: map[string]string{
 					"version-id": "de438ddc-98e5-4226-a5f4-fd2d53474879",
 				},
