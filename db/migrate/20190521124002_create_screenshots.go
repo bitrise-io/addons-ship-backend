@@ -11,11 +11,21 @@ func init() {
 }
 
 func up20190521124002(tx *sql.Tx) error {
-	// This code is executed when the migration is applied.
-	return nil
+	_, err := tx.Exec(`CREATE TABLE screenshots (
+        id uuid primary key NOT NULL,
+        filename text NOT NULL,
+        filesize integer,
+        uploaded boolean,
+        created_at timestamp with time zone NOT NULL,
+        updated_at timestamp with time zone NOT NULL,
+        deleted_at timestamp with time zone
+    );
+
+    CREATE UNIQUE INDEX screenshots_filename_idx ON screenshots(filename);`)
+	return err
 }
 
 func down20190521124002(tx *sql.Tx) error {
-	// This code is executed when the migration is rolled back.
-	return nil
+	_, err := tx.Exec(`DROP TABLE screenshots;`)
+	return err
 }
