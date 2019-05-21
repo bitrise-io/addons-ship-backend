@@ -46,10 +46,11 @@ func newArtifactVersionGetResponse(appVersion *models.AppVersion, artifact *bitr
 	var size int64
 	if artifact.Size != "" {
 		var err error
-		size, err = strconv.ParseInt(artifact.Size, 10, 64)
+		floatSize, err := strconv.ParseFloat(artifact.Size, 64)
 		if err != nil {
 			return AppVersionData{}, err
 		}
+		size = int64(floatSize)
 	}
 	return AppVersionData{
 		AppVersion:           appVersion,

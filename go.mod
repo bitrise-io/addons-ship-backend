@@ -3,7 +3,8 @@ module github.com/bitrise-io/addons-ship-backend
 go 1.12
 
 require (
-	github.com/bitrise-io/api-utils v0.0.0-20190514125221-06e4770c9086
+	github.com/aws/aws-sdk-go v1.19.34 // indirect
+	github.com/bitrise-io/api-utils v0.0.0-20190516083801-f9349515e67c
 	github.com/bitrise-io/bitrise-api-client v0.0.0-20190520120834-f30d027a6ca7
 	github.com/bitrise-io/go-utils v0.0.0-20190507082533-8898129615c9 // indirect
 	github.com/c2fo/testify v0.0.0-20150827203832-fba96363964a
@@ -11,6 +12,8 @@ require (
 	github.com/go-openapi/runtime v0.19.0
 	github.com/go-openapi/strfmt v0.19.0 // indirect
 	github.com/go-openapi/swag v0.19.0 // indirect
+	github.com/gobuffalo/nulls v0.0.0-20190305142546-85f3c9250d87 // indirect
+	github.com/gobuffalo/pop v4.11.0+incompatible
 	github.com/gorilla/mux v1.7.1 // indirect
 	github.com/jinzhu/gorm v1.9.8
 	github.com/justinas/alice v0.0.0-20171023064455-03f45bd4b7da
