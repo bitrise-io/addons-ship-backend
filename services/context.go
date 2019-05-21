@@ -11,6 +11,8 @@ import (
 const (
 	// ContextKeyAuthorizedAppID ...
 	ContextKeyAuthorizedAppID ctxpkg.RequestContextKey = "ctx-authorized-app-id"
+	// ContextKeyAuthorizedAppVersionID ...
+	ContextKeyAuthorizedAppVersionID ctxpkg.RequestContextKey = "ctx-authorized-app-version-id"
 )
 
 // GetAuthorizedAppIDFromContext ...
@@ -25,4 +27,18 @@ func GetAuthorizedAppIDFromContext(ctx context.Context) (uuid.UUID, error) {
 // ContextWithAuthorizedAppID ...
 func ContextWithAuthorizedAppID(ctx context.Context, appID uuid.UUID) context.Context {
 	return context.WithValue(ctx, ContextKeyAuthorizedAppID, appID)
+}
+
+// GetAuthorizedAppVersionIDFromContext ...
+func GetAuthorizedAppVersionIDFromContext(ctx context.Context) (uuid.UUID, error) {
+	id, ok := ctx.Value(ContextKeyAuthorizedAppVersionID).(uuid.UUID)
+	if !ok {
+		return uuid.UUID{}, errors.New("Authorized App Version ID not found in Context")
+	}
+	return id, nil
+}
+
+// ContextWithAuthorizedAppVersionID ...
+func ContextWithAuthorizedAppVersionID(ctx context.Context, appVersionID uuid.UUID) context.Context {
+	return context.WithValue(ctx, ContextKeyAuthorizedAppVersionID, appVersionID)
 }

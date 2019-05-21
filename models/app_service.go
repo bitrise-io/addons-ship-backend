@@ -14,7 +14,7 @@ func (a *AppService) Create(app *App) (*App, error) {
 
 // Find ...
 func (a *AppService) Find(app *App) (*App, error) {
-	err := a.DB.First(app).Error
+	err := a.DB.Preload("AppVersions").Where(app).First(app).Error
 	if err != nil {
 		return nil, err
 	}
