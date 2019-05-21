@@ -110,6 +110,90 @@ func Test_AppVersionGetHandler(t *testing.T) {
 		})
 	})
 
+	t.Run("ok - more complex - device family", func(t *testing.T) {
+		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppVersionID: uuid.NewV4(),
+			},
+			env: &env.AppEnv{
+				AppVersionService: &testAppVersionService{
+					findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
+						return &models.AppVersion{
+							Version:  "v1.0",
+							Platform: "ios",
+							App: models.App{
+								BitriseAPIToken: "test-api-token",
+							},
+						}, nil
+					},
+				},
+				BitriseAPI: &testBitriseAPI{
+					getArtifactMetadataFn: func(string, string, string) (*bitrise.ArtifactMeta, error) {
+						return &bitrise.ArtifactMeta{
+							AppInfo: bitrise.AppInfo{
+								MinimumOS:        "11.1",
+								DeviceFamilyList: []int{1, 2},
+							},
+						}, nil
+					},
+				},
+			},
+			expectedStatusCode: http.StatusOK,
+			expectedResponse: services.AppVersionGetResponse{
+				Data: services.AppVersionData{
+					AppVersion: &models.AppVersion{
+						Version:  "v1.0",
+						Platform: "ios",
+					},
+					MinimumOS:            "11.1",
+					SupportedDeviceTypes: []string{"iPhone", "iPod Touch", "iPad"},
+				},
+			},
+		})
+	})
+
+	t.Run("ok - more complex - unknown device family", func(t *testing.T) {
+		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppVersionID: uuid.NewV4(),
+			},
+			env: &env.AppEnv{
+				AppVersionService: &testAppVersionService{
+					findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
+						return &models.AppVersion{
+							Version:  "v1.0",
+							Platform: "ios",
+							App: models.App{
+								BitriseAPIToken: "test-api-token",
+							},
+						}, nil
+					},
+				},
+				BitriseAPI: &testBitriseAPI{
+					getArtifactMetadataFn: func(string, string, string) (*bitrise.ArtifactMeta, error) {
+						return &bitrise.ArtifactMeta{
+							AppInfo: bitrise.AppInfo{
+								MinimumOS:        "11.1",
+								DeviceFamilyList: []int{12},
+							},
+						}, nil
+					},
+				},
+			},
+			expectedStatusCode: http.StatusOK,
+			expectedResponse: services.AppVersionGetResponse{
+				Data: services.AppVersionData{
+					AppVersion: &models.AppVersion{
+						Version:  "v1.0",
+						Platform: "ios",
+					},
+					MinimumOS:            "11.1",
+					SupportedDeviceTypes: []string{"Unknown"},
+				},
+			},
+		})
+	})
+
 	t.Run("error - not found in database", func(t *testing.T) {
 		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
 			contextElements: map[ctxpkg.RequestContextKey]interface{}{
