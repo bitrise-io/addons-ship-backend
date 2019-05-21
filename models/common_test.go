@@ -89,6 +89,15 @@ func runTestMigrations(t *testing.T, db *gorm.DB) {
 				return nil
 			},
 		},
+		{
+			message: "create screenshots table",
+			fn: func() error {
+				if !db.HasTable(&models.Screenshot{}) {
+					return db.CreateTable(&models.Screenshot{}).Error
+				}
+				return nil
+			},
+		},
 	} {
 		t.Log(migration.message)
 		panicIfErr(migration.fn())

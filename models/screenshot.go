@@ -5,9 +5,11 @@ import uuid "github.com/satori/go.uuid"
 // Screenshot ...
 type Screenshot struct {
 	Record
-	FileName string `json:"filename"`
-	FileSize string `json:"filesize"`
-	Uploaded bool   `json:"uploaded"`
+	FileName   string `json:"filename"`
+	FileSize   string `json:"filesize"`
+	Uploaded   bool   `json:"uploaded"`
+	DeviceType string `json:"device_type"`
+	ScreenSize string `json:"screen_size"`
 
 	AppVersionID uuid.UUID  `db:"app_version_id" json:"-"`
 	AppVersion   AppVersion `gorm:"foreignkey:AppVersionID" json:"-"`

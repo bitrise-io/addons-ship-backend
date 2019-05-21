@@ -16,12 +16,14 @@ func up20190521124002(tx *sql.Tx) error {
         filename text NOT NULL,
         filesize integer,
         uploaded boolean,
+        device_type text,
+        screen_size text,
         created_at timestamp with time zone NOT NULL,
         updated_at timestamp with time zone NOT NULL,
         deleted_at timestamp with time zone
     );
 
-    CREATE UNIQUE INDEX screenshots_filename_idx ON screenshots(filename);`)
+    CREATE UNIQUE INDEX screenshots_filename_idx ON screenshots(filename, device_type, screen_size);`)
 	return err
 }
 
