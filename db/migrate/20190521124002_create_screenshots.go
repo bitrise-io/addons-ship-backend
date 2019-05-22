@@ -13,6 +13,7 @@ func init() {
 func up20190521124002(tx *sql.Tx) error {
 	_, err := tx.Exec(`CREATE TABLE screenshots (
         id uuid primary key NOT NULL,
+        app_version_id uuid NOT NULL REFERENCES app_versions (id),
         filename text NOT NULL,
         filesize integer,
         uploaded boolean,

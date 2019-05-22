@@ -80,9 +80,15 @@ func behavesAsServiceCravingHandler(t *testing.T, method, url string, handler fu
 			} else if sn == "AppVersionService" {
 				controllerTestCase.env.AppVersionService = nil
 				controllerTestCase.expectedInternalErr = "No App Version Service defined for handler"
+			} else if sn == "ScreenshotService" {
+				controllerTestCase.env.ScreenshotService = nil
+				controllerTestCase.expectedInternalErr = "No Screenshot Service defined for handler"
 			} else if sn == "RequestParams" {
 				controllerTestCase.env.RequestParams = nil
 				controllerTestCase.expectedInternalErr = "No RequestParams defined for handler"
+			} else if sn == "AWS" {
+				controllerTestCase.env.AWS = nil
+				controllerTestCase.expectedInternalErr = "No AWS Provider defined for handler"
 			} else if sn == "BitriseAPI" {
 				controllerTestCase.env.BitriseAPI = nil
 				controllerTestCase.expectedInternalErr = "No Bitrise API Service defined for handler"

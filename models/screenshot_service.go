@@ -10,7 +10,7 @@ type ScreenshotService struct {
 // FindAll ...
 func (a *ScreenshotService) FindAll(appVersion *AppVersion) ([]Screenshot, error) {
 	var screenshots []Screenshot
-	err := a.DB.Where(map[string]interface{}{"app_version_id": appVersion.ID}).
+	err := a.DB.Preload("AppVersion").Preload("AppVersion.App").Where(map[string]interface{}{"app_version_id": appVersion.ID}).
 		Find(&screenshots).
 		Order("created_at DESC").Error
 	if err != nil {
