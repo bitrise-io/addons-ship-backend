@@ -1,6 +1,7 @@
 package services
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/bitrise-io/addons-ship-backend/env"
@@ -21,7 +22,12 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if h.Env.Logger != nil {
 			h.Env.Logger.Error(" [!] Exception: Internal Server Error", zap.Error(err))
-			defer h.Env.Logger.Sync()
+			defer func() {
+				err := h.Env.Logger.Sync()
+				if err != nil {
+					fmt.Printf("Failed to sync logger: %#v", err)
+				}
+			}()
 		}
 		httpresponse.RespondWithInternalServerError(w, errors.WithStack(err))
 	}

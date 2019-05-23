@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -15,7 +16,12 @@ import (
 
 func main() {
 	logger := logging.WithContext(nil)
-	defer logger.Sync()
+	defer func() {
+		err := logger.Sync()
+		if err != nil {
+			fmt.Printf("Failed to sync logger: %#v", err)
+		}
+	}()
 	tracer.Start(tracer.WithServiceName("addons-ship"))
 	defer tracer.Stop()
 
