@@ -6,7 +6,6 @@ import (
 	"github.com/bitrise-io/addons-ship-backend/env"
 	"github.com/bitrise-io/addons-ship-backend/models"
 	"github.com/bitrise-io/api-utils/httpresponse"
-	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
 )
 
@@ -34,10 +33,7 @@ func AppVersionsGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Reque
 		&models.App{Record: models.Record{ID: authorizedAppID}},
 		filterParams,
 	)
-	switch {
-	case errors.Cause(err) == gorm.ErrRecordNotFound:
-		return httpresponse.RespondWithNotFoundError(w)
-	case err != nil:
+	if err != nil {
 		return errors.Wrap(err, "SQL Error")
 	}
 	return httpresponse.RespondWithSuccess(w, AppVersionsGetResponse{

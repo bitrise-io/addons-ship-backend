@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -15,6 +16,12 @@ import (
 
 func main() {
 	logger := logging.WithContext(nil)
+	defer func() {
+		err := logger.Sync()
+		if err != nil {
+			fmt.Printf("Failed to sync logger: %#v", err)
+		}
+	}()
 	tracer.Start(tracer.WithServiceName("addons-ship"))
 	defer tracer.Stop()
 
@@ -26,13 +33,17 @@ func main() {
 	defer dataservices.Close()
 	log.Println(" [OK] Database connection established")
 
-	appEnv := env.New(dataservices.GetDB())
+	appEnv, err := env.New(dataservices.GetDB())
+	if err != nil {
+		logger.Error("Failed to initialize Application Environment object", zap.Any("error", err))
+		os.Exit(1)
+	}
 
 	// Routing
-	http.Handle("/", router.New(&appEnv))
+	http.Handle("/", router.New(appEnv))
 
 	log.Println("Starting - using port:", appEnv.Port)
 	if err := http.ListenAndServe(":"+appEnv.Port, nil); err != nil {
-		appEnv.Logger.Error("Failed to initialize Ship Addon Backend", zap.Any("error", err))
+		logger.Error("Failed to initialize Ship Addon Backend", zap.Any("error", err))
 	}
 }

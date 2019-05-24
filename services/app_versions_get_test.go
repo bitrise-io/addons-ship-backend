@@ -8,9 +8,7 @@ import (
 	"github.com/bitrise-io/addons-ship-backend/models"
 	"github.com/bitrise-io/addons-ship-backend/services"
 	ctxpkg "github.com/bitrise-io/api-utils/context"
-	"github.com/bitrise-io/api-utils/httpresponse"
 	"github.com/c2fo/testify/require"
-	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 )
@@ -130,25 +128,6 @@ func Test_AppVersionsGetHandler(t *testing.T) {
 		})
 	})
 
-	t.Run("error - not found in database", func(t *testing.T) {
-		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
-			contextElements: map[ctxpkg.RequestContextKey]interface{}{
-				services.ContextKeyAuthorizedAppID: uuid.NewV4(),
-			},
-			env: &env.AppEnv{
-				AppVersionService: &testAppVersionService{
-					findAllFn: func(app *models.App, filterParams map[string]interface{}) ([]models.AppVersion, error) {
-						return []models.AppVersion{}, gorm.ErrRecordNotFound
-					},
-				},
-			},
-			expectedStatusCode: http.StatusNotFound,
-			expectedResponse: httpresponse.StandardErrorRespModel{
-				Message: "Not Found",
-			},
-		})
-	})
-
 	t.Run("error - unexpected error in database", func(t *testing.T) {
 		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
 			contextElements: map[ctxpkg.RequestContextKey]interface{}{
@@ -161,7 +140,6 @@ func Test_AppVersionsGetHandler(t *testing.T) {
 					},
 				},
 			},
-			expectedStatusCode:  http.StatusNotFound,
 			expectedInternalErr: "SQL Error: SOME-SQL-ERROR",
 		})
 	})
