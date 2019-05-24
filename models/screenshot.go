@@ -4,7 +4,15 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/bitrise-io/api-utils/constants"
+	"github.com/jinzhu/gorm"
+	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
+)
+
+const (
+	// MaxScreenshotFileByteSize ...
+	MaxScreenshotFileByteSize = 10 * constants.MegaByte
 )
 
 // Screenshot ...
@@ -21,8 +29,19 @@ type Screenshot struct {
 }
 
 // BeforeCreate ...
-func (s *Screenshot) BeforeCreate() error {
+func (s *Screenshot) BeforeCreate(scope *gorm.Scope) error {
 	s.ID = uuid.NewV4()
+	err := s.validate(scope)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	return nil
+}
+
+func (s *Screenshot) validate(scope *gorm.Scope) error {
+	if s.Filesize > MaxScreenshotFileByteSize {
+		scope.DB().AddError(errors.New("filesize: Must be smaller than 10 megabytes"))
+	}
 	return nil
 }
 
