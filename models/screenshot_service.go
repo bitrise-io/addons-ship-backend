@@ -7,17 +7,22 @@ type ScreenshotService struct {
 	DB *gorm.DB
 }
 
-// Create ...
-func (s *ScreenshotService) Create(screenshot *Screenshot) (*Screenshot, []error, error) {
-	result := s.DB.Create(screenshot)
-	verrs := result.GetErrors()
-	if len(verrs) > 0 {
-		return nil, verrs, nil
+// BatchCreate ...
+func (s *ScreenshotService) BatchCreate(screenshots []*Screenshot) ([]*Screenshot, []error, error) {
+	tx := s.DB.Begin()
+	for _, screenshot := range screenshots {
+		result := tx.Create(screenshot)
+		verrs := result.GetErrors()
+		if len(verrs) > 0 {
+			tx.Rollback()
+			return nil, verrs, nil
+		}
+		if result.Error != nil {
+			tx.Rollback()
+			return nil, nil, result.Error
+		}
 	}
-	if result.Error != nil {
-		return nil, nil, result.Error
-	}
-	return screenshot, nil, nil
+	return screenshots, nil, tx.Commit().Error
 }
 
 // FindAll ...
