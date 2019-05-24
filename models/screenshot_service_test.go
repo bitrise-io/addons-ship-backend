@@ -12,6 +12,38 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
+func Test_ScreenshotService_Create(t *testing.T) {
+	dbCloseCallbackMethod := prepareDB(t)
+	defer dbCloseCallbackMethod()
+
+	screenshotService := models.ScreenshotService{DB: dataservices.GetDB()}
+
+	t.Run("ok", func(t *testing.T) {
+		testScreenshot := &models.Screenshot{
+			Filename: "screenshot.png",
+			Filesize: 1234,
+		}
+		createdScreeshot, verrs, err := screenshotService.Create(testScreenshot)
+		require.Empty(t, verrs)
+		require.NoError(t, err)
+		require.False(t, createdScreeshot.ID.String() == "")
+		require.False(t, createdScreeshot.CreatedAt.String() == "")
+		require.False(t, createdScreeshot.UpdatedAt.String() == "")
+	})
+
+	t.Run("when filesize is too big", func(t *testing.T) {
+		testScreenshot := &models.Screenshot{
+			Filename: "screenshot.png",
+			Filesize: services.MaxScreenshotFileByteSize + 1,
+		}
+		createdScreeshot, verrs, err := screenshotService.Create(testScreenshot)
+		require.Equal(t, 1, len(verrs))
+		require.Equal(t, "filesize: Must be smaller than 10 megabytes", verrs[0].Error())
+		require.NoError(t, err)
+		require.Nil(t, createdScreeshot)
+	})
+}
+
 func Test_ScreenshotService_FindAll(t *testing.T) {
 	dbCloseCallbackMethod := prepareDB(t)
 	defer dbCloseCallbackMethod()
