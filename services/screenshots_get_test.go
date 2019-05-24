@@ -18,7 +18,7 @@ import (
 
 func Test_ScreenshotsGetHandler(t *testing.T) {
 	httpMethod := "GET"
-	url := "/apps/{app-slug}/app-versions"
+	url := "/apps/{app-slug}/app-versions/{app-version-id}/screenshots"
 	handler := services.ScreenshotsGetHandler
 
 	behavesAsServiceCravingHandler(t, httpMethod, url, handler, []string{"ScreenshotService"}, ControllerTestCase{

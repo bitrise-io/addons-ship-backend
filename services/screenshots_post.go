@@ -51,7 +51,7 @@ func ScreenshotsPostHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Requ
 		return httpresponse.RespondWithUnprocessableEntity(w, verrs)
 	}
 	if err != nil {
-		return errors.WithStack(err)
+		return errors.Wrap(err, "SQL Error")
 	}
 
 	if env.AWS == nil {
