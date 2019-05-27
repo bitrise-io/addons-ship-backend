@@ -19,7 +19,7 @@ import (
 
 func Test_ScreenshotsPostHandler(t *testing.T) {
 	httpMethod := "POST"
-	url := "/apps/{app-slug}/app-versions/{app-version-id}/screenshots"
+	url := "/apps/{app-slug}/versions/{version-id}/screenshots"
 	handler := services.ScreenshotsPostHandler
 
 	behavesAsServiceCravingHandler(t, httpMethod, url, handler, []string{"ScreenshotService"}, ControllerTestCase{
