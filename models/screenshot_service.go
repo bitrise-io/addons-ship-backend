@@ -2,7 +2,6 @@ package models
 
 import (
 	"github.com/jinzhu/gorm"
-	"github.com/pkg/errors"
 )
 
 // ScreenshotService ...
@@ -42,21 +41,20 @@ func (s *ScreenshotService) FindAll(appVersion *AppVersion) ([]Screenshot, error
 }
 
 // BatchUpdate ...
-func (s *ScreenshotService) BatchUpdate(screenshots []*Screenshot, whitelist []string) ([]*Screenshot, []error, error) {
-	updatedupdatedScreenshot := []*Screenshot{}
+func (s *ScreenshotService) BatchUpdate(screenshots []Screenshot, whitelist []string) ([]error, error) {
 	for _, screenshot := range screenshots {
-		updatedScreenshotI, verrs, err := s.WhiteListedUpdate(s.DB, &screenshot, whitelist)
-		updatedScreenshot, ok := updatedScreenshotI.(Screenshot)
-		if !ok {
-			return nil, nil, errors.New("Updated record has different type, than original")
-		}
-		if len(verrs) > 0 {
-			return nil, verrs, nil
-		}
+		updateData, err := s.UpdateData(s.DB, screenshot, whitelist)
 		if err != nil {
-			return nil, nil, err
+			return nil, err
 		}
-		updatedupdatedScreenshot = append(updatedupdatedScreenshot, &updatedScreenshot)
+		result := s.DB.Model(&screenshot).Updates(updateData)
+		verrs := result.GetErrors()
+		if len(verrs) > 0 {
+			return verrs, nil
+		}
+		if result.Error != nil {
+			return nil, result.Error
+		}
 	}
-	return updatedupdatedScreenshot, nil, nil
+	return nil, nil
 }

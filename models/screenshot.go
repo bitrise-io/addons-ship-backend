@@ -31,6 +31,11 @@ type Screenshot struct {
 // BeforeCreate ...
 func (s *Screenshot) BeforeCreate(scope *gorm.Scope) error {
 	s.ID = uuid.NewV4()
+	return nil
+}
+
+// BeforeSave ...
+func (s *Screenshot) BeforeSave(scope *gorm.Scope) error {
 	err := s.validate(scope)
 	if err != nil {
 		return errors.WithStack(err)
