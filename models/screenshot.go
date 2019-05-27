@@ -44,8 +44,12 @@ func (s *Screenshot) BeforeSave(scope *gorm.Scope) error {
 }
 
 func (s *Screenshot) validate(scope *gorm.Scope) error {
+	var err error
 	if s.Filesize > MaxScreenshotFileByteSize {
-		scope.DB().AddError(NewValidationError("filesize: Must be smaller than 10 megabytes"))
+		err = scope.DB().AddError(NewValidationError("filesize: Must be smaller than 10 megabytes"))
+	}
+	if err != nil {
+		return errors.New("Validation failed")
 	}
 	return nil
 }
