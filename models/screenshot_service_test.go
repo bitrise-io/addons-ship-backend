@@ -34,18 +34,20 @@ func Test_ScreenshotService_BatchCreate(t *testing.T) {
 	})
 
 	t.Run("when filesize is too big", func(t *testing.T) {
-		testScreenshot := &models.Screenshot{
-			Filename: "screenshot.png",
-			Filesize: models.MaxScreenshotFileByteSize + 1,
+		testScreenshot := []*models.Screenshot{
+			&models.Screenshot{
+				Filename: "screenshot.png",
+				Filesize: models.MaxScreenshotFileByteSize + 1,
+			},
 		}
-		createdScreeshot, verrs, err := screenshotService.Create(testScreenshot)
+		createdScreeshot, verrs, err := screenshotService.BatchCreate(testScreenshot)
 		require.Equal(t, 1, len(verrs))
 		require.Equal(t, "filesize: Must be smaller than 10 megabytes", verrs[0].Error())
 		require.NoError(t, err)
 		require.Nil(t, createdScreeshot)
 	})
 
-	t.Run("when error happens at creation of any screenshot, transaction get rolled back", func(t *testing.T) {
+	t.Run("when error happens at creation of any screenshot, transaction gets rolled back", func(t *testing.T) {
 		testAppVersion := createTestAppVersion(t, &models.AppVersion{
 			Platform: "iOS",
 			Version:  "v1.0",
