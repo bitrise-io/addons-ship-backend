@@ -3,8 +3,6 @@ package bitrise
 import (
 	"encoding/json"
 	"time"
-
-	"github.com/gobuffalo/pop/nulls"
 )
 
 // AppInfo ...
@@ -50,8 +48,8 @@ type artifactListResponseModel struct {
 }
 
 type artifactShowResponseItemModel struct {
-	Title                nulls.String    `json:"title"`
-	ArtifactType         nulls.String    `json:"artifact_type"`
+	Title                *string         `json:"title"`
+	ArtifactType         *string         `json:"artifact_type"`
 	ArtifactMeta         json.RawMessage `json:"artifact_meta"`
 	DownloadPath         *string         `json:"expiring_download_url"`
 	IsPublicPageEnabled  bool            `json:"is_public_page_enabled"`
