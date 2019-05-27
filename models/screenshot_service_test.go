@@ -169,4 +169,16 @@ func Test_ScreenshotService_BatchUpdate(t *testing.T) {
 		require.Equal(t, "filesize: Must be smaller than 10 megabytes", verrs[0].Error())
 		require.NoError(t, err)
 	})
+
+	t.Run("when trying to update non-existing field", func(t *testing.T) {
+		testScreenshots := []models.Screenshot{
+			*createTestScreenshot(t, &models.Screenshot{
+				Filename: "screenshot1.png",
+				Filesize: 1234,
+			}),
+		}
+		verrs, err := screenshotService.BatchUpdate(testScreenshots, []string{"NonExistingField"})
+		require.EqualError(t, err, "Attribute name doesn't exist in the model")
+		require.Equal(t, 0, len(verrs))
+	})
 }

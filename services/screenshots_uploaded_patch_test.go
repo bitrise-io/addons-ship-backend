@@ -22,13 +22,20 @@ func Test_ScreenshotsUploadedPatchHandler(t *testing.T) {
 	url := "/apps/{app-slug}/app-versions/{app-version-id}/screenshots/uploaded"
 	handler := services.ScreenshotsUploadedPatchHandler
 
-	behavesAsServiceCravingHandler(t, httpMethod, url, handler, []string{"ScreenshotService"}, ControllerTestCase{
+	behavesAsServiceCravingHandler(t, httpMethod, url, handler, []string{"ScreenshotService", "AWS"}, ControllerTestCase{
 		contextElements: map[ctxpkg.RequestContextKey]interface{}{
 			services.ContextKeyAuthorizedAppVersionID: uuid.NewV4(),
 		},
 		env: &env.AppEnv{
-			ScreenshotService: &testScreenshotService{},
-			AWS:               &providers.AWSMock{},
+			ScreenshotService: &testScreenshotService{
+				findAllFn: func(appVersion *models.AppVersion) ([]models.Screenshot, error) {
+					return []models.Screenshot{}, nil
+				},
+				batchUpdateFn: func(screenshots []models.Screenshot, whitelist []string) ([]error, error) {
+					return nil, nil
+				},
+			},
+			AWS: &providers.AWSMock{},
 		},
 	})
 
