@@ -49,7 +49,11 @@ func New(db *gorm.DB) (*AppEnv, error) {
 	env.AppService = &models.AppService{DB: db}
 	env.AppVersionService = &models.AppVersionService{DB: db}
 	env.ScreenshotService = &models.ScreenshotService{DB: db}
-	env.BitriseAPI = bitrise.New()
+	if env.Environment == ServerEnvDevelopment {
+		env.BitriseAPI = &bitrise.APIDev{}
+	} else {
+		env.BitriseAPI = bitrise.New()
+	}
 	env.RequestParams = &providers.RequestParams{}
 
 	awsConfig, err := awsConfig()
