@@ -15,7 +15,7 @@ func (s *ScreenshotService) BatchCreate(screenshots []*Screenshot) ([]*Screensho
 	tx := s.DB.Begin()
 	for _, screenshot := range screenshots {
 		result := tx.Create(screenshot)
-		verrs := result.GetErrors()
+		verrs := ValidationErrors(result.GetErrors())
 		if len(verrs) > 0 {
 			tx.Rollback()
 			return nil, verrs, nil
@@ -48,7 +48,7 @@ func (s *ScreenshotService) BatchUpdate(screenshots []Screenshot, whitelist []st
 			return nil, err
 		}
 		result := s.DB.Model(&screenshot).Updates(updateData)
-		verrs := result.GetErrors()
+		verrs := ValidationErrors(result.GetErrors())
 		if len(verrs) > 0 {
 			return verrs, nil
 		}
