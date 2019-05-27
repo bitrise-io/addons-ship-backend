@@ -29,9 +29,10 @@ type AppVersionData struct {
 	Size                 int64     `json:"size"`
 	SupportedDeviceTypes []string  `json:"supported_device_types"`
 	DistributionType     string    `json:"distribution_type"`
+	PublicInstallPageURL string    `json:"public_install_page_url"`
 }
 
-func newArtifactVersionGetResponse(appVersion *models.AppVersion, artifact *bitrise.ArtifactMeta) (AppVersionData, error) {
+func newArtifactVersionGetResponse(appVersion *models.AppVersion, artifact *bitrise.ArtifactMeta, publicInstallPageURL string) (AppVersionData, error) {
 	var supportedDeviceTypes []string
 	for _, familyID := range artifact.AppInfo.DeviceFamilyList {
 		switch familyID {
@@ -62,6 +63,7 @@ func newArtifactVersionGetResponse(appVersion *models.AppVersion, artifact *bitr
 		Size:                 size,
 		SupportedDeviceTypes: supportedDeviceTypes,
 		DistributionType:     artifact.ProvisioningInfo.DistributionType,
+		PublicInstallPageURL: publicInstallPageURL,
 	}, nil
 }
 
@@ -89,7 +91,7 @@ func AppVersionGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Reques
 		return errors.New("No Bitrise API Service defined for handler")
 	}
 
-	artifact, err := env.BitriseAPI.GetArtifactMetadata(
+	artifactData, err := env.BitriseAPI.GetArtifactData(
 		appVersion.App.BitriseAPIToken,
 		appVersion.App.AppSlug,
 		appVersion.BuildSlug,
@@ -98,7 +100,14 @@ func AppVersionGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Reques
 		return errors.WithStack(err)
 	}
 
-	responseData, err := newArtifactVersionGetResponse(appVersion, artifact)
+	artifactPublicInstallPageURL, err := env.BitriseAPI.GetArtifactPublicPageURL(
+		appVersion.App.BitriseAPIToken,
+		appVersion.App.AppSlug,
+		appVersion.BuildSlug,
+		artifactData.Slug,
+	)
+
+	responseData, err := newArtifactVersionGetResponse(appVersion, &artifactData.Meta, artifactPublicInstallPageURL)
 	if err != nil {
 		return errors.WithStack(err)
 	}

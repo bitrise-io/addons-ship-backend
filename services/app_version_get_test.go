@@ -58,8 +58,11 @@ func Test_AppVersionGetHandler(t *testing.T) {
 					},
 				},
 				BitriseAPI: &testBitriseAPI{
-					getArtifactMetadataFn: func(string, string, string) (*bitrise.ArtifactMeta, error) {
-						return &bitrise.ArtifactMeta{}, nil
+					getArtifactDataFn: func(string, string, string) (*bitrise.ArtifactData, error) {
+						return &bitrise.ArtifactData{}, nil
+					},
+					getArtifactPublicPageURLFn: func(string, string, string, string) (string, error) {
+						return "", nil
 					},
 				},
 			},
@@ -88,12 +91,17 @@ func Test_AppVersionGetHandler(t *testing.T) {
 					},
 				},
 				BitriseAPI: &testBitriseAPI{
-					getArtifactMetadataFn: func(string, string, string) (*bitrise.ArtifactMeta, error) {
-						return &bitrise.ArtifactMeta{
-							AppInfo: bitrise.AppInfo{
-								MinimumOS: "11.1",
+					getArtifactDataFn: func(string, string, string) (*bitrise.ArtifactData, error) {
+						return &bitrise.ArtifactData{
+							Meta: bitrise.ArtifactMeta{
+								AppInfo: bitrise.AppInfo{
+									MinimumOS: "11.1",
+								},
 							},
 						}, nil
+					},
+					getArtifactPublicPageURLFn: func(string, string, string, string) (string, error) {
+						return "http://don.t.go.there", nil
 					},
 				},
 			},
@@ -104,7 +112,8 @@ func Test_AppVersionGetHandler(t *testing.T) {
 						Version:  "v1.0",
 						Platform: "ios",
 					},
-					MinimumOS: "11.1",
+					MinimumOS:            "11.1",
+					PublicInstallPageURL: "http://don.t.go.there",
 				},
 			},
 		})
@@ -128,13 +137,18 @@ func Test_AppVersionGetHandler(t *testing.T) {
 					},
 				},
 				BitriseAPI: &testBitriseAPI{
-					getArtifactMetadataFn: func(string, string, string) (*bitrise.ArtifactMeta, error) {
-						return &bitrise.ArtifactMeta{
-							AppInfo: bitrise.AppInfo{
-								MinimumOS:        "11.1",
-								DeviceFamilyList: []int{1, 2},
+					getArtifactDataFn: func(string, string, string) (*bitrise.ArtifactData, error) {
+						return &bitrise.ArtifactData{
+							Meta: bitrise.ArtifactMeta{
+								AppInfo: bitrise.AppInfo{
+									MinimumOS:        "11.1",
+									DeviceFamilyList: []int{1, 2},
+								},
 							},
 						}, nil
+					},
+					getArtifactPublicPageURLFn: func(string, string, string, string) (string, error) {
+						return "http://don.t.go.there", nil
 					},
 				},
 			},
@@ -147,6 +161,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 					},
 					MinimumOS:            "11.1",
 					SupportedDeviceTypes: []string{"iPhone", "iPod Touch", "iPad"},
+					PublicInstallPageURL: "http://don.t.go.there",
 				},
 			},
 		})
@@ -170,13 +185,18 @@ func Test_AppVersionGetHandler(t *testing.T) {
 					},
 				},
 				BitriseAPI: &testBitriseAPI{
-					getArtifactMetadataFn: func(string, string, string) (*bitrise.ArtifactMeta, error) {
-						return &bitrise.ArtifactMeta{
-							AppInfo: bitrise.AppInfo{
-								MinimumOS:        "11.1",
-								DeviceFamilyList: []int{12},
+					getArtifactDataFn: func(string, string, string) (*bitrise.ArtifactData, error) {
+						return &bitrise.ArtifactData{
+							Meta: bitrise.ArtifactMeta{
+								AppInfo: bitrise.AppInfo{
+									MinimumOS:        "11.1",
+									DeviceFamilyList: []int{12},
+								},
 							},
 						}, nil
+					},
+					getArtifactPublicPageURLFn: func(string, string, string, string) (string, error) {
+						return "http://don.t.go.there", nil
 					},
 				},
 			},
@@ -189,6 +209,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 					},
 					MinimumOS:            "11.1",
 					SupportedDeviceTypes: []string{"Unknown"},
+					PublicInstallPageURL: "http://don.t.go.there",
 				},
 			},
 		})
