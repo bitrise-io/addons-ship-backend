@@ -4,7 +4,7 @@ go 1.12
 
 require (
 	github.com/aws/aws-sdk-go v1.19.34 // indirect
-	github.com/bitrise-io/api-utils v0.0.0-20190516083801-f9349515e67c
+	github.com/bitrise-io/api-utils v0.0.0-20190524124424-444fcf6f2371
 	github.com/c2fo/testify v0.0.0-20150827203832-fba96363964a
 	github.com/gorilla/mux v1.7.1 // indirect
 	github.com/jinzhu/gorm v1.9.8
