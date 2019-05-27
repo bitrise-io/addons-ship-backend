@@ -2,7 +2,6 @@ package models
 
 import (
 	"github.com/bitrise-io/api-utils/structs"
-	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
 )
 
@@ -10,7 +9,7 @@ import (
 type UpdatabeModelService struct{}
 
 // UpdateData ...
-func (u *UpdatabeModelService) UpdateData(db *gorm.DB, object interface{}, whiteList []string) (map[string]interface{}, error) {
+func (u *UpdatabeModelService) UpdateData(object interface{}, whiteList []string) (map[string]interface{}, error) {
 	if len(whiteList) < 1 {
 		return nil, errors.New("No attributes to update")
 	}

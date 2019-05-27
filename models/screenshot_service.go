@@ -43,7 +43,7 @@ func (s *ScreenshotService) FindAll(appVersion *AppVersion) ([]Screenshot, error
 // BatchUpdate ...
 func (s *ScreenshotService) BatchUpdate(screenshots []Screenshot, whitelist []string) ([]error, error) {
 	for _, screenshot := range screenshots {
-		updateData, err := s.UpdateData(s.DB, screenshot, whitelist)
+		updateData, err := s.UpdateData(screenshot, whitelist)
 		if err != nil {
 			return nil, err
 		}
