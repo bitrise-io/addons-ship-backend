@@ -11,8 +11,8 @@ github.com/apache/thrift v0.12.0/go.mod h1:cp2SuWMxlEZw2r+iP2GNCdIi4C1qmUzdZFSVb
 github.com/aws/aws-sdk-go v1.19.34 h1:GlE1CUDxDef2CWe1oZW5kvj9bHkIpe/qZCzSavm0BNI=
 github.com/aws/aws-sdk-go v1.19.34/go.mod h1:KmX6BPdI08NWTb3/sm4ZGu5ShLoqVDhKgpiN924inxo=
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
-github.com/bitrise-io/api-utils v0.0.0-20190516083801-f9349515e67c h1:LTIOeiMkrAUt35wSc6eIfmsfckOPyP9VRWVNkJJRh+c=
-github.com/bitrise-io/api-utils v0.0.0-20190516083801-f9349515e67c/go.mod h1:FwXTOBcd4twhPfBS61C83oz3QkrUjIawlZc4T/EBqEc=
+github.com/bitrise-io/api-utils v0.0.0-20190524124424-444fcf6f2371 h1:ktgWYA5cEikVzRtowtsY8MtjMAMZd+Pacixz8NuZXt4=
+github.com/bitrise-io/api-utils v0.0.0-20190524124424-444fcf6f2371/go.mod h1:FwXTOBcd4twhPfBS61C83oz3QkrUjIawlZc4T/EBqEc=
 github.com/c2fo/testify v0.0.0-20150827203832-fba96363964a h1:lXGVReN5qeiyu6AZpIgYJN1PoXSy1koT3nUP3ZRMWm0=
 github.com/c2fo/testify v0.0.0-20150827203832-fba96363964a/go.mod h1:NWprYCk3t+OPBp2UnxQ39EF9vPpUzoMr498TiqMA8jU=
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
