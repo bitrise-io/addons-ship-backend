@@ -2,6 +2,8 @@ package bitrise
 
 import (
 	"time"
+
+	"github.com/bitrise-io/go-utils/pointers"
 )
 
 // APIDev ...
@@ -32,4 +34,12 @@ func (a *APIDev) GetArtifactData(authToken, appSlug, buildSlug string) (*Artifac
 // GetArtifactPublicInstallPageURL ...
 func (a *APIDev) GetArtifactPublicInstallPageURL(authToken, appSlug, buildSlug, artifactSlug string) (string, error) {
 	return "http://don.t.go.there", nil
+}
+
+// GetAppDetails ...
+func (a *APIDev) GetAppDetails(authToken, appSlug string) (*AppDetails, error) {
+	return &AppDetails{
+		Title:     "The Adventures of Stealy",
+		AvatarURL: pointers.NewStringPtr("https://bit.ly/1LixVJu"),
+	}, nil
 }

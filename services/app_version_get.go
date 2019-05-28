@@ -13,9 +13,10 @@ import (
 	"github.com/pkg/errors"
 )
 
-// AppVersionGetResponse ...
-type AppVersionGetResponse struct {
-	Data AppVersionData `json:"data"`
+// AppData ...
+type AppData struct {
+	Title      string  `json:"title"`
+	AppIconURL *string `json:"app_icon_url"`
 }
 
 // AppVersionData ...
@@ -30,41 +31,12 @@ type AppVersionData struct {
 	SupportedDeviceTypes []string  `json:"supported_device_types"`
 	DistributionType     string    `json:"distribution_type"`
 	PublicInstallPageURL string    `json:"public_install_page_url"`
+	AppInfo              AppData   `json:"app_info"`
 }
 
-func newArtifactVersionGetResponse(appVersion *models.AppVersion, artifact *bitrise.ArtifactMeta, publicInstallPageURL string) (AppVersionData, error) {
-	var supportedDeviceTypes []string
-	for _, familyID := range artifact.AppInfo.DeviceFamilyList {
-		switch familyID {
-		case 1:
-			supportedDeviceTypes = append(supportedDeviceTypes, "iPhone", "iPod Touch")
-		case 2:
-			supportedDeviceTypes = append(supportedDeviceTypes, "iPad")
-		default:
-			supportedDeviceTypes = append(supportedDeviceTypes, "Unknown")
-		}
-	}
-	var size int64
-	if artifact.Size != "" {
-		var err error
-		floatSize, err := strconv.ParseFloat(artifact.Size, 64)
-		if err != nil {
-			return AppVersionData{}, err
-		}
-		size = int64(floatSize)
-	}
-	return AppVersionData{
-		AppVersion:           appVersion,
-		MinimumOS:            artifact.AppInfo.MinimumOS,
-		MinimumSDK:           artifact.AppInfo.MinimumSDKVersion,
-		PackageName:          artifact.AppInfo.PackageName,
-		CertificateExpires:   artifact.ProvisioningInfo.ExpireDate,
-		BundleID:             artifact.AppInfo.BundleID,
-		Size:                 size,
-		SupportedDeviceTypes: supportedDeviceTypes,
-		DistributionType:     artifact.ProvisioningInfo.DistributionType,
-		PublicInstallPageURL: publicInstallPageURL,
-	}, nil
+// AppVersionGetResponse ...
+type AppVersionGetResponse struct {
+	Data AppVersionData `json:"data"`
 }
 
 // AppVersionGetHandler ...
@@ -106,8 +78,16 @@ func AppVersionGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Reques
 		appVersion.BuildSlug,
 		artifactData.Slug,
 	)
+	if err != nil {
+		return errors.WithStack(err)
+	}
 
-	responseData, err := newArtifactVersionGetResponse(appVersion, &artifactData.Meta, artifactPublicInstallPageURL)
+	appDetails, err := env.BitriseAPI.GetAppDetails(appVersion.App.BitriseAPIToken, appVersion.App.AppSlug)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	responseData, err := newArtifactVersionGetResponse(appVersion, &artifactData.Meta, artifactPublicInstallPageURL, appDetails)
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -115,4 +95,44 @@ func AppVersionGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Reques
 	return httpresponse.RespondWithSuccess(w, AppVersionGetResponse{
 		Data: responseData,
 	})
+}
+
+func newArtifactVersionGetResponse(appVersion *models.AppVersion, artifact *bitrise.ArtifactMeta, publicInstallPageURL string, appDetails *bitrise.AppDetails) (AppVersionData, error) {
+	var supportedDeviceTypes []string
+	for _, familyID := range artifact.AppInfo.DeviceFamilyList {
+		switch familyID {
+		case 1:
+			supportedDeviceTypes = append(supportedDeviceTypes, "iPhone", "iPod Touch")
+		case 2:
+			supportedDeviceTypes = append(supportedDeviceTypes, "iPad")
+		default:
+			supportedDeviceTypes = append(supportedDeviceTypes, "Unknown")
+		}
+	}
+	var size int64
+	if artifact.Size != "" {
+		var err error
+		floatSize, err := strconv.ParseFloat(artifact.Size, 64)
+		if err != nil {
+			return AppVersionData{}, err
+		}
+		size = int64(floatSize)
+	}
+	appData := AppData{
+		Title:      appDetails.Title,
+		AppIconURL: appDetails.AvatarURL,
+	}
+	return AppVersionData{
+		AppVersion:           appVersion,
+		MinimumOS:            artifact.AppInfo.MinimumOS,
+		MinimumSDK:           artifact.AppInfo.MinimumSDKVersion,
+		PackageName:          artifact.AppInfo.PackageName,
+		CertificateExpires:   artifact.ProvisioningInfo.ExpireDate,
+		BundleID:             artifact.AppInfo.BundleID,
+		Size:                 size,
+		SupportedDeviceTypes: supportedDeviceTypes,
+		DistributionType:     artifact.ProvisioningInfo.DistributionType,
+		PublicInstallPageURL: publicInstallPageURL,
+		AppInfo:              appData,
+	}, nil
 }

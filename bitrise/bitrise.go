@@ -18,6 +18,7 @@ var (
 type APIInterface interface {
 	GetArtifactData(string, string, string) (*ArtifactData, error)
 	GetArtifactPublicInstallPageURL(string, string, string, string) (string, error)
+	GetAppDetails(authToken, appSlug string) (*AppDetails, error)
 }
 
 // API ...
@@ -94,9 +95,26 @@ func (a *API) GetArtifactPublicInstallPageURL(authToken, appSlug, buildSlug, art
 	}
 	var responseModel artifactShowResponseModel
 	if err := json.NewDecoder(resp.Body).Decode(&responseModel); err != nil {
-		return "nil", errors.WithStack(err)
+		return "", errors.WithStack(err)
 	}
 	return responseModel.Data.PublicInstallPageURL, nil
+}
+
+// GetAppDetails ...
+func (a *API) GetAppDetails(authToken, appSlug string) (*AppDetails, error) {
+	resp, err := a.doRequest(authToken, "GET", fmt.Sprintf("%s/apps/%s", apiBaseURL, appSlug))
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	defer httpresponse.BodyCloseWithErrorLog(resp)
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.Errorf("Failed to fetch artifact data: status: %d", resp.StatusCode)
+	}
+	var responseModel appShowResponseModel
+	if err := json.NewDecoder(resp.Body).Decode(&responseModel); err != nil {
+		return nil, errors.WithStack(err)
+	}
+	return &responseModel.Data, nil
 }
 
 func (a *API) listArtifacts(authToken, appSlug, buildSlug, next string) (*artifactListResponseModel, error) {
