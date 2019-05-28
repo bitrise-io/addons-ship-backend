@@ -16,7 +16,9 @@ var (
 
 // APIInterface ...
 type APIInterface interface {
-	GetArtifactMetadata(authToken, appSlug, buildSlug string) (*ArtifactMeta, error)
+	GetArtifactData(string, string, string) (*ArtifactData, error)
+	GetArtifactPublicInstallPageURL(string, string, string, string) (string, error)
+	GetAppDetails(authToken, appSlug string) (*AppDetails, error)
 }
 
 // API ...
@@ -47,21 +49,21 @@ func (a *API) doRequest(authToken, method, url string) (*http.Response, error) {
 	return resp, nil
 }
 
-// GetArtifactMetadata ...
-func (a *API) GetArtifactMetadata(authToken, appSlug, buildSlug string) (*ArtifactMeta, error) {
+// GetArtifactData ...
+func (a *API) GetArtifactData(authToken, appSlug, buildSlug string) (*ArtifactData, error) {
 	responseModel, err := a.listArtifacts(authToken, appSlug, buildSlug, "")
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 	if responseModel.Paging.Next == "" {
-		artifactMeta, err := getInstallableArtifactsFromResponseModel(responseModel)
+		artifactData, err := getInstallableArtifactsFromResponseModel(responseModel)
 		if err != nil {
 			return nil, errors.WithStack(err)
 		}
-		if artifactMeta == nil {
+		if artifactData == nil {
 			return nil, errors.New("No matching artifact found")
 		}
-		return artifactMeta, nil
+		return artifactData, nil
 	}
 	next := responseModel.Paging.Next
 	for next != "" {
@@ -69,16 +71,50 @@ func (a *API) GetArtifactMetadata(authToken, appSlug, buildSlug string) (*Artifa
 		if err != nil {
 			return nil, errors.WithStack(err)
 		}
-		artifacMeta, err := getInstallableArtifactsFromResponseModel(responseModel)
+		artifactData, err := getInstallableArtifactsFromResponseModel(responseModel)
 		if err != nil {
 			return nil, errors.WithStack(err)
 		}
-		if artifacMeta != nil {
-			return artifacMeta, nil
+		if artifactData != nil {
+			return artifactData, nil
 		}
 		next = responseModel.Paging.Next
 	}
 	return nil, errors.New("No matching artifact found")
+}
+
+// GetArtifactPublicInstallPageURL ...
+func (a *API) GetArtifactPublicInstallPageURL(authToken, appSlug, buildSlug, artifactSlug string) (string, error) {
+	resp, err := a.doRequest(authToken, "GET", fmt.Sprintf("%s/apps/%s/builds/%s/artifacts/%s", apiBaseURL, appSlug, buildSlug, artifactSlug))
+	if err != nil {
+		return "", errors.WithStack(err)
+	}
+	defer httpresponse.BodyCloseWithErrorLog(resp)
+	if resp.StatusCode != http.StatusOK {
+		return "", errors.Errorf("Failed to fetch artifact data: status: %d", resp.StatusCode)
+	}
+	var responseModel artifactShowResponseModel
+	if err := json.NewDecoder(resp.Body).Decode(&responseModel); err != nil {
+		return "", errors.WithStack(err)
+	}
+	return responseModel.Data.PublicInstallPageURL, nil
+}
+
+// GetAppDetails ...
+func (a *API) GetAppDetails(authToken, appSlug string) (*AppDetails, error) {
+	resp, err := a.doRequest(authToken, "GET", fmt.Sprintf("%s/apps/%s", apiBaseURL, appSlug))
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	defer httpresponse.BodyCloseWithErrorLog(resp)
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.Errorf("Failed to fetch artifact data: status: %d", resp.StatusCode)
+	}
+	var responseModel appShowResponseModel
+	if err := json.NewDecoder(resp.Body).Decode(&responseModel); err != nil {
+		return nil, errors.WithStack(err)
+	}
+	return &responseModel.Data, nil
 }
 
 func (a *API) listArtifacts(authToken, appSlug, buildSlug, next string) (*artifactListResponseModel, error) {
@@ -101,7 +137,7 @@ func (a *API) listArtifacts(authToken, appSlug, buildSlug, next string) (*artifa
 	return &responseModel, nil
 }
 
-func getInstallableArtifactsFromResponseModel(respModel *artifactListResponseModel) (*ArtifactMeta, error) {
+func getInstallableArtifactsFromResponseModel(respModel *artifactListResponseModel) (*ArtifactData, error) {
 	for _, buildArtifact := range respModel.Data {
 		if validArtifact(buildArtifact) {
 			var artifactMeta ArtifactMeta
@@ -109,7 +145,10 @@ func getInstallableArtifactsFromResponseModel(respModel *artifactListResponseMod
 			if err != nil {
 				return nil, errors.WithStack(err)
 			}
-			return &artifactMeta, nil
+			return &ArtifactData{
+				Meta: artifactMeta,
+				Slug: buildArtifact.Slug,
+			}, nil
 		}
 	}
 	return nil, nil

@@ -27,6 +27,12 @@ type ArtifactMeta struct {
 	Size             string           `json:"file_size_bytes"`
 }
 
+// ArtifactData ...
+type ArtifactData struct {
+	Meta ArtifactMeta
+	Slug string
+}
+
 type artifactListElementResponseModel struct {
 	Title               *string         `json:"title"`
 	ArtifactType        *string         `json:"artifact_type"`
@@ -39,4 +45,19 @@ type artifactListElementResponseModel struct {
 type artifactListResponseModel struct {
 	Data   []artifactListElementResponseModel `json:"data"`
 	Paging pagingResponseModel                `json:"paging"`
+}
+
+type artifactShowResponseItemModel struct {
+	Title                *string         `json:"title"`
+	ArtifactType         *string         `json:"artifact_type"`
+	ArtifactMeta         json.RawMessage `json:"artifact_meta"`
+	DownloadPath         *string         `json:"expiring_download_url"`
+	IsPublicPageEnabled  bool            `json:"is_public_page_enabled"`
+	Slug                 string          `json:"slug"`
+	PublicInstallPageURL string          `json:"public_install_page_url"`
+	FileSizeBytes        *int64          `json:"file_size_bytes"`
+}
+
+type artifactShowResponseModel struct {
+	Data artifactShowResponseItemModel `json:"data"`
 }

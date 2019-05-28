@@ -13,6 +13,8 @@ github.com/aws/aws-sdk-go v1.19.34/go.mod h1:KmX6BPdI08NWTb3/sm4ZGu5ShLoqVDhKgpi
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
 github.com/bitrise-io/api-utils v0.0.0-20190527070942-5b16f88a43f4 h1:KesKFqIxqtSJvwTowYhjmhrl+nTYOJJ1KbTREnVFGCM=
 github.com/bitrise-io/api-utils v0.0.0-20190527070942-5b16f88a43f4/go.mod h1:FwXTOBcd4twhPfBS61C83oz3QkrUjIawlZc4T/EBqEc=
+github.com/bitrise-io/go-utils v0.0.0-20190507082533-8898129615c9 h1:/VXAK6LQD11bNkHiz/w0MPeO7y4wPCrsoyPnYJ+0qbA=
+github.com/bitrise-io/go-utils v0.0.0-20190507082533-8898129615c9/go.mod h1:Pp48eQd8BSNEzWWTBxdFUd/ufS5b5Bgkmt9D5NedjWg=
 github.com/c2fo/testify v0.0.0-20150827203832-fba96363964a h1:lXGVReN5qeiyu6AZpIgYJN1PoXSy1koT3nUP3ZRMWm0=
 github.com/c2fo/testify v0.0.0-20150827203832-fba96363964a/go.mod h1:NWprYCk3t+OPBp2UnxQ39EF9vPpUzoMr498TiqMA8jU=
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
