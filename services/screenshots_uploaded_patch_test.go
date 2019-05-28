@@ -19,7 +19,7 @@ import (
 
 func Test_ScreenshotsUploadedPatchHandler(t *testing.T) {
 	httpMethod := "PATCH"
-	url := "/apps/{app-slug}/app-versions/{app-version-id}/screenshots/uploaded"
+	url := "/apps/{app-slug}/versions/{version-id}/screenshots/uploaded"
 	handler := services.ScreenshotsUploadedPatchHandler
 
 	behavesAsServiceCravingHandler(t, httpMethod, url, handler, []string{"ScreenshotService", "AWS"}, ControllerTestCase{

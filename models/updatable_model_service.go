@@ -5,11 +5,11 @@ import (
 	"github.com/pkg/errors"
 )
 
-// UpdatabeModelService ...
-type UpdatabeModelService struct{}
+// UpdatableModelService ...
+type UpdatableModelService struct{}
 
 // UpdateData ...
-func (u *UpdatabeModelService) UpdateData(object interface{}, whiteList []string) (map[string]interface{}, error) {
+func (u *UpdatableModelService) UpdateData(object interface{}, whiteList []string) (map[string]interface{}, error) {
 	if len(whiteList) < 1 {
 		return nil, errors.New("No attributes to update")
 	}

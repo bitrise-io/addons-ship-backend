@@ -7,14 +7,14 @@ import (
 	"github.com/c2fo/testify/require"
 )
 
-func Test_UpdatabeModelService_UpdateData(t *testing.T) {
+func Test_UpdatableModelService_UpdateData(t *testing.T) {
 	t.Run("ok", func(t *testing.T) {
 		testModel := struct {
 			JSONTaggedField string `json:"json_tagged_field"`
 		}{
 			JSONTaggedField: "some-test-value",
 		}
-		testService := models.UpdatabeModelService{}
+		testService := models.UpdatableModelService{}
 
 		updateData, err := testService.UpdateData(testModel, []string{"JSONTaggedField"})
 		require.NoError(t, err)
@@ -29,7 +29,7 @@ func Test_UpdatabeModelService_UpdateData(t *testing.T) {
 		}{
 			JSONTaggedField: "some-test-value",
 		}
-		testService := models.UpdatabeModelService{}
+		testService := models.UpdatableModelService{}
 
 		updateData, err := testService.UpdateData(testModel, []string{})
 		require.EqualError(t, err, "No attributes to update")
@@ -42,7 +42,7 @@ func Test_UpdatabeModelService_UpdateData(t *testing.T) {
 		}{
 			DBTaggedField: "some-test-value",
 		}
-		testService := models.UpdatabeModelService{}
+		testService := models.UpdatableModelService{}
 
 		updateData, err := testService.UpdateData(testModel, []string{"DBTaggedField"})
 		require.EqualError(t, err, "Attribute doesn't have 'json' tag")
@@ -55,7 +55,7 @@ func Test_UpdatabeModelService_UpdateData(t *testing.T) {
 		}{
 			JSONTaggedField: "some-test-value",
 		}
-		testService := models.UpdatabeModelService{}
+		testService := models.UpdatableModelService{}
 
 		updateData, err := testService.UpdateData(testModel, []string{"NonExistingField"})
 		require.EqualError(t, err, "Attribute name doesn't exist in the model")

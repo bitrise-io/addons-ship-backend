@@ -7,7 +7,7 @@ import (
 // ScreenshotService ...
 type ScreenshotService struct {
 	DB *gorm.DB
-	UpdatabeModelService
+	UpdatableModelService
 }
 
 // BatchCreate ...
