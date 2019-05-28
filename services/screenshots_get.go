@@ -12,13 +12,14 @@ import (
 )
 
 const (
-	expirationInterval = 10 * time.Minute
+	presignedURLExpirationInterval = 10 * time.Minute
 )
 
 // ScreenshotData ...
 type ScreenshotData struct {
 	models.Screenshot
-	DownloadURL string `json:"download_url"`
+	DownloadURL string `json:"download_url,omitempty"`
+	UploadURL   string `json:"upload_url,omitempty"`
 }
 
 // ScreenshotsGetResponse ...
@@ -46,7 +47,7 @@ func ScreenshotsGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Reque
 	if env.AWS == nil {
 		return errors.New("No AWS Provider defined for handler")
 	}
-	responseData, err := newScreenshotResponseData(screenshots, env.AWS)
+	responseData, err := newScreenshotGetResponseData(screenshots, env.AWS)
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -56,10 +57,10 @@ func ScreenshotsGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Reque
 	})
 }
 
-func newScreenshotResponseData(screenshots []models.Screenshot, awsProvider providers.AWSInterface) ([]ScreenshotData, error) {
+func newScreenshotGetResponseData(screenshots []models.Screenshot, awsProvider providers.AWSInterface) ([]ScreenshotData, error) {
 	data := []ScreenshotData{}
 	for _, screenshot := range screenshots {
-		presignedURL, err := awsProvider.GeneratePresignedGETURL(screenshot.AWSPath(), expirationInterval)
+		presignedURL, err := awsProvider.GeneratePresignedGETURL(screenshot.AWSPath(), presignedURLExpirationInterval)
 		if err != nil {
 			return []ScreenshotData{}, errors.WithStack(err)
 		}

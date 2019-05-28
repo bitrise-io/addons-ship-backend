@@ -12,6 +12,70 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
+func Test_ScreenshotService_BatchCreate(t *testing.T) {
+	dbCloseCallbackMethod := prepareDB(t)
+	defer dbCloseCallbackMethod()
+
+	screenshotService := models.ScreenshotService{DB: dataservices.GetDB()}
+
+	t.Run("ok", func(t *testing.T) {
+		testScreenshots := []*models.Screenshot{
+			&models.Screenshot{
+				Filename: "screenshot.png",
+				Filesize: 1234,
+			},
+		}
+		createdScreeshots, verrs, err := screenshotService.BatchCreate(testScreenshots)
+		require.Empty(t, verrs)
+		require.NoError(t, err)
+		require.False(t, createdScreeshots[0].ID.String() == "")
+		require.False(t, createdScreeshots[0].CreatedAt.String() == "")
+		require.False(t, createdScreeshots[0].UpdatedAt.String() == "")
+	})
+
+	t.Run("when filesize is too big", func(t *testing.T) {
+		testScreenshot := []*models.Screenshot{
+			&models.Screenshot{
+				Filename: "screenshot.png",
+				Filesize: models.MaxScreenshotFileByteSize + 1,
+			},
+		}
+		createdScreeshot, verrs, err := screenshotService.BatchCreate(testScreenshot)
+		require.Equal(t, 1, len(verrs))
+		require.Equal(t, "filesize: Must be smaller than 10 megabytes", verrs[0].Error())
+		require.NoError(t, err)
+		require.Nil(t, createdScreeshot)
+	})
+
+	t.Run("when error happens at creation of any screenshot, transaction gets rolled back", func(t *testing.T) {
+		testAppVersion := createTestAppVersion(t, &models.AppVersion{
+			Platform: "iOS",
+			Version:  "v1.0",
+		})
+		testScreenshots := []*models.Screenshot{
+			&models.Screenshot{
+				AppVersion: *testAppVersion,
+				Filename:   "screenshot.png",
+				Filesize:   1234,
+			},
+			&models.Screenshot{
+				AppVersion: *testAppVersion,
+				Filename:   "screenshot.png",
+				Filesize:   models.MaxScreenshotFileByteSize + 1,
+			},
+		}
+		createdScreeshots, verrs, err := screenshotService.BatchCreate(testScreenshots)
+		require.Equal(t, 1, len(verrs))
+		require.Equal(t, "filesize: Must be smaller than 10 megabytes", verrs[0].Error())
+		require.NoError(t, err)
+		require.Empty(t, createdScreeshots)
+
+		foundScreenshots, err := screenshotService.FindAll(testAppVersion)
+		require.NoError(t, err)
+		require.Empty(t, foundScreenshots)
+	})
+}
+
 func Test_ScreenshotService_FindAll(t *testing.T) {
 	dbCloseCallbackMethod := prepareDB(t)
 	defer dbCloseCallbackMethod()
