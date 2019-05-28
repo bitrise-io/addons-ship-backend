@@ -29,7 +29,7 @@ func (a *APIDev) GetArtifactData(authToken, appSlug, buildSlug string) (*Artifac
 	}, nil
 }
 
-// GetArtifactPublicPageURL ...
-func (a *APIDev) GetArtifactPublicPageURL(authToken, appSlug, buildSlug, artifactSlug string) (string, error) {
+// GetArtifactPublicInstallPageURL ...
+func (a *APIDev) GetArtifactPublicInstallPageURL(authToken, appSlug, buildSlug, artifactSlug string) (string, error) {
 	return "http://don.t.go.there", nil
 }

@@ -100,7 +100,7 @@ func AppVersionGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Reques
 		return errors.WithStack(err)
 	}
 
-	artifactPublicInstallPageURL, err := env.BitriseAPI.GetArtifactPublicPageURL(
+	artifactPublicInstallPageURL, err := env.BitriseAPI.GetArtifactPublicInstallPageURL(
 		appVersion.App.BitriseAPIToken,
 		appVersion.App.AppSlug,
 		appVersion.BuildSlug,

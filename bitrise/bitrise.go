@@ -17,7 +17,7 @@ var (
 // APIInterface ...
 type APIInterface interface {
 	GetArtifactData(string, string, string) (*ArtifactData, error)
-	GetArtifactPublicPageURL(string, string, string, string) (string, error)
+	GetArtifactPublicInstallPageURL(string, string, string, string) (string, error)
 }
 
 // API ...
@@ -82,8 +82,8 @@ func (a *API) GetArtifactData(authToken, appSlug, buildSlug string) (*ArtifactDa
 	return nil, errors.New("No matching artifact found")
 }
 
-// GetArtifactPublicPageURL ...
-func (a *API) GetArtifactPublicPageURL(authToken, appSlug, buildSlug, artifactSlug string) (string, error) {
+// GetArtifactPublicInstallPageURL ...
+func (a *API) GetArtifactPublicInstallPageURL(authToken, appSlug, buildSlug, artifactSlug string) (string, error) {
 	resp, err := a.doRequest(authToken, "GET", fmt.Sprintf("%s/apps/%s/builds/%s/artifacts/%s", apiBaseURL, appSlug, buildSlug, artifactSlug))
 	if err != nil {
 		return "", errors.WithStack(err)

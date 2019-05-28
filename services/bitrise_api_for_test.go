@@ -14,9 +14,9 @@ func (a *testBitriseAPI) GetArtifactData(authToken, appSlug, buildSlug string) (
 	return a.getArtifactDataFn(authToken, appSlug, buildSlug)
 }
 
-func (a *testBitriseAPI) GetArtifactPublicPageURL(authToken, appSlug, buildSlug, artifactSlug string) (string, error) {
+func (a *testBitriseAPI) GetArtifactPublicInstallPageURL(authToken, appSlug, buildSlug, artifactSlug string) (string, error) {
 	if a.getArtifactPublicPageURLFn == nil {
-		panic("You have to override GetArtifactPublicPageURL function in tests")
+		panic("You have to override GetArtifactPublicInstallPageURL function in tests")
 	}
 	return a.getArtifactPublicPageURLFn(authToken, appSlug, buildSlug, artifactSlug)
 }
