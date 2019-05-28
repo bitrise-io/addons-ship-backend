@@ -111,3 +111,74 @@ func Test_ScreenshotService_FindAll(t *testing.T) {
 		reflect.DeepEqual([]models.Screenshot{*testScreenshot2, *testScreenshot1}, foundScreenshots)
 	})
 }
+
+func Test_ScreenshotService_BatchUpdate(t *testing.T) {
+	dbCloseCallbackMethod := prepareDB(t)
+	defer dbCloseCallbackMethod()
+
+	screenshotService := models.ScreenshotService{DB: dataservices.GetDB()}
+
+	t.Run("ok", func(t *testing.T) {
+		testAppVersions := []*models.AppVersion{
+			createTestAppVersion(t, &models.AppVersion{Platform: "iOS", Version: "v1.0"}),
+			createTestAppVersion(t, &models.AppVersion{Platform: "Android", Version: "v1.2"}),
+		}
+		testScreenshotsOfVersion1 := []models.Screenshot{
+			*createTestScreenshot(t, &models.Screenshot{
+				Filename:   "screenshot1.png",
+				AppVersion: *testAppVersions[0],
+			}),
+			*createTestScreenshot(t, &models.Screenshot{
+				Filename:   "screenshot2.png",
+				AppVersion: *testAppVersions[0],
+			}),
+		}
+		createTestScreenshot(t, &models.Screenshot{
+			Filename:   "screenshot3.png",
+			AppVersion: *testAppVersions[1],
+		})
+
+		testScreenshotsOfVersion1[0].Uploaded = true
+		testScreenshotsOfVersion1[1].Uploaded = true
+		verrs, err := screenshotService.BatchUpdate(testScreenshotsOfVersion1, []string{"Uploaded"})
+		require.Empty(t, verrs)
+		require.NoError(t, err)
+
+		t.Log("check if screenshots got updated")
+		foundScreenshots, err := screenshotService.FindAll(testAppVersions[0])
+		require.NoError(t, err)
+		require.True(t, foundScreenshots[0].Uploaded)
+		require.True(t, foundScreenshots[1].Uploaded)
+
+		t.Log("check if no other screenshots were updated")
+		foundScreenshots, err = screenshotService.FindAll(testAppVersions[1])
+		require.NoError(t, err)
+		require.False(t, foundScreenshots[0].Uploaded)
+	})
+
+	t.Run("when filesize is too big", func(t *testing.T) {
+		testScreenshots := []models.Screenshot{
+			*createTestScreenshot(t, &models.Screenshot{
+				Filename: "screenshot1.png",
+				Filesize: 1234,
+			}),
+		}
+		testScreenshots[0].Filesize = models.MaxScreenshotFileByteSize + 1
+		verrs, err := screenshotService.BatchUpdate(testScreenshots, []string{"Filesize"})
+		require.Equal(t, 1, len(verrs))
+		require.Equal(t, "filesize: Must be smaller than 10 megabytes", verrs[0].Error())
+		require.NoError(t, err)
+	})
+
+	t.Run("when trying to update non-existing field", func(t *testing.T) {
+		testScreenshots := []models.Screenshot{
+			*createTestScreenshot(t, &models.Screenshot{
+				Filename: "screenshot1.png",
+				Filesize: 1234,
+			}),
+		}
+		verrs, err := screenshotService.BatchUpdate(testScreenshots, []string{"NonExistingField"})
+		require.EqualError(t, err, "Attribute name doesn't exist in the model")
+		require.Equal(t, 0, len(verrs))
+	})
+}
