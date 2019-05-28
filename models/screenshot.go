@@ -31,6 +31,11 @@ type Screenshot struct {
 // BeforeCreate ...
 func (s *Screenshot) BeforeCreate(scope *gorm.Scope) error {
 	s.ID = uuid.NewV4()
+	return nil
+}
+
+// BeforeSave ...
+func (s *Screenshot) BeforeSave(scope *gorm.Scope) error {
 	err := s.validate(scope)
 	if err != nil {
 		return errors.WithStack(err)
@@ -39,8 +44,12 @@ func (s *Screenshot) BeforeCreate(scope *gorm.Scope) error {
 }
 
 func (s *Screenshot) validate(scope *gorm.Scope) error {
+	var err error
 	if s.Filesize > MaxScreenshotFileByteSize {
-		return errors.New("filesize: Must be smaller than 10 megabytes")
+		err = scope.DB().AddError(NewValidationError("filesize: Must be smaller than 10 megabytes"))
+	}
+	if err != nil {
+		return errors.New("Validation failed")
 	}
 	return nil
 }

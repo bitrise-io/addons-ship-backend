@@ -1,10 +1,13 @@
 package models
 
-import "github.com/jinzhu/gorm"
+import (
+	"github.com/jinzhu/gorm"
+)
 
 // ScreenshotService ...
 type ScreenshotService struct {
 	DB *gorm.DB
+	UpdatableModelService
 }
 
 // BatchCreate ...
@@ -12,7 +15,7 @@ func (s *ScreenshotService) BatchCreate(screenshots []*Screenshot) ([]*Screensho
 	tx := s.DB.Begin()
 	for _, screenshot := range screenshots {
 		result := tx.Create(screenshot)
-		verrs := result.GetErrors()
+		verrs := ValidationErrors(result.GetErrors())
 		if len(verrs) > 0 {
 			tx.Rollback()
 			return nil, verrs, nil
@@ -35,4 +38,23 @@ func (s *ScreenshotService) FindAll(appVersion *AppVersion) ([]Screenshot, error
 		return nil, err
 	}
 	return screenshots, nil
+}
+
+// BatchUpdate ...
+func (s *ScreenshotService) BatchUpdate(screenshots []Screenshot, whitelist []string) ([]error, error) {
+	for _, screenshot := range screenshots {
+		updateData, err := s.UpdateData(screenshot, whitelist)
+		if err != nil {
+			return nil, err
+		}
+		result := s.DB.Model(&screenshot).Updates(updateData)
+		verrs := ValidationErrors(result.GetErrors())
+		if len(verrs) > 0 {
+			return verrs, nil
+		}
+		if result.Error != nil {
+			return nil, result.Error
+		}
+	}
+	return nil, nil
 }
