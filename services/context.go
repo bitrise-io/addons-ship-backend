@@ -13,6 +13,8 @@ const (
 	ContextKeyAuthorizedAppID ctxpkg.RequestContextKey = "ctx-authorized-app-id"
 	// ContextKeyAuthorizedAppVersionID ...
 	ContextKeyAuthorizedAppVersionID ctxpkg.RequestContextKey = "ctx-authorized-app-version-id"
+	// ContextKeyAuthorizedScreenshotID ...
+	ContextKeyAuthorizedScreenshotID ctxpkg.RequestContextKey = "ctx-authorized-screenshot-id"
 )
 
 // GetAuthorizedAppIDFromContext ...
@@ -38,7 +40,21 @@ func GetAuthorizedAppVersionIDFromContext(ctx context.Context) (uuid.UUID, error
 	return id, nil
 }
 
+// GetAuthorizedScreenshotIDFromContext ...
+func GetAuthorizedScreenshotIDFromContext(ctx context.Context) (uuid.UUID, error) {
+	id, ok := ctx.Value(ContextKeyAuthorizedScreenshotID).(uuid.UUID)
+	if !ok {
+		return uuid.UUID{}, errors.New("Authorized App Version Screenshot ID not found in Context")
+	}
+	return id, nil
+}
+
 // ContextWithAuthorizedAppVersionID ...
 func ContextWithAuthorizedAppVersionID(ctx context.Context, appVersionID uuid.UUID) context.Context {
 	return context.WithValue(ctx, ContextKeyAuthorizedAppVersionID, appVersionID)
+}
+
+// ContextWithAuthorizedScreenshotID ...
+func ContextWithAuthorizedScreenshotID(ctx context.Context, screenshotID uuid.UUID) context.Context {
+	return context.WithValue(ctx, ContextKeyAuthorizedScreenshotID, screenshotID)
 }
