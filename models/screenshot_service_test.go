@@ -76,6 +76,29 @@ func Test_ScreenshotService_BatchCreate(t *testing.T) {
 	})
 }
 
+func Test_ScreenshotService_Find(t *testing.T) {
+	dbCloseCallbackMethod := prepareDB(t)
+	defer dbCloseCallbackMethod()
+
+	screenshotService := models.ScreenshotService{DB: dataservices.GetDB()}
+	testAppVersion := createTestAppVersion(t, &models.AppVersion{
+		AppID:    uuid.NewV4(),
+		Platform: "iOS",
+	})
+
+	testScreenshot := createTestScreenshot(t, &models.Screenshot{
+		AppVersion: *testAppVersion,
+		DeviceType: "iPhone XS Max",
+		ScreenSize: "6.5 inch",
+	})
+
+	t.Run("when querying a screenshot that belongs to an app version", func(t *testing.T) {
+		foundScreenshot, err := screenshotServiceFind(&models.Screenshot{Record: models.Record{ID: testScreenshot.ID}, AppVersionID: testAppVersion.ID})
+		require.NoError(t, err)
+		reflect.DeepEqual(testScreenshot, foundScreenshot)
+	})
+}
+
 func Test_ScreenshotService_FindAll(t *testing.T) {
 	dbCloseCallbackMethod := prepareDB(t)
 	defer dbCloseCallbackMethod()

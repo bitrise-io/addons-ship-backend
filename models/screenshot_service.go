@@ -28,6 +28,17 @@ func (s *ScreenshotService) BatchCreate(screenshots []*Screenshot) ([]*Screensho
 	return screenshots, nil, tx.Commit().Error
 }
 
+// Find ...
+func (s *ScreenshotService) Find(screenshot *Screenshot) (*Screenshot, error) {
+	err := s.DB.First(screenshot).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return screenshot, nil
+}
+
 // FindAll ...
 func (s *ScreenshotService) FindAll(appVersion *AppVersion) ([]Screenshot, error) {
 	var screenshots []Screenshot
@@ -56,5 +67,21 @@ func (s *ScreenshotService) BatchUpdate(screenshots []Screenshot, whitelist []st
 			return nil, result.Error
 		}
 	}
+	return nil, nil
+}
+
+// Delete ...
+func (s *ScreenshotService) Delete(screenshot *Screenshot) (validationErrors []error, dbError error) {
+	result := s.DB.Delete(&screenshot)
+	verrs := ValidationErrors(result.GetErrors())
+
+	if len(verrs) > 0 {
+		return verrs, nil
+	}
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
 	return nil, nil
 }
