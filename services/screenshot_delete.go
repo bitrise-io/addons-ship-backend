@@ -25,14 +25,16 @@ func ScreenshotDeleteHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Req
 		return errors.New("No Screenshot Service defined for handler")
 	}
 
-	// aws.DeleteObject
-
-	// // ID, err := uuid.FromString(screenshotID)
-	// if err != nil {
-	// 	return errors.New("Screenshot ID is invalid")
-	// }
+	if env.AWS == nil {
+		return errors.New("No AWS Provider defined for handler")
+	}
 
 	screenshot, err := env.ScreenshotService.Find(&models.Screenshot{Record: models.Record{ID: screenshotID}})
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	err = env.AWS.DeleteObject(screenshot.AWSPath())
 	if err != nil {
 		return errors.WithStack(err)
 	}

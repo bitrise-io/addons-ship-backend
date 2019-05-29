@@ -8,6 +8,7 @@ import (
 	"github.com/bitrise-io/addons-ship-backend/models"
 	"github.com/bitrise-io/addons-ship-backend/services"
 	ctxpkg "github.com/bitrise-io/api-utils/context"
+	"github.com/bitrise-io/api-utils/providers"
 	"github.com/c2fo/testify/require"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
@@ -25,20 +26,12 @@ func Test_ScreenshotDeleteHandler(t *testing.T) {
 		contextElements: map[ctxpkg.RequestContextKey]interface{}{
 			services.ContextKeyAuthorizedScreenshotID: screenshotID,
 		},
-		env: &env.AppEnv{
-			ScreenshotService: &testScreenshotService{},
-			// AWS:               &providers.AWSMock{},
-		},
+		env: &env.AppEnv{},
 	})
 
 	behavesAsContextCravingHandler(t, httpMethod, url, handler, []ctxpkg.RequestContextKey{services.ContextKeyAuthorizedScreenshotID}, ControllerTestCase{
-		contextElements: map[ctxpkg.RequestContextKey]interface{}{
-			services.ContextKeyAuthorizedScreenshotID: uuid.FromStringOrNil("de438ddc-98e5-4226-a5f4-fd2d53474879"),
-		},
-		env: &env.AppEnv{
-			ScreenshotService: &testScreenshotService{},
-			// AWS:               &providers.AWSMock{},
-		},
+		contextElements: map[ctxpkg.RequestContextKey]interface{}{},
+		env:             &env.AppEnv{},
 	})
 
 	t.Run("ok - minimal", func(t *testing.T) {
@@ -56,11 +49,11 @@ func Test_ScreenshotDeleteHandler(t *testing.T) {
 						return testScreenshot, nil
 					},
 				},
-				// AWS: &providers.AWSMock{
-				// 	GeneratePresignedGETURLFn: func(path string, expiration time.Duration) (string, error) {
-				// 		return "", nil
-				// 	},
-				// },
+				AWS: &providers.AWSMock{
+					DeleteObjectFn: func(path string) error {
+						return nil
+					},
+				},
 			},
 			expectedStatusCode: http.StatusOK,
 			expectedResponse: services.ScreenshotDeleteResponse{
@@ -80,9 +73,30 @@ func Test_ScreenshotDeleteHandler(t *testing.T) {
 						return nil, errors.New("SOME-SQL-ERROR")
 					},
 				},
-				// AWS: &providers.AWSMock{},
+				AWS: &providers.AWSMock{},
 			},
 			expectedInternalErr: "SOME-SQL-ERROR",
+		})
+	})
+
+	t.Run("error - aws error", func(t *testing.T) {
+		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedScreenshotID: screenshotID,
+			},
+			env: &env.AppEnv{
+				ScreenshotService: &testScreenshotService{
+					findFn: func(screemshot *models.Screenshot) (*models.Screenshot, error) {
+						return testScreenshot, nil
+					},
+				},
+				AWS: &providers.AWSMock{
+					DeleteObjectFn: func(path string) error {
+						return errors.New("An AWS error")
+					},
+				},
+			},
+			expectedInternalErr: "An AWS error",
 		})
 	})
 }
