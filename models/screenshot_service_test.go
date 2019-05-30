@@ -93,7 +93,7 @@ func Test_ScreenshotService_Find(t *testing.T) {
 	})
 
 	t.Run("when querying a screenshot that belongs to an app version", func(t *testing.T) {
-		foundScreenshot, err := screenshotServiceFind(&models.Screenshot{Record: models.Record{ID: testScreenshot.ID}, AppVersionID: testAppVersion.ID})
+		foundScreenshot, err := screenshotService.Find(&models.Screenshot{Record: models.Record{ID: testScreenshot.ID}, AppVersionID: testAppVersion.ID})
 		require.NoError(t, err)
 		reflect.DeepEqual(testScreenshot, foundScreenshot)
 	})
