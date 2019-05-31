@@ -479,6 +479,7 @@ func Test_AuthorizeForAppVersionScreenshotAccessHandlerFunc(t *testing.T) {
 		ContextElementList: map[string]ctxpkg.RequestContextKey{
 			"authorizedAppID":        services.ContextKeyAuthorizedAppID,
 			"authorizedAppVersionID": services.ContextKeyAuthorizedAppVersionID,
+			"authorizedScreenshotID": services.ContextKeyAuthorizedScreenshotID,
 		},
 	}
 	httpMethod := "GET"
@@ -525,6 +526,7 @@ func Test_AuthorizeForAppVersionScreenshotAccessHandlerFunc(t *testing.T) {
 			expectedResponse: map[string]interface{}{
 				"authorizedAppID":        testAppID,
 				"authorizedAppVersionID": testAppVersionID,
+				"authorizedScreenshotID": testScreenshotID,
 			},
 		})
 	})
