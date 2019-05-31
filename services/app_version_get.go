@@ -22,16 +22,17 @@ type AppData struct {
 // AppVersionData ...
 type AppVersionData struct {
 	*models.AppVersion
-	MinimumOS            string    `json:"minimum_os"`
-	MinimumSDK           string    `json:"minimum_sdk"`
-	PackageName          string    `json:"package_name"`
-	CertificateExpires   time.Time `json:"certificate_expires"`
-	BundleID             string    `json:"bundle_id"`
-	Size                 int64     `json:"size"`
-	SupportedDeviceTypes []string  `json:"supported_device_types"`
-	DistributionType     string    `json:"distribution_type"`
-	PublicInstallPageURL string    `json:"public_install_page_url"`
-	AppInfo              AppData   `json:"app_info"`
+	MinimumOS            string              `json:"minimum_os"`
+	MinimumSDK           string              `json:"minimum_sdk"`
+	PackageName          string              `json:"package_name"`
+	CertificateExpires   time.Time           `json:"certificate_expires"`
+	BundleID             string              `json:"bundle_id"`
+	Size                 int64               `json:"size"`
+	SupportedDeviceTypes []string            `json:"supported_device_types"`
+	DistributionType     string              `json:"distribution_type"`
+	PublicInstallPageURL string              `json:"public_install_page_url"`
+	AppInfo              AppData             `json:"app_info"`
+	AppStoreInfo         models.AppStoreInfo `json:"app_store_info"`
 }
 
 // AppVersionGetResponse ...
@@ -122,6 +123,10 @@ func newArtifactVersionGetResponse(appVersion *models.AppVersion, artifact *bitr
 		Title:      appDetails.Title,
 		AppIconURL: appDetails.AvatarURL,
 	}
+	appStoreInfo, err := appVersion.AppStoreInfo()
+	if err != nil {
+		return AppVersionData{}, err
+	}
 	return AppVersionData{
 		AppVersion:           appVersion,
 		MinimumOS:            artifact.AppInfo.MinimumOS,
@@ -134,5 +139,6 @@ func newArtifactVersionGetResponse(appVersion *models.AppVersion, artifact *bitr
 		DistributionType:     artifact.ProvisioningInfo.DistributionType,
 		PublicInstallPageURL: publicInstallPageURL,
 		AppInfo:              appData,
+		AppStoreInfo:         appStoreInfo,
 	}, nil
 }

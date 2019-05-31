@@ -1,6 +1,7 @@
 package services_test
 
 import (
+	"encoding/json"
 	"net/http"
 	"testing"
 
@@ -55,7 +56,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 				AppVersionService: &testAppVersionService{
 					findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
 						require.Equal(t, appVersion.ID.String(), "de438ddc-98e5-4226-a5f4-fd2d53474879")
-						return &models.AppVersion{App: models.App{}}, nil
+						return &models.AppVersion{App: models.App{}, AppStoreInfoData: json.RawMessage(`{}`)}, nil
 					},
 				},
 				BitriseAPI: &testBitriseAPI{
@@ -86,8 +87,9 @@ func Test_AppVersionGetHandler(t *testing.T) {
 				AppVersionService: &testAppVersionService{
 					findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
 						return &models.AppVersion{
-							Version:  "v1.0",
-							Platform: "ios",
+							Version:          "v1.0",
+							Platform:         "ios",
+							AppStoreInfoData: json.RawMessage(`{"short_description":"Some shorter description"}`),
 							App: models.App{
 								BitriseAPIToken: "test-api-token",
 							},
@@ -128,6 +130,9 @@ func Test_AppVersionGetHandler(t *testing.T) {
 						Title:      "The Adventures of Stealy",
 						AppIconURL: pointers.NewStringPtr("https://bit.ly/1LixVJu"),
 					},
+					AppStoreInfo: models.AppStoreInfo{
+						ShortDescription: "Some shorter description",
+					},
 				},
 			},
 		})
@@ -142,8 +147,9 @@ func Test_AppVersionGetHandler(t *testing.T) {
 				AppVersionService: &testAppVersionService{
 					findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
 						return &models.AppVersion{
-							Version:  "v1.0",
-							Platform: "ios",
+							Version:          "v1.0",
+							Platform:         "ios",
+							AppStoreInfoData: json.RawMessage(`{}`),
 							App: models.App{
 								BitriseAPIToken: "test-api-token",
 							},
@@ -200,8 +206,9 @@ func Test_AppVersionGetHandler(t *testing.T) {
 				AppVersionService: &testAppVersionService{
 					findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
 						return &models.AppVersion{
-							Version:  "v1.0",
-							Platform: "ios",
+							Version:          "v1.0",
+							Platform:         "ios",
+							AppStoreInfoData: json.RawMessage(`{}`),
 							App: models.App{
 								BitriseAPIToken: "test-api-token",
 							},
