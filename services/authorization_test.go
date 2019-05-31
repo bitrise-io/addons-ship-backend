@@ -603,7 +603,7 @@ func Test_AuthorizeForAppVersionScreenshotAccessHandlerFunc(t *testing.T) {
 		})
 	})
 
-	t.Run("when app no found in database", func(t *testing.T) {
+	t.Run("when app not found in database", func(t *testing.T) {
 		handler := services.AuthorizeForAppVersionScreenshotAccessHandlerFunc(&env.AppEnv{
 			RequestParams: validRequestParams,
 			ScreenshotService: &testScreenshotService{

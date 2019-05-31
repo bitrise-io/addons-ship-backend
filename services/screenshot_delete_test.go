@@ -30,8 +30,10 @@ func Test_ScreenshotDeleteHandler(t *testing.T) {
 	})
 
 	behavesAsContextCravingHandler(t, httpMethod, url, handler, []ctxpkg.RequestContextKey{services.ContextKeyAuthorizedScreenshotID}, ControllerTestCase{
-		contextElements: map[ctxpkg.RequestContextKey]interface{}{},
-		env:             &env.AppEnv{},
+		contextElements: map[ctxpkg.RequestContextKey]interface{}{
+			services.ContextKeyAuthorizedScreenshotID: screenshotID,
+		},
+		env: &env.AppEnv{},
 	})
 
 	t.Run("ok - minimal", func(t *testing.T) {
@@ -44,8 +46,8 @@ func Test_ScreenshotDeleteHandler(t *testing.T) {
 					deleteFn: func(*models.Screenshot) error {
 						return nil
 					},
-					findFn: func(screemshot *models.Screenshot) (*models.Screenshot, error) {
-						require.Equal(t, screemshot.ID.String(), screenshotID.String())
+					findFn: func(screenshot *models.Screenshot) (*models.Screenshot, error) {
+						require.Equal(t, screenshot.ID.String(), screenshotID.String())
 						return testScreenshot, nil
 					},
 				},
@@ -69,7 +71,7 @@ func Test_ScreenshotDeleteHandler(t *testing.T) {
 			},
 			env: &env.AppEnv{
 				ScreenshotService: &testScreenshotService{
-					findFn: func(screemshot *models.Screenshot) (*models.Screenshot, error) {
+					findFn: func(screenshot *models.Screenshot) (*models.Screenshot, error) {
 						return nil, errors.New("SOME-SQL-ERROR")
 					},
 				},
@@ -86,7 +88,7 @@ func Test_ScreenshotDeleteHandler(t *testing.T) {
 			},
 			env: &env.AppEnv{
 				ScreenshotService: &testScreenshotService{
-					findFn: func(screemshot *models.Screenshot) (*models.Screenshot, error) {
+					findFn: func(screenshot *models.Screenshot) (*models.Screenshot, error) {
 						return testScreenshot, nil
 					},
 				},
