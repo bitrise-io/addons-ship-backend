@@ -3,6 +3,7 @@
 package models_test
 
 import (
+	"encoding/json"
 	"reflect"
 	"testing"
 
@@ -17,13 +18,20 @@ func Test_AppVersionService_Create(t *testing.T) {
 
 	appVersionService := models.AppVersionService{DB: dataservices.GetDB()}
 	testAppVersion := &models.AppVersion{
-		Version: "v1.0",
+		Version:          "v1.0",
+		AppStoreInfoData: json.RawMessage(`{"short_description":"Some quite short description"}`),
+	}
+	expectedAppStoreInfo := models.AppStoreInfo{
+		ShortDescription: "Some quite short description",
 	}
 	createdAppVersion, err := appVersionService.Create(testAppVersion)
 	require.NoError(t, err)
 	require.False(t, createdAppVersion.ID.String() == "")
 	require.False(t, createdAppVersion.CreatedAt.String() == "")
 	require.False(t, createdAppVersion.UpdatedAt.String() == "")
+	createdAppVersionStoreInfo, err := testAppVersion.AppStoreInfo()
+	require.NoError(t, err)
+	require.Equal(t, expectedAppStoreInfo, createdAppVersionStoreInfo)
 }
 
 func Test_AppVersionService_Find(t *testing.T) {

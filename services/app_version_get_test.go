@@ -1,6 +1,7 @@
 package services_test
 
 import (
+	"encoding/json"
 	"net/http"
 	"testing"
 
@@ -55,7 +56,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 				AppVersionService: &testAppVersionService{
 					findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
 						require.Equal(t, appVersion.ID.String(), "de438ddc-98e5-4226-a5f4-fd2d53474879")
-						return &models.AppVersion{App: models.App{}}, nil
+						return &models.AppVersion{App: models.App{}, AppStoreInfoData: json.RawMessage(`{}`)}, nil
 					},
 				},
 				BitriseAPI: &testBitriseAPI{
@@ -86,8 +87,9 @@ func Test_AppVersionGetHandler(t *testing.T) {
 				AppVersionService: &testAppVersionService{
 					findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
 						return &models.AppVersion{
-							Version:  "v1.0",
-							Platform: "ios",
+							Version:          "v1.0",
+							Platform:         "ios",
+							AppStoreInfoData: json.RawMessage(`{"short_description":"Some shorter description"}`),
 							App: models.App{
 								BitriseAPIToken: "test-api-token",
 							},
@@ -128,6 +130,9 @@ func Test_AppVersionGetHandler(t *testing.T) {
 						Title:      "The Adventures of Stealy",
 						AppIconURL: pointers.NewStringPtr("https://bit.ly/1LixVJu"),
 					},
+					AppStoreInfo: models.AppStoreInfo{
+						ShortDescription: "Some shorter description",
+					},
 				},
 			},
 		})
@@ -142,8 +147,9 @@ func Test_AppVersionGetHandler(t *testing.T) {
 				AppVersionService: &testAppVersionService{
 					findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
 						return &models.AppVersion{
-							Version:  "v1.0",
-							Platform: "ios",
+							Version:          "v1.0",
+							Platform:         "ios",
+							AppStoreInfoData: json.RawMessage(`{}`),
 							App: models.App{
 								BitriseAPIToken: "test-api-token",
 							},
@@ -200,8 +206,9 @@ func Test_AppVersionGetHandler(t *testing.T) {
 				AppVersionService: &testAppVersionService{
 					findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
 						return &models.AppVersion{
-							Version:  "v1.0",
-							Platform: "ios",
+							Version:          "v1.0",
+							Platform:         "ios",
+							AppStoreInfoData: json.RawMessage(`{}`),
 							App: models.App{
 								BitriseAPIToken: "test-api-token",
 							},
@@ -274,6 +281,66 @@ func Test_AppVersionGetHandler(t *testing.T) {
 				},
 			},
 			expectedInternalErr: "SOME-BITRISE-API-ERROR",
+		})
+	})
+
+	t.Run("when artifact size is not a valid float", func(t *testing.T) {
+		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppVersionID: uuid.FromStringOrNil("de438ddc-98e5-4226-a5f4-fd2d53474879"),
+			},
+			env: &env.AppEnv{
+				AppVersionService: &testAppVersionService{
+					findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
+						require.Equal(t, appVersion.ID.String(), "de438ddc-98e5-4226-a5f4-fd2d53474879")
+						return &models.AppVersion{App: models.App{}, AppStoreInfoData: json.RawMessage(`{}`)}, nil
+					},
+				},
+				BitriseAPI: &testBitriseAPI{
+					getArtifactDataFn: func(string, string, string) (*bitrise.ArtifactData, error) {
+						return &bitrise.ArtifactData{
+							Meta: bitrise.ArtifactMeta{
+								Size: "not-a-number",
+							},
+						}, nil
+					},
+					getArtifactPublicPageURLFn: func(string, string, string, string) (string, error) {
+						return "", nil
+					},
+					getAppDetailsFn: func(string, string) (*bitrise.AppDetails, error) {
+						return &bitrise.AppDetails{}, nil
+					},
+				},
+			},
+			expectedInternalErr: `strconv.ParseFloat: parsing "not-a-number": invalid syntax`,
+		})
+	})
+
+	t.Run("when error happens at reading app store info", func(t *testing.T) {
+		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppVersionID: uuid.FromStringOrNil("de438ddc-98e5-4226-a5f4-fd2d53474879"),
+			},
+			env: &env.AppEnv{
+				AppVersionService: &testAppVersionService{
+					findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
+						require.Equal(t, appVersion.ID.String(), "de438ddc-98e5-4226-a5f4-fd2d53474879")
+						return &models.AppVersion{App: models.App{}}, nil
+					},
+				},
+				BitriseAPI: &testBitriseAPI{
+					getArtifactDataFn: func(string, string, string) (*bitrise.ArtifactData, error) {
+						return &bitrise.ArtifactData{}, nil
+					},
+					getArtifactPublicPageURLFn: func(string, string, string, string) (string, error) {
+						return "", nil
+					},
+					getAppDetailsFn: func(string, string) (*bitrise.AppDetails, error) {
+						return &bitrise.AppDetails{}, nil
+					},
+				},
+			},
+			expectedInternalErr: "unexpected end of JSON input",
 		})
 	})
 
