@@ -71,17 +71,12 @@ func (s *ScreenshotService) BatchUpdate(screenshots []Screenshot, whitelist []st
 }
 
 // Delete ...
-func (s *ScreenshotService) Delete(screenshot *Screenshot) (validationErrors []error, dbError error) {
+func (s *ScreenshotService) Delete(screenshot *Screenshot) error {
 	result := s.DB.Delete(&screenshot)
-	verrs := ValidationErrors(result.GetErrors())
-
-	if len(verrs) > 0 {
-		return verrs, nil
-	}
 
 	if result.Error != nil {
-		return nil, result.Error
+		return result.Error
 	}
 
-	return nil, nil
+	return nil
 }

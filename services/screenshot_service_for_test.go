@@ -7,7 +7,7 @@ type testScreenshotService struct {
 	findFn        func(screenshot *models.Screenshot) (*models.Screenshot, error)
 	findAllFn     func(*models.AppVersion) ([]models.Screenshot, error)
 	batchUpdateFn func([]models.Screenshot, []string) ([]error, error)
-	deleteFn      func(screenshot *models.Screenshot) (validationErrors []error, dbError error)
+	deleteFn      func(screenshot *models.Screenshot) error
 }
 
 func (s *testScreenshotService) BatchCreate(screenshot []*models.Screenshot) ([]*models.Screenshot, []error, error) {
@@ -38,7 +38,7 @@ func (s *testScreenshotService) BatchUpdate(screenshots []models.Screenshot, whi
 	panic("You have to override BatchUpdate function in tests")
 }
 
-func (s *testScreenshotService) Delete(screenshot *models.Screenshot) (validationErrors []error, dbError error) {
+func (s *testScreenshotService) Delete(screenshot *models.Screenshot) error {
 	if s.deleteFn != nil {
 		return s.deleteFn(screenshot)
 	}

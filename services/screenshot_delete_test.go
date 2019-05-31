@@ -41,8 +41,8 @@ func Test_ScreenshotDeleteHandler(t *testing.T) {
 			},
 			env: &env.AppEnv{
 				ScreenshotService: &testScreenshotService{
-					deleteFn: func(*models.Screenshot) (validationErrors []error, dbError error) {
-						return nil, nil
+					deleteFn: func(*models.Screenshot) error {
+						return nil
 					},
 					findFn: func(screemshot *models.Screenshot) (*models.Screenshot, error) {
 						require.Equal(t, screemshot.ID.String(), screenshotID.String())

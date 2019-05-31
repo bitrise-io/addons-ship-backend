@@ -39,12 +39,10 @@ func ScreenshotDeleteHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Req
 		return errors.WithStack(err)
 	}
 
-	verrs, err := env.ScreenshotService.Delete(
+	err = env.ScreenshotService.Delete(
 		screenshot,
 	)
-	if len(verrs) > 0 {
-		return httpresponse.RespondWithUnprocessableEntity(w, verrs)
-	}
+
 	if err != nil {
 		return errors.Wrap(err, "SQL Error")
 	}

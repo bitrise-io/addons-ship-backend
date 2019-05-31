@@ -8,5 +8,5 @@ type ScreenshotService interface {
 	Find(screenshot *models.Screenshot) (*models.Screenshot, error)
 	FindAll(appVersion *models.AppVersion) ([]models.Screenshot, error)
 	BatchUpdate(screenshots []models.Screenshot, whitelist []string) (validationErrors []error, dbError error)
-	Delete(screenshot *models.Screenshot) (validationErrors []error, dbError error)
+	Delete(screenshot *models.Screenshot) error
 }
