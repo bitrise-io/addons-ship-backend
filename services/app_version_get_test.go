@@ -73,7 +73,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 			},
 			expectedStatusCode: http.StatusOK,
 			expectedResponse: services.AppVersionGetResponse{
-				Data: services.AppVersionData{AppVersion: &models.AppVersion{}},
+				Data: services.AppVersionGetResponseData{AppVersion: &models.AppVersion{}},
 			},
 		})
 	})
@@ -119,7 +119,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 			},
 			expectedStatusCode: http.StatusOK,
 			expectedResponse: services.AppVersionGetResponse{
-				Data: services.AppVersionData{
+				Data: services.AppVersionGetResponseData{
 					AppVersion: &models.AppVersion{
 						Version:  "v1.0",
 						Platform: "ios",
@@ -180,7 +180,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 			},
 			expectedStatusCode: http.StatusOK,
 			expectedResponse: services.AppVersionGetResponse{
-				Data: services.AppVersionData{
+				Data: services.AppVersionGetResponseData{
 					AppVersion: &models.AppVersion{
 						Version:  "v1.0",
 						Platform: "ios",
@@ -239,7 +239,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 			},
 			expectedStatusCode: http.StatusOK,
 			expectedResponse: services.AppVersionGetResponse{
-				Data: services.AppVersionData{
+				Data: services.AppVersionGetResponseData{
 					AppVersion: &models.AppVersion{
 						Version:  "v1.0",
 						Platform: "ios",
