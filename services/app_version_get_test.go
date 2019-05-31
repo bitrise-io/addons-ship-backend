@@ -284,6 +284,66 @@ func Test_AppVersionGetHandler(t *testing.T) {
 		})
 	})
 
+	t.Run("when artifact size is not a valid float", func(t *testing.T) {
+		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppVersionID: uuid.FromStringOrNil("de438ddc-98e5-4226-a5f4-fd2d53474879"),
+			},
+			env: &env.AppEnv{
+				AppVersionService: &testAppVersionService{
+					findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
+						require.Equal(t, appVersion.ID.String(), "de438ddc-98e5-4226-a5f4-fd2d53474879")
+						return &models.AppVersion{App: models.App{}, AppStoreInfoData: json.RawMessage(`{}`)}, nil
+					},
+				},
+				BitriseAPI: &testBitriseAPI{
+					getArtifactDataFn: func(string, string, string) (*bitrise.ArtifactData, error) {
+						return &bitrise.ArtifactData{
+							Meta: bitrise.ArtifactMeta{
+								Size: "not-a-number",
+							},
+						}, nil
+					},
+					getArtifactPublicPageURLFn: func(string, string, string, string) (string, error) {
+						return "", nil
+					},
+					getAppDetailsFn: func(string, string) (*bitrise.AppDetails, error) {
+						return &bitrise.AppDetails{}, nil
+					},
+				},
+			},
+			expectedInternalErr: `strconv.ParseFloat: parsing "not-a-number": invalid syntax`,
+		})
+	})
+
+	t.Run("when error happens at reading app store info", func(t *testing.T) {
+		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppVersionID: uuid.FromStringOrNil("de438ddc-98e5-4226-a5f4-fd2d53474879"),
+			},
+			env: &env.AppEnv{
+				AppVersionService: &testAppVersionService{
+					findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
+						require.Equal(t, appVersion.ID.String(), "de438ddc-98e5-4226-a5f4-fd2d53474879")
+						return &models.AppVersion{App: models.App{}}, nil
+					},
+				},
+				BitriseAPI: &testBitriseAPI{
+					getArtifactDataFn: func(string, string, string) (*bitrise.ArtifactData, error) {
+						return &bitrise.ArtifactData{}, nil
+					},
+					getArtifactPublicPageURLFn: func(string, string, string, string) (string, error) {
+						return "", nil
+					},
+					getAppDetailsFn: func(string, string) (*bitrise.AppDetails, error) {
+						return &bitrise.AppDetails{}, nil
+					},
+				},
+			},
+			expectedInternalErr: "unexpected end of JSON input",
+		})
+	})
+
 	t.Run("when error happens at fetching artifact public install page from Bitrise API", func(t *testing.T) {
 		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
 			contextElements: map[ctxpkg.RequestContextKey]interface{}{
