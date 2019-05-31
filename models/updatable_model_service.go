@@ -13,7 +13,7 @@ func (u *UpdatableModelService) UpdateData(object interface{}, whiteList []strin
 	if len(whiteList) < 1 {
 		return nil, errors.New("No attributes to update")
 	}
-
+	whiteList = append(whiteList, "UpdatedAt")
 	updateData := map[string]interface{}{}
 	for _, attribute := range whiteList {
 		dbFieldName, err := structs.GetFieldNameByAttributeNameAndTag(object, attribute, "json")
