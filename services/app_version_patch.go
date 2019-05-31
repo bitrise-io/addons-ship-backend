@@ -41,14 +41,18 @@ func AppVersionPatchHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Requ
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	appVersionToUpdate := &models.AppVersion{
-		Record:           models.Record{ID: authorizedAppVersionID},
+	recordToUpdate := models.Record{ID: authorizedAppVersionID}
+	verr, err := env.AppVersionService.Update(&models.AppVersion{
+		Record:           recordToUpdate,
 		AppStoreInfoData: appStoreInfo,
-	}
-	verr, err := env.AppVersionService.Update(appVersionToUpdate, []string{"AppStoreInfoData"})
+	}, []string{"AppStoreInfoData"})
 	if len(verr) > 0 {
 		return httpresponse.RespondWithUnprocessableEntity(w, verr)
 	}
+	if err != nil {
+		return errors.Wrap(err, "SQL Error")
+	}
+	appVersionToUpdate, err := env.AppVersionService.Find(&models.AppVersion{Record: recordToUpdate})
 	if err != nil {
 		return errors.Wrap(err, "SQL Error")
 	}
