@@ -9,6 +9,8 @@ import (
 	"github.com/bitrise-io/addons-ship-backend/dataservices"
 	"github.com/bitrise-io/addons-ship-backend/models"
 	"github.com/c2fo/testify/require"
+	"github.com/jinzhu/gorm"
+	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -96,6 +98,17 @@ func Test_ScreenshotService_Find(t *testing.T) {
 		foundScreenshot, err := screenshotService.Find(&models.Screenshot{Record: models.Record{ID: testScreenshot.ID}, AppVersionID: testAppVersion.ID})
 		require.NoError(t, err)
 		reflect.DeepEqual(testScreenshot, foundScreenshot)
+	})
+
+	t.Run("error - when screenshot is not found", func(t *testing.T) {
+		otherTestAppVersion := createTestAppVersion(t, &models.AppVersion{
+			AppID:    uuid.NewV4(),
+			Platform: "iOS",
+		})
+
+		foundScreenshot, err := screenshotService.Find(&models.Screenshot{Record: models.Record{ID: testScreenshot.ID}, AppVersionID: otherTestAppVersion.ID})
+		require.Equal(t, errors.Cause(err), gorm.ErrRecordNotFound)
+		require.Nil(t, foundScreenshot)
 	})
 }
 
