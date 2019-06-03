@@ -19,8 +19,8 @@ type AppData struct {
 	AppIconURL *string `json:"app_icon_url"`
 }
 
-// AppVersionData ...
-type AppVersionData struct {
+// AppVersionGetResponseData ...
+type AppVersionGetResponseData struct {
 	*models.AppVersion
 	MinimumOS            string              `json:"minimum_os"`
 	MinimumSDK           string              `json:"minimum_sdk"`
@@ -37,7 +37,7 @@ type AppVersionData struct {
 
 // AppVersionGetResponse ...
 type AppVersionGetResponse struct {
-	Data AppVersionData `json:"data"`
+	Data AppVersionGetResponseData `json:"data"`
 }
 
 // AppVersionGetHandler ...
@@ -98,7 +98,7 @@ func AppVersionGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Reques
 	})
 }
 
-func newArtifactVersionGetResponse(appVersion *models.AppVersion, artifact *bitrise.ArtifactMeta, publicInstallPageURL string, appDetails *bitrise.AppDetails) (AppVersionData, error) {
+func newArtifactVersionGetResponse(appVersion *models.AppVersion, artifact *bitrise.ArtifactMeta, publicInstallPageURL string, appDetails *bitrise.AppDetails) (AppVersionGetResponseData, error) {
 	var supportedDeviceTypes []string
 	for _, familyID := range artifact.AppInfo.DeviceFamilyList {
 		switch familyID {
@@ -115,7 +115,7 @@ func newArtifactVersionGetResponse(appVersion *models.AppVersion, artifact *bitr
 		var err error
 		floatSize, err := strconv.ParseFloat(artifact.Size, 64)
 		if err != nil {
-			return AppVersionData{}, err
+			return AppVersionGetResponseData{}, err
 		}
 		size = int64(floatSize)
 	}
@@ -125,9 +125,9 @@ func newArtifactVersionGetResponse(appVersion *models.AppVersion, artifact *bitr
 	}
 	appStoreInfo, err := appVersion.AppStoreInfo()
 	if err != nil {
-		return AppVersionData{}, err
+		return AppVersionGetResponseData{}, err
 	}
-	return AppVersionData{
+	return AppVersionGetResponseData{
 		AppVersion:           appVersion,
 		MinimumOS:            artifact.AppInfo.MinimumOS,
 		MinimumSDK:           artifact.AppInfo.MinimumSDKVersion,

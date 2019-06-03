@@ -8,7 +8,7 @@ import (
 	"github.com/c2fo/testify/require"
 )
 
-func Test_AppStoreInfo(t *testing.T) {
+func Test_AppVersion_AppStoreInfo(t *testing.T) {
 	t.Run("ok", func(t *testing.T) {
 		testAppVersion := &models.AppVersion{AppStoreInfoData: json.RawMessage(`{"short_description":"Some shorter description"}`)}
 		appStoreInfo, err := testAppVersion.AppStoreInfo()
