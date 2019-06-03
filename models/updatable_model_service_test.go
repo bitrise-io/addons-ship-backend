@@ -52,6 +52,19 @@ func Test_UpdatableModelService_UpdateData(t *testing.T) {
 		require.Nil(t, updateData)
 	})
 
+	t.Run("when struct field has json tag with value '-' and does not have db tag", func(t *testing.T) {
+		testModel := struct {
+			DBTaggedField string `json:"-" yaml:"json_tagged_field"`
+		}{
+			DBTaggedField: "some-test-value",
+		}
+		testService := models.UpdatableModelService{}
+
+		updateData, err := testService.UpdateData(testModel, []string{"DBTaggedField"})
+		require.EqualError(t, err, "Attribute doesn't have 'db' tag")
+		require.Nil(t, updateData)
+	})
+
 	t.Run("when struct does not have field listed in the whitelist", func(t *testing.T) {
 		testModel := struct {
 			JSONTaggedField string `json:"json_tagged_field"`
