@@ -49,15 +49,27 @@ func Test_AppVersionService_Create(t *testing.T) {
 		require.Equal(t, expectedAppStoreInfo, createdAppVersionStoreInfo)
 	})
 
+	t.Run("when app store info is not a valid JSON", func(t *testing.T) {
+		testAppVersion := &models.AppVersion{
+			Platform:         "ios",
+			AppStoreInfoData: json.RawMessage(`invalid json`),
+		}
+		createdAppVersion, verrs, err := appVersionService.Create(testAppVersion)
+		require.Empty(t, verrs)
+		require.EqualError(t, err, "invalid character 'i' looking for beginning of value")
+		require.Nil(t, createdAppVersion)
+	})
+
 	t.Run("when platform is android", func(t *testing.T) {
 		t.Run("when short description is longer, than 80 characters", func(t *testing.T) {
 			testAppVersion := &models.AppVersion{
 				Platform:         "android",
 				AppStoreInfoData: json.RawMessage(`{"short_description":"Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula e"}`),
 			}
-			_, verrs, err := appVersionService.Create(testAppVersion)
+			createdAppVersion, verrs, err := appVersionService.Create(testAppVersion)
 			require.Equal(t, []error{errors.New("short_description: Mustn't be longer than 80 characters")}, verrs)
 			require.NoError(t, err)
+			require.Nil(t, createdAppVersion)
 		})
 
 		t.Run("when full description is longer, than 80 characters", func(t *testing.T) {
@@ -65,9 +77,10 @@ func Test_AppVersionService_Create(t *testing.T) {
 				Platform:         "android",
 				AppStoreInfoData: json.RawMessage(`{"full_description":"Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula e"}`),
 			}
-			_, verrs, err := appVersionService.Create(testAppVersion)
+			createdAppVersion, verrs, err := appVersionService.Create(testAppVersion)
 			require.Equal(t, []error{errors.New("full_description: Mustn't be longer than 80 characters")}, verrs)
 			require.NoError(t, err)
+			require.Nil(t, createdAppVersion)
 		})
 	})
 
@@ -77,9 +90,10 @@ func Test_AppVersionService_Create(t *testing.T) {
 				Platform:         "ios",
 				AppStoreInfoData: json.RawMessage(`{"short_description":"Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis,."}`),
 			}
-			_, verrs, err := appVersionService.Create(testAppVersion)
+			createdAppVersion, verrs, err := appVersionService.Create(testAppVersion)
 			require.Equal(t, []error{errors.New("short_description: Mustn't be longer than 255 characters")}, verrs)
 			require.NoError(t, err)
+			require.Nil(t, createdAppVersion)
 		})
 	})
 }
