@@ -8,22 +8,23 @@ import (
 	"github.com/bitrise-io/addons-ship-backend/models"
 	"github.com/bitrise-io/api-utils/httprequest"
 	"github.com/bitrise-io/api-utils/httpresponse"
+	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
 )
 
-// AppVersionPatchResponseData ...
-type AppVersionPatchResponseData struct {
+// AppVersionPutResponseData ...
+type AppVersionPutResponseData struct {
 	*models.AppVersion
 	AppStoreInfo models.AppStoreInfo `json:"app_store_info"`
 }
 
-// AppVersionPatchResponse ...
-type AppVersionPatchResponse struct {
-	Data AppVersionPatchResponseData `json:"data"`
+// AppVersionPutResponse ...
+type AppVersionPutResponse struct {
+	Data AppVersionPutResponseData `json:"data"`
 }
 
-// AppVersionPatchHandler ...
-func AppVersionPatchHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request) error {
+// AppVersionPutHandler ...
+func AppVersionPutHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request) error {
 	authorizedAppVersionID, err := GetAuthorizedAppVersionIDFromContext(r.Context())
 	if err != nil {
 		return errors.WithStack(err)
@@ -41,34 +42,37 @@ func AppVersionPatchHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Requ
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	recordToUpdate := models.Record{ID: authorizedAppVersionID}
-	verr, err := env.AppVersionService.Update(&models.AppVersion{
-		Record:           recordToUpdate,
-		AppStoreInfoData: appStoreInfo,
-	}, []string{"AppStoreInfoData"})
+	appVersionToUpdate, err := env.AppVersionService.Find(&models.AppVersion{Record: models.Record{ID: authorizedAppVersionID}})
+	switch {
+	case errors.Cause(err) == gorm.ErrRecordNotFound:
+		return httpresponse.RespondWithNotFoundError(w)
+	case err != nil:
+		return errors.Wrap(err, "SQL Error")
+	}
+	appVersionToUpdate.AppStoreInfoData = appStoreInfo
+	verr, err := env.AppVersionService.Update(appVersionToUpdate, []string{"AppStoreInfoData"})
 	if len(verr) > 0 {
 		return httpresponse.RespondWithUnprocessableEntity(w, verr)
 	}
 	if err != nil {
 		return errors.Wrap(err, "SQL Error")
 	}
-	appVersionToUpdate, err := env.AppVersionService.Find(&models.AppVersion{Record: recordToUpdate})
-	if err != nil {
-		return errors.Wrap(err, "SQL Error")
-	}
 	response, err := newArtifactVersionPatchResponse(appVersionToUpdate)
+	if err != nil {
+		return errors.WithStack(err)
+	}
 
-	return httpresponse.RespondWithSuccess(w, AppVersionPatchResponse{
+	return httpresponse.RespondWithSuccess(w, AppVersionPutResponse{
 		Data: response,
 	})
 }
 
-func newArtifactVersionPatchResponse(appVersion *models.AppVersion) (AppVersionPatchResponseData, error) {
+func newArtifactVersionPatchResponse(appVersion *models.AppVersion) (AppVersionPutResponseData, error) {
 	appStoreInfo, err := appVersion.AppStoreInfo()
 	if err != nil {
-		return AppVersionPatchResponseData{}, err
+		return AppVersionPutResponseData{}, err
 	}
-	return AppVersionPatchResponseData{
+	return AppVersionPutResponseData{
 		AppVersion:   appVersion,
 		AppStoreInfo: appStoreInfo,
 	}, nil

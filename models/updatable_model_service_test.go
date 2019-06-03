@@ -2,6 +2,7 @@ package models_test
 
 import (
 	"testing"
+	"time"
 
 	"github.com/bitrise-io/addons-ship-backend/models"
 	"github.com/c2fo/testify/require"
@@ -10,7 +11,8 @@ import (
 func Test_UpdatableModelService_UpdateData(t *testing.T) {
 	t.Run("ok", func(t *testing.T) {
 		testModel := struct {
-			JSONTaggedField string `json:"json_tagged_field"`
+			JSONTaggedField string    `json:"json_tagged_field"`
+			UpdatedAt       time.Time `json:"updated_at"`
 		}{
 			JSONTaggedField: "some-test-value",
 		}
@@ -20,6 +22,7 @@ func Test_UpdatableModelService_UpdateData(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, map[string]interface{}{
 			"json_tagged_field": "some-test-value",
+			"updated_at":        time.Time{},
 		}, updateData)
 	})
 

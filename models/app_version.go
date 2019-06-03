@@ -17,7 +17,6 @@ type AppStoreInfo struct {
 	ReviewNotes      string `json:"review_notes"`
 	SupportURL       string `json:"support_url"`
 	MarketingURL     string `json:"marketing_url"`
-	NewField         string `json:"new_field"`
 }
 
 // AppVersion ...
