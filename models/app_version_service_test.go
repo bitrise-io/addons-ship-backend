@@ -54,7 +54,7 @@ func Test_AppVersionService_Create(t *testing.T) {
 				AppStoreInfoData: json.RawMessage(`{"short_description":"Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula e"}`),
 			}
 			_, verrs, err := appVersionService.Create(testAppVersion)
-			require.Equal(t, []error{errors.New("short_description: Must be shorter than 80 characters")}, verrs)
+			require.Equal(t, []error{errors.New("short_description: Mustn't be longer than 80 characters")}, verrs)
 			require.NoError(t, err)
 		})
 
@@ -64,7 +64,7 @@ func Test_AppVersionService_Create(t *testing.T) {
 				AppStoreInfoData: json.RawMessage(`{"full_description":"Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula e"}`),
 			}
 			_, verrs, err := appVersionService.Create(testAppVersion)
-			require.Equal(t, []error{errors.New("full_description: Must be shorter than 80 characters")}, verrs)
+			require.Equal(t, []error{errors.New("full_description: Mustn't be longer than 80 characters")}, verrs)
 			require.NoError(t, err)
 		})
 	})
@@ -76,7 +76,7 @@ func Test_AppVersionService_Create(t *testing.T) {
 				AppStoreInfoData: json.RawMessage(`{"short_description":"Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis,."}`),
 			}
 			_, verrs, err := appVersionService.Create(testAppVersion)
-			require.Equal(t, []error{errors.New("short_description: Must be shorter than 255 characters")}, verrs)
+			require.Equal(t, []error{errors.New("short_description: Mustn't be longer than 255 characters")}, verrs)
 			require.NoError(t, err)
 		})
 	})
@@ -161,12 +161,12 @@ func Test_AppVersionService_Update(t *testing.T) {
 		compareAppVersion(t, *testAppVersions[1], *foundAppVersion)
 	})
 
-	t.Run("when filesize is too big", func(t *testing.T) {
+	t.Run("when short description is longer than 80 characters", func(t *testing.T) {
 		testAppVersion := createTestAppVersion(t, &models.AppVersion{Platform: "android", Version: "v1.0"})
 		testAppVersion.AppStoreInfoData = json.RawMessage(`{"short_description":"Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula e"}`)
 		verrs, err := appVersionService.Update(testAppVersion, []string{"AppStoreInfoData"})
 		require.Equal(t, 1, len(verrs))
-		require.Equal(t, "short_description: Must be shorter than 80 characters", verrs[0].Error())
+		require.Equal(t, "short_description: Mustn't be longer than 80 characters", verrs[0].Error())
 		require.NoError(t, err)
 	})
 

@@ -73,15 +73,15 @@ func (a *AppVersion) validate(scope *gorm.Scope) error {
 	}
 	if a.Platform == "android" {
 		if len(appStoreInfo.ShortDescription) > maxCharNumberForAndroidShortDescription {
-			err = scope.DB().AddError(NewValidationError(fmt.Sprintf("short_description: Must be shorter than %d characters", maxCharNumberForAndroidShortDescription)))
+			err = scope.DB().AddError(NewValidationError(fmt.Sprintf("short_description: Mustn't be longer than %d characters", maxCharNumberForAndroidShortDescription)))
 		}
 		if len(appStoreInfo.FullDescription) > maxCharNumberForAndroidFullDescription {
-			err = scope.DB().AddError(NewValidationError(fmt.Sprintf("full_description: Must be shorter than %d characters", maxCharNumberForAndroidFullDescription)))
+			err = scope.DB().AddError(NewValidationError(fmt.Sprintf("full_description: Mustn't be longer than %d characters", maxCharNumberForAndroidFullDescription)))
 		}
 	}
 	if a.Platform == "ios" {
 		if len(appStoreInfo.ShortDescription) > maxCharNumberForIOSShortDescription {
-			err = scope.DB().AddError(NewValidationError(fmt.Sprintf("short_description: Must be shorter than %d characters", maxCharNumberForIOSShortDescription)))
+			err = scope.DB().AddError(NewValidationError(fmt.Sprintf("short_description: Mustn't be longer than %d characters", maxCharNumberForIOSShortDescription)))
 		}
 	}
 	if err != nil {
