@@ -13,7 +13,7 @@ import (
 const (
 	maxCharNumberForAndroidShortDescription = 80
 	maxCharNumberForAndroidFullDescription  = 80
-	maxCharNumberForIOSShortDescription     = 255
+	maxCharNumberForIOSFullDescription      = 255
 )
 
 // AppStoreInfo ...
@@ -80,8 +80,8 @@ func (a *AppVersion) validate(scope *gorm.Scope) error {
 		}
 	}
 	if a.Platform == "ios" {
-		if len(appStoreInfo.ShortDescription) > maxCharNumberForIOSShortDescription {
-			err = scope.DB().AddError(NewValidationError(fmt.Sprintf("short_description: Mustn't be longer than %d characters", maxCharNumberForIOSShortDescription)))
+		if len(appStoreInfo.FullDescription) > maxCharNumberForIOSFullDescription {
+			err = scope.DB().AddError(NewValidationError(fmt.Sprintf("full_description: Mustn't be longer than %d characters", maxCharNumberForIOSFullDescription)))
 		}
 	}
 	if err != nil {
