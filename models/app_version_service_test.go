@@ -88,10 +88,10 @@ func Test_AppVersionService_Create(t *testing.T) {
 		t.Run("when short description is longer, than 255 characters", func(t *testing.T) {
 			testAppVersion := &models.AppVersion{
 				Platform:         "ios",
-				AppStoreInfoData: json.RawMessage(`{"short_description":"Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis,."}`),
+				AppStoreInfoData: json.RawMessage(`{"full_description":"Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis,."}`),
 			}
 			createdAppVersion, verrs, err := appVersionService.Create(testAppVersion)
-			require.Equal(t, []error{errors.New("short_description: Mustn't be longer than 255 characters")}, verrs)
+			require.Equal(t, []error{errors.New("full_description: Mustn't be longer than 255 characters")}, verrs)
 			require.NoError(t, err)
 			require.Nil(t, createdAppVersion)
 		})
