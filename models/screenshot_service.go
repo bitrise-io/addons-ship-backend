@@ -30,7 +30,7 @@ func (s *ScreenshotService) BatchCreate(screenshots []*Screenshot) ([]*Screensho
 
 // Find ...
 func (s *ScreenshotService) Find(screenshot *Screenshot) (*Screenshot, error) {
-	err := s.DB.First(screenshot).Error
+	err := s.DB.Where(screenshot).First(screenshot).Error
 
 	if err != nil {
 		return nil, err
