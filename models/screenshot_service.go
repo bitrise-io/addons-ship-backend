@@ -78,5 +78,9 @@ func (s *ScreenshotService) Delete(screenshot *Screenshot) error {
 		return result.Error
 	}
 
+	if result.RowsAffected < 1 {
+		return gorm.ErrRecordNotFound
+	}
+
 	return nil
 }

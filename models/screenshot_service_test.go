@@ -218,3 +218,26 @@ func Test_ScreenshotService_BatchUpdate(t *testing.T) {
 		require.Equal(t, 0, len(verrs))
 	})
 }
+
+func Test_ScreenshotService_Delete(t *testing.T) {
+	dbCloseCallbackMethod := prepareDB(t)
+	defer dbCloseCallbackMethod()
+
+	screenshotService := models.ScreenshotService{DB: dataservices.GetDB()}
+
+	testScreenshot := createTestScreenshot(t, &models.Screenshot{
+		DeviceType: "iPhone XS Max",
+		ScreenSize: "6.5 inch",
+	})
+
+	t.Run("when deleting a screenshot", func(t *testing.T) {
+		err := screenshotService.Delete(&models.Screenshot{Record: models.Record{ID: testScreenshot.ID}})
+		require.NoError(t, err)
+	})
+
+	t.Run("error - when screenshot is not found", func(t *testing.T) {
+		err := screenshotService.Delete(&models.Screenshot{Record: models.Record{ID: uuid.NewV4()}})
+
+		require.Equal(t, err, gorm.ErrRecordNotFound)
+	})
+}
