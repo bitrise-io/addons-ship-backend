@@ -3,13 +3,13 @@ package services_test
 import "github.com/bitrise-io/addons-ship-backend/models"
 
 type testAppVersionService struct {
-	createFn  func(*models.AppVersion) (*models.AppVersion, error)
+	createFn  func(*models.AppVersion) (*models.AppVersion, []error, error)
 	findFn    func(*models.AppVersion) (*models.AppVersion, error)
 	findAllFn func(*models.App, map[string]interface{}) ([]models.AppVersion, error)
 	updateFn  func(*models.AppVersion, []string) (validationErrors []error, dbErr error)
 }
 
-func (a *testAppVersionService) Create(appVersion *models.AppVersion) (*models.AppVersion, error) {
+func (a *testAppVersionService) Create(appVersion *models.AppVersion) (*models.AppVersion, []error, error) {
 	if a.createFn != nil {
 		return a.createFn(appVersion)
 	}

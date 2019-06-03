@@ -20,6 +20,12 @@ func (u *UpdatableModelService) UpdateData(object interface{}, whiteList []strin
 		if err != nil {
 			return nil, errors.WithStack(err)
 		}
+		if dbFieldName == "-" {
+			dbFieldName, err = structs.GetFieldNameByAttributeNameAndTag(object, attribute, "db")
+			if err != nil {
+				return nil, errors.WithStack(err)
+			}
+		}
 		fieldValue, err := structs.GetValueByAttributeName(object, attribute)
 		if err != nil {
 			return nil, errors.WithStack(err)

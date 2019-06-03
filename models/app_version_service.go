@@ -9,8 +9,16 @@ type AppVersionService struct {
 }
 
 // Create ...
-func (a *AppVersionService) Create(appVersion *AppVersion) (*AppVersion, error) {
-	return appVersion, a.DB.Create(appVersion).Error
+func (a *AppVersionService) Create(appVersion *AppVersion) (*AppVersion, []error, error) {
+	result := a.DB.Create(appVersion)
+	verrs := ValidationErrors(result.GetErrors())
+	if len(verrs) > 0 {
+		return nil, verrs, nil
+	}
+	if result.Error != nil {
+		return nil, nil, result.Error
+	}
+	return appVersion, nil, nil
 }
 
 // Find ...
