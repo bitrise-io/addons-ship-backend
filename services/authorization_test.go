@@ -361,7 +361,7 @@ func Test_AuthorizeForAppVersionAccessHandlerFunc(t *testing.T) {
 			},
 			expectedStatusCode: http.StatusBadRequest,
 			expectedResponse: map[string]interface{}{
-				"message": "App Version ID not provided",
+				"message": "Failed to fetch URL param version-id",
 			},
 		})
 	})
@@ -391,7 +391,7 @@ func Test_AuthorizeForAppVersionAccessHandlerFunc(t *testing.T) {
 			},
 			expectedStatusCode: http.StatusBadRequest,
 			expectedResponse: map[string]interface{}{
-				"message": "App Version ID has invalid format",
+				"message": "Invalid UUID format for version-id",
 			},
 		})
 	})
@@ -466,6 +466,180 @@ func Test_AuthorizeForAppVersionAccessHandlerFunc(t *testing.T) {
 			requestHeaders: map[string]string{
 				"Authorization": "token test-auth-token",
 			},
+			expectedStatusCode: http.StatusInternalServerError,
+			expectedResponse: map[string]interface{}{
+				"message": "Internal Server Error",
+			},
+		})
+	})
+}
+
+func Test_AuthorizeForAppVersionScreenshotAccessHandlerFunc(t *testing.T) {
+	authHandler := &handlers.TestAuthHandler{
+		ContextElementList: map[string]ctxpkg.RequestContextKey{
+			"authorizedAppID":        services.ContextKeyAuthorizedAppID,
+			"authorizedAppVersionID": services.ContextKeyAuthorizedAppVersionID,
+			"authorizedScreenshotID": services.ContextKeyAuthorizedScreenshotID,
+		},
+	}
+	httpMethod := "GET"
+	url := "/apps/test_app_slug/versions/version_uuid/screenshots/screenshot_uuid"
+
+	testAppID := "211afc15-127a-40f9-8cbe-1dadc1f86cdf"
+	testAppVersionID := "de438ddc-98e5-4226-a5f4-fd2d53474879"
+	testScreenshotID := "123afc15-127a-40f9-8cbe-1dadc1f86cdf"
+	validRequestParams := &providers.RequestParamsMock{
+		Params: map[string]string{
+			"version-id":    testAppVersionID,
+			"screenshot-id": testScreenshotID,
+		},
+	}
+
+	successfulTestScreenshotService := &testScreenshotService{
+		findFn: func(screenshot *models.Screenshot) (*models.Screenshot, error) {
+			require.Equal(t, screenshot.AppVersionID.String(), testAppVersionID)
+			require.Equal(t, screenshot.ID.String(), testScreenshotID)
+
+			return &models.Screenshot{
+				Record: models.Record{ID: uuid.FromStringOrNil(testScreenshotID)},
+			}, nil
+		},
+	}
+
+	testRequestHeaders := map[string]string{
+		"Authorization": "token test-auth-token",
+	}
+
+	t.Run("ok", func(t *testing.T) {
+		handler := services.AuthorizeForAppVersionScreenshotAccessHandlerFunc(&env.AppEnv{
+			RequestParams:     validRequestParams,
+			ScreenshotService: successfulTestScreenshotService,
+		}, authHandler)
+		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppID:        uuid.FromStringOrNil(testAppID),
+				services.ContextKeyAuthorizedAppVersionID: uuid.FromStringOrNil(testAppVersionID),
+				services.ContextKeyAuthorizedScreenshotID: uuid.FromStringOrNil(testScreenshotID),
+			},
+			requestHeaders:     testRequestHeaders,
+			expectedStatusCode: http.StatusOK,
+			expectedResponse: map[string]interface{}{
+				"authorizedAppID":        testAppID,
+				"authorizedAppVersionID": testAppVersionID,
+				"authorizedScreenshotID": testScreenshotID,
+			},
+		})
+	})
+
+	t.Run("when no Request Params object is provided", func(t *testing.T) {
+		handler := services.AuthorizeForAppVersionScreenshotAccessHandlerFunc(&env.AppEnv{
+			ScreenshotService: successfulTestScreenshotService,
+		}, authHandler)
+		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppVersionID: uuid.FromStringOrNil(testAppVersionID),
+			},
+			requestHeaders:     testRequestHeaders,
+			expectedStatusCode: http.StatusInternalServerError,
+			expectedResponse: map[string]interface{}{
+				"message": "Internal Server Error",
+			},
+		})
+	})
+
+	t.Run("when no screenshot id found in url params", func(t *testing.T) {
+		handler := services.AuthorizeForAppVersionScreenshotAccessHandlerFunc(&env.AppEnv{
+			RequestParams: &providers.RequestParamsMock{
+				Params: map[string]string{},
+			},
+			ScreenshotService: successfulTestScreenshotService,
+		}, authHandler)
+		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppVersionID: uuid.FromStringOrNil(testAppVersionID),
+			},
+			requestHeaders:     testRequestHeaders,
+			expectedStatusCode: http.StatusBadRequest,
+			expectedResponse: map[string]interface{}{
+				"message": "Failed to fetch URL param screenshot-id",
+			},
+		})
+	})
+
+	t.Run("when no valid app version id found in url params", func(t *testing.T) {
+		handler := services.AuthorizeForAppVersionScreenshotAccessHandlerFunc(&env.AppEnv{
+			RequestParams: &providers.RequestParamsMock{
+				Params: map[string]string{
+					"screenshot-id": "invalid-uuid",
+				},
+			},
+			ScreenshotService: successfulTestScreenshotService,
+		}, authHandler)
+		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppVersionID: uuid.FromStringOrNil(testAppVersionID),
+			},
+			requestHeaders:     testRequestHeaders,
+			expectedStatusCode: http.StatusBadRequest,
+			expectedResponse: map[string]interface{}{
+				"message": "Invalid UUID format for screenshot-id",
+			},
+		})
+	})
+
+	t.Run("when no screenshot service is provided in app env", func(t *testing.T) {
+		handler := services.AuthorizeForAppVersionScreenshotAccessHandlerFunc(&env.AppEnv{
+			RequestParams: validRequestParams,
+		}, authHandler)
+		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppVersionID: uuid.FromStringOrNil(testAppVersionID),
+			},
+			requestHeaders:     testRequestHeaders,
+			expectedStatusCode: http.StatusInternalServerError,
+			expectedResponse: map[string]interface{}{
+				"message": "Internal Server Error",
+			},
+		})
+	})
+
+	t.Run("when app not found in database", func(t *testing.T) {
+		handler := services.AuthorizeForAppVersionScreenshotAccessHandlerFunc(&env.AppEnv{
+			RequestParams: validRequestParams,
+			ScreenshotService: &testScreenshotService{
+				findFn: func(screenshot *models.Screenshot) (*models.Screenshot, error) {
+					require.Equal(t, screenshot.ID.String(), testScreenshotID)
+					return &models.Screenshot{}, gorm.ErrRecordNotFound
+				},
+			},
+		}, authHandler)
+		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppVersionID: uuid.FromStringOrNil(testAppVersionID),
+			},
+			requestHeaders:     testRequestHeaders,
+			expectedStatusCode: http.StatusNotFound,
+			expectedResponse: map[string]interface{}{
+				"message": "Not Found",
+			},
+		})
+	})
+
+	t.Run("when unexpected error happens at database query", func(t *testing.T) {
+		handler := services.AuthorizeForAppVersionScreenshotAccessHandlerFunc(&env.AppEnv{
+			RequestParams: validRequestParams,
+			ScreenshotService: &testScreenshotService{
+				findFn: func(screenshot *models.Screenshot) (*models.Screenshot, error) {
+					require.Equal(t, screenshot.ID.String(), testScreenshotID)
+					return &models.Screenshot{}, errors.New("SOME-SQL-ERROR")
+				},
+			},
+		}, authHandler)
+		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppVersionID: uuid.FromStringOrNil(testAppVersionID),
+			},
+			requestHeaders:     testRequestHeaders,
 			expectedStatusCode: http.StatusInternalServerError,
 			expectedResponse: map[string]interface{}{
 				"message": "Internal Server Error",
