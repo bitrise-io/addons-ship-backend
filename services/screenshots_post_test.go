@@ -84,7 +84,7 @@ func Test_ScreenshotsPostHandler(t *testing.T) {
 
 						require.Equal(t, &models.Screenshot{
 							AppVersionID: appVersionID,
-							Uploadable: models.Uploadable{
+							UploadableObject: models.UploadableObject{
 								Filename: "screenshot.png",
 								Filesize: 1234,
 							},
@@ -93,7 +93,7 @@ func Test_ScreenshotsPostHandler(t *testing.T) {
 						}, screenshots[0])
 						require.Equal(t, &models.Screenshot{
 							AppVersionID: appVersionID,
-							Uploadable: models.Uploadable{
+							UploadableObject: models.UploadableObject{
 								Filename: "screenshot2.png",
 								Filesize: 4321,
 							},
@@ -103,20 +103,20 @@ func Test_ScreenshotsPostHandler(t *testing.T) {
 
 						return []*models.Screenshot{
 							&models.Screenshot{
-								Record:     models.Record{ID: testScreenshotUUID1},
-								Uploadable: models.Uploadable{Filename: "screenshot.png"},
-								DeviceType: "iPhone XS Max",
-								ScreenSize: "6.5 inch",
+								Record:           models.Record{ID: testScreenshotUUID1},
+								UploadableObject: models.UploadableObject{Filename: "screenshot.png"},
+								DeviceType:       "iPhone XS Max",
+								ScreenSize:       "6.5 inch",
 								AppVersion: models.AppVersion{
 									Record: models.Record{ID: appVersionID},
 									App:    models.App{AppSlug: "test-app-slug"},
 								},
 							},
 							&models.Screenshot{
-								Record:     models.Record{ID: testScreenshotUUID2},
-								Uploadable: models.Uploadable{Filename: "screenshot2.png"},
-								DeviceType: "iPhone XS",
-								ScreenSize: "5.5 inch",
+								Record:           models.Record{ID: testScreenshotUUID2},
+								UploadableObject: models.UploadableObject{Filename: "screenshot2.png"},
+								DeviceType:       "iPhone XS",
+								ScreenSize:       "5.5 inch",
 								AppVersion: models.AppVersion{
 									Record: models.Record{ID: appVersionID},
 									App:    models.App{AppSlug: "test-app-slug"},
@@ -140,19 +140,19 @@ func Test_ScreenshotsPostHandler(t *testing.T) {
 				Data: []services.ScreenshotData{
 					services.ScreenshotData{
 						Screenshot: models.Screenshot{
-							Record:     models.Record{ID: testScreenshotUUID1},
-							Uploadable: models.Uploadable{Filename: "screenshot.png"},
-							DeviceType: "iPhone XS Max",
-							ScreenSize: "6.5 inch",
+							Record:           models.Record{ID: testScreenshotUUID1},
+							UploadableObject: models.UploadableObject{Filename: "screenshot.png"},
+							DeviceType:       "iPhone XS Max",
+							ScreenSize:       "6.5 inch",
 						},
 						UploadURL: "http://presigned.aws.url/test-app-slug/de438ddc-98e5-4226-a5f4-fd2d53474879/iPhone XS Max (6.5 inch)/42156ba6-3473-493f-ba08-6d74d26c320e.png",
 					},
 					services.ScreenshotData{
 						Screenshot: models.Screenshot{
-							Record:     models.Record{ID: testScreenshotUUID2},
-							Uploadable: models.Uploadable{Filename: "screenshot2.png"},
-							DeviceType: "iPhone XS",
-							ScreenSize: "5.5 inch",
+							Record:           models.Record{ID: testScreenshotUUID2},
+							UploadableObject: models.UploadableObject{Filename: "screenshot2.png"},
+							DeviceType:       "iPhone XS",
+							ScreenSize:       "5.5 inch",
 						},
 						UploadURL: "http://presigned.aws.url/test-app-slug/de438ddc-98e5-4226-a5f4-fd2d53474879/iPhone XS (5.5 inch)/9f235109-34fb-476d-a081-c28047d1d025.png",
 					},
@@ -245,18 +245,18 @@ func Test_ScreenshotsPostHandler(t *testing.T) {
 						appVersionID := uuid.FromStringOrNil("de438ddc-98e5-4226-a5f4-fd2d53474879")
 						return []*models.Screenshot{
 							&models.Screenshot{
-								Uploadable: models.Uploadable{Filename: "screenshot.png"},
-								DeviceType: "iPhone XS Max",
-								ScreenSize: "6.5 inch",
+								UploadableObject: models.UploadableObject{Filename: "screenshot.png"},
+								DeviceType:       "iPhone XS Max",
+								ScreenSize:       "6.5 inch",
 								AppVersion: models.AppVersion{
 									Record: models.Record{ID: appVersionID},
 									App:    models.App{AppSlug: "test-app-slug"},
 								},
 							},
 							&models.Screenshot{
-								Uploadable: models.Uploadable{Filename: "screenshot2.png"},
-								DeviceType: "iPhone XS",
-								ScreenSize: "5.5 inch",
+								UploadableObject: models.UploadableObject{Filename: "screenshot2.png"},
+								DeviceType:       "iPhone XS",
+								ScreenSize:       "5.5 inch",
 								AppVersion: models.AppVersion{
 									Record: models.Record{ID: appVersionID},
 									App:    models.App{AppSlug: "test-app-slug"},

@@ -19,7 +19,7 @@ const (
 // Screenshot ...
 type Screenshot struct {
 	Record
-	Uploadable
+	UploadableObject
 	DeviceType string `json:"device_type"`
 	ScreenSize string `json:"screen_size"`
 

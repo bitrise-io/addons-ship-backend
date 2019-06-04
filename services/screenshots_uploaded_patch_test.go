@@ -91,7 +91,7 @@ func Test_ScreenshotsUploadedPatchHandler(t *testing.T) {
 						return []models.Screenshot{
 							models.Screenshot{
 								Record:     models.Record{ID: testScreenshotUUID1},
-								Uploadable: models.Uploadable{Filename: "screenshot.png"},
+								UploadableObject: models.UploadableObject{Filename: "screenshot.png"},
 								DeviceType: "iPhone XS Max",
 								ScreenSize: "6.5 inch",
 								AppVersion: models.AppVersion{
@@ -101,7 +101,7 @@ func Test_ScreenshotsUploadedPatchHandler(t *testing.T) {
 							},
 							models.Screenshot{
 								Record:     models.Record{ID: testScreenshotUUID2},
-								Uploadable: models.Uploadable{Filename: "screenshot2.png"},
+								UploadableObject: models.UploadableObject{Filename: "screenshot2.png"},
 								DeviceType: "iPhone XS",
 								ScreenSize: "5.5 inch",
 								AppVersion: models.AppVersion{
@@ -117,7 +117,7 @@ func Test_ScreenshotsUploadedPatchHandler(t *testing.T) {
 						require.Equal(t, []string{"Uploaded"}, whitelist)
 						require.Equal(t, models.Screenshot{
 							Record: models.Record{ID: testScreenshotUUID1},
-							Uploadable: models.Uploadable{
+							UploadableObject: models.UploadableObject{
 								Filename: "screenshot.png",
 								Uploaded: true,
 							},
@@ -130,7 +130,7 @@ func Test_ScreenshotsUploadedPatchHandler(t *testing.T) {
 						}, screenshots[0])
 						require.Equal(t, models.Screenshot{
 							Record: models.Record{ID: testScreenshotUUID2},
-							Uploadable: models.Uploadable{
+							UploadableObject: models.UploadableObject{
 								Filename: "screenshot2.png",
 								Uploaded: true,
 							},
@@ -157,7 +157,7 @@ func Test_ScreenshotsUploadedPatchHandler(t *testing.T) {
 					services.ScreenshotData{
 						Screenshot: models.Screenshot{
 							Record: models.Record{ID: testScreenshotUUID1},
-							Uploadable: models.Uploadable{
+							UploadableObject: models.UploadableObject{
 								Filename: "screenshot.png",
 								Uploaded: true,
 							},
@@ -169,7 +169,7 @@ func Test_ScreenshotsUploadedPatchHandler(t *testing.T) {
 					services.ScreenshotData{
 						Screenshot: models.Screenshot{
 							Record: models.Record{ID: testScreenshotUUID2},
-							Uploadable: models.Uploadable{
+							UploadableObject: models.UploadableObject{
 								Filename: "screenshot2.png",
 								Uploaded: true,
 							},

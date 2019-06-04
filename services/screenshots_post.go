@@ -72,7 +72,7 @@ func screenshotCreateParamsFromRequestParams(params []screenshotsPostParamsEleme
 	for _, param := range params {
 		createParams = append(createParams, &models.Screenshot{
 			AppVersionID: appVersionID,
-			Uploadable: models.Uploadable{
+			UploadableObject: models.UploadableObject{
 				Filename: param.Filename,
 				Filesize: param.Filesize,
 			},

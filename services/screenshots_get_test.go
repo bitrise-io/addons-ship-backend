@@ -80,7 +80,7 @@ func Test_ScreenshotsGetHandler(t *testing.T) {
 						return []models.Screenshot{
 							models.Screenshot{
 								Record:     models.Record{ID: testScreenshotUUID1},
-								Uploadable: models.Uploadable{Filename: "screenshot.png"},
+								UploadableObject: models.UploadableObject{Filename: "screenshot.png"},
 								DeviceType: "iPhone XS Max",
 								ScreenSize: "6.5 inch",
 								AppVersion: models.AppVersion{
@@ -90,7 +90,7 @@ func Test_ScreenshotsGetHandler(t *testing.T) {
 							},
 							models.Screenshot{
 								Record:     models.Record{ID: testScreenshotUUID2},
-								Uploadable: models.Uploadable{Filename: "screenshot2.png"},
+								UploadableObject: models.UploadableObject{Filename: "screenshot2.png"},
 								DeviceType: "iPhone XS",
 								ScreenSize: "5.5 inch",
 								AppVersion: models.AppVersion{
@@ -113,7 +113,7 @@ func Test_ScreenshotsGetHandler(t *testing.T) {
 					services.ScreenshotData{
 						Screenshot: models.Screenshot{
 							Record:     models.Record{ID: testScreenshotUUID1},
-							Uploadable: models.Uploadable{Filename: "screenshot.png"},
+							UploadableObject: models.UploadableObject{Filename: "screenshot.png"},
 							DeviceType: "iPhone XS Max",
 							ScreenSize: "6.5 inch",
 						},
@@ -122,7 +122,7 @@ func Test_ScreenshotsGetHandler(t *testing.T) {
 					services.ScreenshotData{
 						Screenshot: models.Screenshot{
 							Record:     models.Record{ID: testScreenshotUUID2},
-							Uploadable: models.Uploadable{Filename: "screenshot2.png"},
+							UploadableObject: models.UploadableObject{Filename: "screenshot2.png"},
 							DeviceType: "iPhone XS",
 							ScreenSize: "5.5 inch",
 						},

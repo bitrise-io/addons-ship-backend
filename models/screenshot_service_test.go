@@ -23,7 +23,7 @@ func Test_ScreenshotService_BatchCreate(t *testing.T) {
 	t.Run("ok", func(t *testing.T) {
 		testScreenshots := []*models.Screenshot{
 			&models.Screenshot{
-				Uploadable: models.Uploadable{
+				UploadableObject: models.UploadableObject{
 					Filename: "screenshot.png",
 					Filesize: 1234,
 				},
@@ -40,7 +40,7 @@ func Test_ScreenshotService_BatchCreate(t *testing.T) {
 	t.Run("when filesize is too big", func(t *testing.T) {
 		testScreenshot := []*models.Screenshot{
 			&models.Screenshot{
-				Uploadable: models.Uploadable{
+				UploadableObject: models.UploadableObject{
 					Filename: "screenshot.png",
 					Filesize: models.MaxScreenshotFileByteSize + 1,
 				},
@@ -61,14 +61,14 @@ func Test_ScreenshotService_BatchCreate(t *testing.T) {
 		testScreenshots := []*models.Screenshot{
 			&models.Screenshot{
 				AppVersion: *testAppVersion,
-				Uploadable: models.Uploadable{
+				UploadableObject: models.UploadableObject{
 					Filename: "screenshot.png",
 					Filesize: 1234,
 				},
 			},
 			&models.Screenshot{
 				AppVersion: *testAppVersion,
-				Uploadable: models.Uploadable{
+				UploadableObject: models.UploadableObject{
 					Filename: "screenshot.png",
 					Filesize: models.MaxScreenshotFileByteSize + 1,
 				},
@@ -169,16 +169,16 @@ func Test_ScreenshotService_BatchUpdate(t *testing.T) {
 		}
 		testScreenshotsOfVersion1 := []models.Screenshot{
 			*createTestScreenshot(t, &models.Screenshot{
-				Uploadable: models.Uploadable{Filename: "screenshot1.png"},
+				UploadableObject: models.UploadableObject{Filename: "screenshot1.png"},
 				AppVersion: *testAppVersions[0],
 			}),
 			*createTestScreenshot(t, &models.Screenshot{
-				Uploadable: models.Uploadable{Filename: "screenshot2.png"},
+				UploadableObject: models.UploadableObject{Filename: "screenshot2.png"},
 				AppVersion: *testAppVersions[0],
 			}),
 		}
 		createTestScreenshot(t, &models.Screenshot{
-			Uploadable: models.Uploadable{Filename: "screenshot3.png"},
+			UploadableObject: models.UploadableObject{Filename: "screenshot3.png"},
 			AppVersion: *testAppVersions[1],
 		})
 
@@ -203,7 +203,7 @@ func Test_ScreenshotService_BatchUpdate(t *testing.T) {
 	t.Run("when filesize is too big", func(t *testing.T) {
 		testScreenshots := []models.Screenshot{
 			*createTestScreenshot(t, &models.Screenshot{
-				Uploadable: models.Uploadable{
+				UploadableObject: models.UploadableObject{
 					Filename: "screenshot1.png",
 					Filesize: 1234,
 				},
@@ -219,7 +219,7 @@ func Test_ScreenshotService_BatchUpdate(t *testing.T) {
 	t.Run("when trying to update non-existing field", func(t *testing.T) {
 		testScreenshots := []models.Screenshot{
 			*createTestScreenshot(t, &models.Screenshot{
-				Uploadable: models.Uploadable{
+				UploadableObject: models.UploadableObject{
 					Filename: "screenshot1.png",
 					Filesize: 1234,
 				},

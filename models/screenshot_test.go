@@ -11,7 +11,7 @@ import (
 func Test_Screenshot_AWSPath(t *testing.T) {
 	testScreenshot := models.Screenshot{
 		Record:     models.Record{ID: uuid.FromStringOrNil("42156ba6-3473-493f-ba08-6d74d26c320e")},
-		Uploadable: models.Uploadable{Filename: "screenshot1.png"},
+		UploadableObject: models.UploadableObject{Filename: "screenshot1.png"},
 		DeviceType: "iPhone XS Max",
 		ScreenSize: "6.5 inch",
 		AppVersion: models.AppVersion{
