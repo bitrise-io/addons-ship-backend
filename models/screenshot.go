@@ -18,9 +18,7 @@ const (
 // Screenshot ...
 type Screenshot struct {
 	Record
-	Filename   string `json:"filename"`
-	Filesize   int64  `json:"filesize"`
-	Uploaded   bool   `json:"uploaded"`
+	Uploadable
 	DeviceType string `json:"device_type"`
 	ScreenSize string `json:"screen_size"`
 

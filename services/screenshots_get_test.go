@@ -76,7 +76,7 @@ func Test_ScreenshotsGetHandler(t *testing.T) {
 						require.Equal(t, appVersion.ID.String(), "de438ddc-98e5-4226-a5f4-fd2d53474879")
 						return []models.Screenshot{
 							models.Screenshot{
-								Filename:   "screenshot.png",
+								Uploadable: models.Uploadable{Filename: "screenshot.png"},
 								DeviceType: "iPhone XS Max",
 								ScreenSize: "6.5 inch",
 								AppVersion: models.AppVersion{
@@ -85,7 +85,7 @@ func Test_ScreenshotsGetHandler(t *testing.T) {
 								},
 							},
 							models.Screenshot{
-								Filename:   "screenshot2.png",
+								Uploadable: models.Uploadable{Filename: "screenshot2.png"},
 								DeviceType: "iPhone XS",
 								ScreenSize: "5.5 inch",
 								AppVersion: models.AppVersion{
@@ -107,7 +107,7 @@ func Test_ScreenshotsGetHandler(t *testing.T) {
 				Data: []services.ScreenshotData{
 					services.ScreenshotData{
 						Screenshot: models.Screenshot{
-							Filename:   "screenshot.png",
+							Uploadable: models.Uploadable{Filename: "screenshot.png"},
 							DeviceType: "iPhone XS Max",
 							ScreenSize: "6.5 inch",
 						},
@@ -115,7 +115,7 @@ func Test_ScreenshotsGetHandler(t *testing.T) {
 					},
 					services.ScreenshotData{
 						Screenshot: models.Screenshot{
-							Filename:   "screenshot2.png",
+							Uploadable: models.Uploadable{Filename: "screenshot2.png"},
 							DeviceType: "iPhone XS",
 							ScreenSize: "5.5 inch",
 						},

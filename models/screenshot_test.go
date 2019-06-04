@@ -10,7 +10,7 @@ import (
 
 func Test_Screenshot_AWSPath(t *testing.T) {
 	testScreenshot := models.Screenshot{
-		Filename:   "screenshot1.png",
+		Uploadable: models.Uploadable{Filename: "screenshot1.png"},
 		DeviceType: "iPhone XS Max",
 		ScreenSize: "6.5 inch",
 		AppVersion: models.AppVersion{

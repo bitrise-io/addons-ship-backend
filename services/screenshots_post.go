@@ -72,10 +72,12 @@ func screenshotCreateParamsFromRequestParams(params []screenshotsPostParamsEleme
 	for _, param := range params {
 		createParams = append(createParams, &models.Screenshot{
 			AppVersionID: appVersionID,
-			Filename:     param.Filename,
-			Filesize:     param.Filesize,
-			DeviceType:   param.DeviceType,
-			ScreenSize:   param.ScreenSize,
+			Uploadable: models.Uploadable{
+				Filename: param.Filename,
+				Filesize: param.Filesize,
+			},
+			DeviceType: param.DeviceType,
+			ScreenSize: param.ScreenSize,
 		})
 	}
 	return createParams
