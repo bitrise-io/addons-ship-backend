@@ -47,7 +47,7 @@ func (f *FeatureGraphic) validate(scope *gorm.Scope, action string) error {
 	}
 	if action == "create" {
 		var featureGraphicCnt int64
-		err = scope.DB().Where(&FeatureGraphic{AppVersionID: f.AppVersionID}).Count(&featureGraphicCnt).Error
+		err = scope.DB().Model(&FeatureGraphic{}).Where("app_version_id = ?", f.AppVersionID).Count(&featureGraphicCnt).Error
 		if featureGraphicCnt > 0 {
 			err = scope.DB().AddError(NewValidationError("feature_graphics: Maximum count of feature graphics is 1"))
 		}

@@ -20,3 +20,13 @@ func (s *FeatureGraphicService) Create(featureGraphic *FeatureGraphic) (*Feature
 	}
 	return featureGraphic, nil, nil
 }
+
+// Find ...
+func (s *FeatureGraphicService) Find(featureGraphic *FeatureGraphic) (*FeatureGraphic, error) {
+	err := s.DB.Where(featureGraphic).First(featureGraphic).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return featureGraphic, nil
+}
