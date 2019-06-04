@@ -187,3 +187,27 @@ func Test_FeatureGraphicService_Update(t *testing.T) {
 		require.Equal(t, 0, len(verrs))
 	})
 }
+
+func Test_FeatureGraphicService_Delete(t *testing.T) {
+	dbCloseCallbackMethod := prepareDB(t)
+	defer dbCloseCallbackMethod()
+
+	featureGraphicService := models.FeatureGraphicService{DB: dataservices.GetDB()}
+
+	testFeatureGraphic := *createTestFeatureGraphic(t, &models.FeatureGraphic{
+		UploadableObject: models.UploadableObject{
+			Filename: "screenshot1.png",
+			Filesize: 1234,
+		},
+	})
+
+	t.Run("when deleting a feature graphic", func(t *testing.T) {
+		err := featureGraphicService.Delete(&models.FeatureGraphic{Record: models.Record{ID: testFeatureGraphic.ID}})
+		require.NoError(t, err)
+	})
+
+	t.Run("error - when feature graphic is not found", func(t *testing.T) {
+		err := featureGraphicService.Delete(&models.FeatureGraphic{Record: models.Record{ID: uuid.NewV4()}})
+		require.Equal(t, err, gorm.ErrRecordNotFound)
+	})
+}
