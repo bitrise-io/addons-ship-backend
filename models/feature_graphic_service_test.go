@@ -122,3 +122,68 @@ func Test_FeatureGraphicService_Find(t *testing.T) {
 		require.Nil(t, foundFeatureGraphic)
 	})
 }
+
+func Test_FeatureGraphicService_Update(t *testing.T) {
+	dbCloseCallbackMethod := prepareDB(t)
+	defer dbCloseCallbackMethod()
+
+	featureGraphicService := models.FeatureGraphicService{DB: dataservices.GetDB()}
+
+	t.Run("ok", func(t *testing.T) {
+		testAppVersions := []*models.AppVersion{
+			createTestAppVersion(t, &models.AppVersion{Platform: "iOS", Version: "v1.0"}),
+			createTestAppVersion(t, &models.AppVersion{Platform: "Android", Version: "v1.2"}),
+		}
+		testFeatureGraphicToUpdate := *createTestFeatureGraphic(t, &models.FeatureGraphic{
+			UploadableObject: models.UploadableObject{Filename: "screenshot1.png"},
+			AppVersion:       *testAppVersions[0],
+		})
+		testFeatureGraphicNotToUpdate := createTestFeatureGraphic(t, &models.FeatureGraphic{
+			UploadableObject: models.UploadableObject{Filename: "screenshot3.png"},
+			AppVersion:       *testAppVersions[1],
+		})
+
+		testFeatureGraphicToUpdate.Uploaded = true
+		verrs, err := featureGraphicService.Update(testFeatureGraphicToUpdate, []string{"Uploaded"})
+		require.Empty(t, verrs)
+		require.NoError(t, err)
+
+		t.Log("check if feature graphic got updated")
+		foundFeatureGraphic, err := featureGraphicService.Find(&models.FeatureGraphic{Record: models.Record{ID: testFeatureGraphicToUpdate.ID}})
+		require.NoError(t, err)
+		require.True(t, foundFeatureGraphic.Uploaded)
+
+		t.Log("check if no other feature graphics were updated")
+		foundFeatureGraphic, err = featureGraphicService.Find(&models.FeatureGraphic{Record: models.Record{ID: testFeatureGraphicNotToUpdate.ID}})
+		require.NoError(t, err)
+		require.False(t, foundFeatureGraphic.Uploaded)
+	})
+
+	t.Run("when filesize is too big", func(t *testing.T) {
+		testAppVersion := createTestAppVersion(t, &models.AppVersion{
+			AppID:    uuid.NewV4(),
+			Platform: "iOS",
+		})
+		testFeatureGraphicToUpdate := *createTestFeatureGraphic(t, &models.FeatureGraphic{
+			UploadableObject: models.UploadableObject{Filename: "screenshot1.png", Filesize: 1234},
+			AppVersion:       *testAppVersion,
+		})
+		testFeatureGraphicToUpdate.Filesize = models.MaxFeatureGraphicFileByteSize + 1
+		verrs, err := featureGraphicService.Update(testFeatureGraphicToUpdate, []string{"Filesize"})
+		require.Equal(t, 1, len(verrs))
+		require.Equal(t, "filesize: Must be smaller than 10 megabytes", verrs[0].Error())
+		require.NoError(t, err)
+	})
+
+	t.Run("when trying to update non-existing field", func(t *testing.T) {
+		testFeatureGraphicToUpdate := *createTestFeatureGraphic(t, &models.FeatureGraphic{
+			UploadableObject: models.UploadableObject{
+				Filename: "screenshot1.png",
+				Filesize: 1234,
+			},
+		})
+		verrs, err := featureGraphicService.Update(testFeatureGraphicToUpdate, []string{"NonExistingField"})
+		require.EqualError(t, err, "Attribute name doesn't exist in the model")
+		require.Equal(t, 0, len(verrs))
+	})
+}

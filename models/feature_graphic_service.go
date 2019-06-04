@@ -30,3 +30,20 @@ func (s *FeatureGraphicService) Find(featureGraphic *FeatureGraphic) (*FeatureGr
 
 	return featureGraphic, nil
 }
+
+// Update ...
+func (s *FeatureGraphicService) Update(featureGraphic FeatureGraphic, whitelist []string) ([]error, error) {
+	updateData, err := s.UpdateData(featureGraphic, whitelist)
+	if err != nil {
+		return nil, err
+	}
+	result := s.DB.Model(&featureGraphic).Updates(updateData)
+	verrs := ValidationErrors(result.GetErrors())
+	if len(verrs) > 0 {
+		return verrs, nil
+	}
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return nil, nil
+}
