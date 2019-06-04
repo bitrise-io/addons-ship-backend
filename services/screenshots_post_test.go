@@ -70,6 +70,9 @@ func Test_ScreenshotsPostHandler(t *testing.T) {
 	})
 
 	t.Run("ok - more complex", func(t *testing.T) {
+		testScreenshotUUID1 := uuid.FromStringOrNil("42156ba6-3473-493f-ba08-6d74d26c320e")
+		testScreenshotUUID2 := uuid.FromStringOrNil("9f235109-34fb-476d-a081-c28047d1d025")
+
 		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
 			contextElements: map[ctxpkg.RequestContextKey]interface{}{
 				services.ContextKeyAuthorizedAppVersionID: uuid.FromStringOrNil("de438ddc-98e5-4226-a5f4-fd2d53474879"),
@@ -100,6 +103,7 @@ func Test_ScreenshotsPostHandler(t *testing.T) {
 
 						return []*models.Screenshot{
 							&models.Screenshot{
+								Record:     models.Record{ID: testScreenshotUUID1},
 								Uploadable: models.Uploadable{Filename: "screenshot.png"},
 								DeviceType: "iPhone XS Max",
 								ScreenSize: "6.5 inch",
@@ -109,6 +113,7 @@ func Test_ScreenshotsPostHandler(t *testing.T) {
 								},
 							},
 							&models.Screenshot{
+								Record:     models.Record{ID: testScreenshotUUID2},
 								Uploadable: models.Uploadable{Filename: "screenshot2.png"},
 								DeviceType: "iPhone XS",
 								ScreenSize: "5.5 inch",
@@ -135,19 +140,21 @@ func Test_ScreenshotsPostHandler(t *testing.T) {
 				Data: []services.ScreenshotData{
 					services.ScreenshotData{
 						Screenshot: models.Screenshot{
+							Record:     models.Record{ID: testScreenshotUUID1},
 							Uploadable: models.Uploadable{Filename: "screenshot.png"},
 							DeviceType: "iPhone XS Max",
 							ScreenSize: "6.5 inch",
 						},
-						UploadURL: "http://presigned.aws.url/test-app-slug/de438ddc-98e5-4226-a5f4-fd2d53474879/iPhone XS Max (6.5 inch)/screenshot.png",
+						UploadURL: "http://presigned.aws.url/test-app-slug/de438ddc-98e5-4226-a5f4-fd2d53474879/iPhone XS Max (6.5 inch)/42156ba6-3473-493f-ba08-6d74d26c320e.png",
 					},
 					services.ScreenshotData{
 						Screenshot: models.Screenshot{
+							Record:     models.Record{ID: testScreenshotUUID2},
 							Uploadable: models.Uploadable{Filename: "screenshot2.png"},
 							DeviceType: "iPhone XS",
 							ScreenSize: "5.5 inch",
 						},
-						UploadURL: "http://presigned.aws.url/test-app-slug/de438ddc-98e5-4226-a5f4-fd2d53474879/iPhone XS (5.5 inch)/screenshot2.png",
+						UploadURL: "http://presigned.aws.url/test-app-slug/de438ddc-98e5-4226-a5f4-fd2d53474879/iPhone XS (5.5 inch)/9f235109-34fb-476d-a081-c28047d1d025.png",
 					},
 				},
 			},

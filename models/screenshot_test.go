@@ -10,6 +10,7 @@ import (
 
 func Test_Screenshot_AWSPath(t *testing.T) {
 	testScreenshot := models.Screenshot{
+		Record:     models.Record{ID: uuid.FromStringOrNil("42156ba6-3473-493f-ba08-6d74d26c320e")},
 		Uploadable: models.Uploadable{Filename: "screenshot1.png"},
 		DeviceType: "iPhone XS Max",
 		ScreenSize: "6.5 inch",
@@ -21,5 +22,5 @@ func Test_Screenshot_AWSPath(t *testing.T) {
 		},
 	}
 
-	require.Equal(t, "test-app-slug/de438ddc-98e5-4226-a5f4-fd2d53474879/iPhone XS Max (6.5 inch)/screenshot1.png", testScreenshot.AWSPath())
+	require.Equal(t, "test-app-slug/de438ddc-98e5-4226-a5f4-fd2d53474879/iPhone XS Max (6.5 inch)/42156ba6-3473-493f-ba08-6d74d26c320e.png", testScreenshot.AWSPath())
 }

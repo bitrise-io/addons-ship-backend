@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"path/filepath"
 	"strings"
 
 	"github.com/bitrise-io/api-utils/constants"
@@ -58,7 +59,7 @@ func (s *Screenshot) AWSPath() string {
 		s.AppVersion.App.AppSlug,
 		s.AppVersion.ID.String(),
 		fmt.Sprintf("%s (%s)", s.DeviceType, s.ScreenSize),
-		s.Filename,
+		s.ID.String() + filepath.Ext(s.Filename),
 	}
 	return strings.Join(pathElements, "/")
 }
