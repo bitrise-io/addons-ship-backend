@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"path/filepath"
 	"strings"
 
 	"github.com/bitrise-io/api-utils/constants"
@@ -18,9 +19,7 @@ const (
 // Screenshot ...
 type Screenshot struct {
 	Record
-	Filename   string `json:"filename"`
-	Filesize   int64  `json:"filesize"`
-	Uploaded   bool   `json:"uploaded"`
+	UploadableObject
 	DeviceType string `json:"device_type"`
 	ScreenSize string `json:"screen_size"`
 
@@ -60,7 +59,7 @@ func (s *Screenshot) AWSPath() string {
 		s.AppVersion.App.AppSlug,
 		s.AppVersion.ID.String(),
 		fmt.Sprintf("%s (%s)", s.DeviceType, s.ScreenSize),
-		s.Filename,
+		s.ID.String() + filepath.Ext(s.Filename),
 	}
 	return strings.Join(pathElements, "/")
 }

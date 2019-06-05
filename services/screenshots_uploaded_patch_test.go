@@ -77,6 +77,9 @@ func Test_ScreenshotsUploadedPatchHandler(t *testing.T) {
 	})
 
 	t.Run("ok - more complex", func(t *testing.T) {
+		testScreenshotUUID1 := uuid.FromStringOrNil("42156ba6-3473-493f-ba08-6d74d26c320e")
+		testScreenshotUUID2 := uuid.FromStringOrNil("9f235109-34fb-476d-a081-c28047d1d025")
+
 		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
 			contextElements: map[ctxpkg.RequestContextKey]interface{}{
 				services.ContextKeyAuthorizedAppVersionID: uuid.FromStringOrNil("de438ddc-98e5-4226-a5f4-fd2d53474879"),
@@ -87,7 +90,8 @@ func Test_ScreenshotsUploadedPatchHandler(t *testing.T) {
 						require.Equal(t, appVersion.ID.String(), "de438ddc-98e5-4226-a5f4-fd2d53474879")
 						return []models.Screenshot{
 							models.Screenshot{
-								Filename:   "screenshot.png",
+								Record:     models.Record{ID: testScreenshotUUID1},
+								UploadableObject: models.UploadableObject{Filename: "screenshot.png"},
 								DeviceType: "iPhone XS Max",
 								ScreenSize: "6.5 inch",
 								AppVersion: models.AppVersion{
@@ -96,7 +100,8 @@ func Test_ScreenshotsUploadedPatchHandler(t *testing.T) {
 								},
 							},
 							models.Screenshot{
-								Filename:   "screenshot2.png",
+								Record:     models.Record{ID: testScreenshotUUID2},
+								UploadableObject: models.UploadableObject{Filename: "screenshot2.png"},
 								DeviceType: "iPhone XS",
 								ScreenSize: "5.5 inch",
 								AppVersion: models.AppVersion{
@@ -111,20 +116,26 @@ func Test_ScreenshotsUploadedPatchHandler(t *testing.T) {
 
 						require.Equal(t, []string{"Uploaded"}, whitelist)
 						require.Equal(t, models.Screenshot{
-							Filename:   "screenshot.png",
+							Record: models.Record{ID: testScreenshotUUID1},
+							UploadableObject: models.UploadableObject{
+								Filename: "screenshot.png",
+								Uploaded: true,
+							},
 							DeviceType: "iPhone XS Max",
 							ScreenSize: "6.5 inch",
-							Uploaded:   true,
 							AppVersion: models.AppVersion{
 								Record: models.Record{ID: appVersionID},
 								App:    models.App{AppSlug: "test-app-slug"},
 							},
 						}, screenshots[0])
 						require.Equal(t, models.Screenshot{
-							Filename:   "screenshot2.png",
+							Record: models.Record{ID: testScreenshotUUID2},
+							UploadableObject: models.UploadableObject{
+								Filename: "screenshot2.png",
+								Uploaded: true,
+							},
 							DeviceType: "iPhone XS",
 							ScreenSize: "5.5 inch",
-							Uploaded:   true,
 							AppVersion: models.AppVersion{
 								Record: models.Record{ID: appVersionID},
 								App:    models.App{AppSlug: "test-app-slug"},
@@ -145,21 +156,27 @@ func Test_ScreenshotsUploadedPatchHandler(t *testing.T) {
 				Data: []services.ScreenshotData{
 					services.ScreenshotData{
 						Screenshot: models.Screenshot{
-							Filename:   "screenshot.png",
+							Record: models.Record{ID: testScreenshotUUID1},
+							UploadableObject: models.UploadableObject{
+								Filename: "screenshot.png",
+								Uploaded: true,
+							},
 							DeviceType: "iPhone XS Max",
 							ScreenSize: "6.5 inch",
-							Uploaded:   true,
 						},
-						DownloadURL: "http://presigned.aws.url/test-app-slug/de438ddc-98e5-4226-a5f4-fd2d53474879/iPhone XS Max (6.5 inch)/screenshot.png",
+						DownloadURL: "http://presigned.aws.url/test-app-slug/de438ddc-98e5-4226-a5f4-fd2d53474879/iPhone XS Max (6.5 inch)/42156ba6-3473-493f-ba08-6d74d26c320e.png",
 					},
 					services.ScreenshotData{
 						Screenshot: models.Screenshot{
-							Filename:   "screenshot2.png",
+							Record: models.Record{ID: testScreenshotUUID2},
+							UploadableObject: models.UploadableObject{
+								Filename: "screenshot2.png",
+								Uploaded: true,
+							},
 							DeviceType: "iPhone XS",
 							ScreenSize: "5.5 inch",
-							Uploaded:   true,
 						},
-						DownloadURL: "http://presigned.aws.url/test-app-slug/de438ddc-98e5-4226-a5f4-fd2d53474879/iPhone XS (5.5 inch)/screenshot2.png",
+						DownloadURL: "http://presigned.aws.url/test-app-slug/de438ddc-98e5-4226-a5f4-fd2d53474879/iPhone XS (5.5 inch)/9f235109-34fb-476d-a081-c28047d1d025.png",
 					},
 				},
 			},
