@@ -22,7 +22,7 @@ func Test_FeatureGraphicPostHandler(t *testing.T) {
 	url := "/apps/{app-slug}/versions/{version-id}/feature-graphic"
 	handler := services.FeatureGraphicPostHandler
 
-	behavesAsServiceCravingHandler(t, httpMethod, url, handler, []string{"FeatureGraphicService"}, ControllerTestCase{
+	behavesAsServiceCravingHandler(t, httpMethod, url, handler, []string{"FeatureGraphicService", "AWS"}, ControllerTestCase{
 		contextElements: map[ctxpkg.RequestContextKey]interface{}{
 			services.ContextKeyAuthorizedAppVersionID: uuid.NewV4(),
 		},
