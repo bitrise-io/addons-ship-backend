@@ -3,11 +3,16 @@ package services
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/bitrise-io/addons-ship-backend/env"
 	"github.com/bitrise-io/api-utils/httpresponse"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
+)
+
+const (
+	presignedURLExpirationInterval = 10 * time.Minute
 )
 
 // Handler ...

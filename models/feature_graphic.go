@@ -1,6 +1,9 @@
 package models
 
 import (
+	"path/filepath"
+	"strings"
+
 	"github.com/bitrise-io/api-utils/constants"
 	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
@@ -56,4 +59,14 @@ func (f *FeatureGraphic) validate(scope *gorm.Scope, action string) error {
 		return errors.New("Validation failed")
 	}
 	return nil
+}
+
+// AWSPath ...
+func (f *FeatureGraphic) AWSPath() string {
+	pathElements := []string{
+		f.AppVersion.App.AppSlug,
+		f.AppVersion.ID.String(),
+		f.ID.String() + filepath.Ext(f.Filename),
+	}
+	return strings.Join(pathElements, "/")
 }
