@@ -27,7 +27,11 @@ func Test_FeatureGraphicPostHandler(t *testing.T) {
 			services.ContextKeyAuthorizedAppVersionID: uuid.NewV4(),
 		},
 		env: &env.AppEnv{
-			FeatureGraphicService: &testFeatureGraphicService{},
+			FeatureGraphicService: &testFeatureGraphicService{
+				createFn: func(featureGraphic *models.FeatureGraphic) (*models.FeatureGraphic, []error, error) {
+					return &models.FeatureGraphic{}, nil, nil
+				},
+			},
 			AWS: &providers.AWSMock{},
 		},
 		requestBody: `{}`,

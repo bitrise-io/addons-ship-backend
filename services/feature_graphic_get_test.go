@@ -21,12 +21,16 @@ func Test_FeatureGraphicGetHandler(t *testing.T) {
 	url := "/apps/{app-slug}/versions/{version-id}/feature-graphic"
 	handler := services.FeatureGraphicGetHandler
 
-	behavesAsServiceCravingHandler(t, httpMethod, url, handler, []string{"FeatureGraphicService"}, ControllerTestCase{
+	behavesAsServiceCravingHandler(t, httpMethod, url, handler, []string{"FeatureGraphicService", "AWS"}, ControllerTestCase{
 		contextElements: map[ctxpkg.RequestContextKey]interface{}{
 			services.ContextKeyAuthorizedAppVersionID: uuid.NewV4(),
 		},
 		env: &env.AppEnv{
-			FeatureGraphicService: &testFeatureGraphicService{},
+			FeatureGraphicService: &testFeatureGraphicService{
+				findFn: func(featureGraphic *models.FeatureGraphic) (*models.FeatureGraphic, error) {
+					return &models.FeatureGraphic{}, nil
+				},
+			},
 			AWS: &providers.AWSMock{},
 		},
 	})
