@@ -132,4 +132,4 @@ workflows:
             - content: |
                 #!/bin/bash
                 set -ex
-                docker-compose run --rm app bash -c 'go run db/seed/main.go'
+                docker-compose run --rm app bash -c 'cd db/seed && go run main.go'

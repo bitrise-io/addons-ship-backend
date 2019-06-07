@@ -13,43 +13,6 @@ import (
 	"github.com/satori/go.uuid"
 )
 
-type app struct {
-	ID              uuid.UUID `yaml:"id"`
-	Slug            string    `yaml:"slug"`
-	Plan            string    `yaml:"plan"`
-	BitriseAPIToken string    `yaml:"bitrise_api_token"`
-	APIToken        string    `yaml:"api_token"`
-}
-
-type appStoreInfo struct {
-	ShortDescription string `yaml:"short_description"`
-	FullDescription  string `yaml:"full_description"`
-	WhatsNew         string `yaml:"whats_new"`
-	PromotionalText  string `yaml:"promotional_text"`
-	Keywords         string `yaml:"keywords"`
-	ReviewNotes      string `yaml:"review_notes"`
-	SupportURL       string `yaml:"support_url"`
-	MarketingURL     string `yaml:"marketing_url"`
-}
-
-type appVersion struct {
-	ID            uuid.UUID    `yaml:"id"`
-	AppID         uuid.UUID    `yaml:"app_id"`
-	Version       string       `yaml:"version"`
-	Platform      string       `yaml:"platform"`
-	BuildNumber   string       `yaml:"build_number"`
-	BuildSlug     string       `yaml:"build_slug"`
-	LastUpdate    time.Time    `yaml:"last_update"`
-	Scheme        string       `yaml:"scheme"`
-	Configuration string       `yaml:"configuration"`
-	AppStoreInfo  appStoreInfo `yaml:"app_store_info"`
-}
-
-type testData struct {
-	Apps        []app        `yaml:"apps"`
-	AppVersions []appVersion `yaml:"app_versions"`
-}
-
 func main() {
 	err := dataservices.InitializeConnection(dataservices.ConnectionParams{}, true)
 	if err != nil {
@@ -105,4 +68,41 @@ func main() {
 			fmt.Printf("Failed to seed db with app version: %#v, app version: %#v", err, appVersion)
 		}
 	}
+}
+
+type app struct {
+	ID              uuid.UUID `yaml:"id"`
+	Slug            string    `yaml:"slug"`
+	Plan            string    `yaml:"plan"`
+	BitriseAPIToken string    `yaml:"bitrise_api_token"`
+	APIToken        string    `yaml:"api_token"`
+}
+
+type appStoreInfo struct {
+	ShortDescription string `yaml:"short_description"`
+	FullDescription  string `yaml:"full_description"`
+	WhatsNew         string `yaml:"whats_new"`
+	PromotionalText  string `yaml:"promotional_text"`
+	Keywords         string `yaml:"keywords"`
+	ReviewNotes      string `yaml:"review_notes"`
+	SupportURL       string `yaml:"support_url"`
+	MarketingURL     string `yaml:"marketing_url"`
+}
+
+type appVersion struct {
+	ID            uuid.UUID    `yaml:"id"`
+	AppID         uuid.UUID    `yaml:"app_id"`
+	Version       string       `yaml:"version"`
+	Platform      string       `yaml:"platform"`
+	BuildNumber   string       `yaml:"build_number"`
+	BuildSlug     string       `yaml:"build_slug"`
+	LastUpdate    time.Time    `yaml:"last_update"`
+	Scheme        string       `yaml:"scheme"`
+	Configuration string       `yaml:"configuration"`
+	AppStoreInfo  appStoreInfo `yaml:"app_store_info"`
+}
+
+type testData struct {
+	Apps        []app        `yaml:"apps"`
+	AppVersions []appVersion `yaml:"app_versions"`
 }

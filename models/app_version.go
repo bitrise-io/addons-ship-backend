@@ -46,7 +46,9 @@ type AppVersion struct {
 
 // BeforeCreate ...
 func (a *AppVersion) BeforeCreate(scope *gorm.Scope) error {
-	a.ID = uuid.NewV4()
+	if uuid.Equal(a.ID, uuid.UUID{}) {
+		a.ID = uuid.NewV4()
+	}
 	if a.AppStoreInfoData == nil {
 		a.AppStoreInfoData = json.RawMessage(`{}`)
 	}
