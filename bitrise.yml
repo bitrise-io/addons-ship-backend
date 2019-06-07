@@ -1,135 +1,135 @@
-format_version: "7"
+format_version: '7'
 default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 project_type: other
 app:
   envs:
-  - DB_HOST: postgres
-  - DB_NAME: addons_ship_dev
-  - DB_USER: postgres
-  - DB_PWD: postgres
-  - CODE_COV_DIR: ./_coverage
-  - CODE_COV_TXT_REPORT_FILE: ${CODE_COV_DIR}/coverage.txt
-  - PORT: 3003
+    - DB_HOST: postgres
+    - DB_NAME: addons_ship_dev
+    - DB_USER: postgres
+    - DB_PWD: postgres
+    - CODE_COV_DIR: ./_coverage
+    - CODE_COV_TXT_REPORT_FILE: ${CODE_COV_DIR}/coverage.txt
+    - PORT: 3003
 workflows:
   _collect_package_list_without_vendor:
     steps:
-    - script:
-        title: GOLIST_WITHOUT_VENDOR
-        inputs:
-        - content: |
-            set -ex
-            no_vendor_paths="$(go list ./... | grep -v vendor)"
-            envman add --key GOLIST_WITHOUT_VENDOR --value "$no_vendor_paths"
+      - script:
+          title: GOLIST_WITHOUT_VENDOR
+          inputs:
+            - content: |
+                set -ex
+                no_vendor_paths="$(go list ./... | grep -v vendor)"
+                envman add --key GOLIST_WITHOUT_VENDOR --value "$no_vendor_paths"
   code-coverage:
     description: |
       Generates code coverage report
     steps:
-    - script:
-        title: Code coverage TXT report
-        inputs:
-        - content: |
-            #!/bin/bash
-            set -ex
-            mkdir ./_coverage
-            touch ./_coverage/coverage.txt
-            go test -race -coverprofile="${CODE_COV_TXT_REPORT_FILE}" -covermode=atomic -tags=database ./...
-            cp "${CODE_COV_TXT_REPORT_FILE}" "${BITRISE_DEPLOY_DIR}/"
+      - script:
+          title: Code coverage TXT report
+          inputs:
+            - content: |
+                #!/bin/bash
+                set -ex
+                mkdir ./_coverage
+                touch ./_coverage/coverage.txt
+                go test -race -coverprofile="${CODE_COV_TXT_REPORT_FILE}" -covermode=atomic -tags=database ./...
+                cp "${CODE_COV_TXT_REPORT_FILE}" "${BITRISE_DEPLOY_DIR}/"
   dev-console:
     steps:
-    - script:
-        title: Run development console
-        inputs:
-        - content: |
-            #!/bin/bash
-            set -ex
+      - script:
+          title: Run development console
+          inputs:
+            - content: |
+                #!/bin/bash
+                set -ex
 
-            docker-compose run --rm app bash -c '. _scripts/compile_goose.sh && cd db && bash'
+                docker-compose run --rm app bash -c '. _scripts/compile_goose.sh && cd db && bash'
   setup:
     steps:
-    - script@1.1.5:
-        title: Setup server
-        inputs:
-        - content: |
-            #!/bin/bash
-            set -ex
-            docker-compose rm -f
-            docker-compose build
-            docker-compose up --no-start
-            docker-compose start db
-            docker-compose exec db psql -U $DB_USER -c "drop database if exists $DB_NAME;"
-            docker-compose exec db psql -U $DB_USER -c "create database $DB_NAME;"
-            docker-compose run --rm app bash -c 'go run db/main.go -dir db up'
+      - script@1.1.5:
+          title: Setup server
+          inputs:
+            - content: |
+                #!/bin/bash
+                set -ex
+                docker-compose rm -f
+                docker-compose build
+                docker-compose up --no-start
+                docker-compose start db
+                docker-compose exec db psql -U $DB_USER -c "drop database if exists $DB_NAME;"
+                docker-compose exec db psql -U $DB_USER -c "create database $DB_NAME;"
+                docker-compose run --rm app bash -c 'go run db/main.go -dir db up'
   ci:
     steps:
-    - script:
-        title: Run CI
-        inputs:
-        - content: |
-            #!/bin/bash
-            set -ex
+      - script:
+          title: Run CI
+          inputs:
+            - content: |
+                #!/bin/bash
+                set -ex
 
-            docker-compose run --rm app bash -c 'sleep 5'
-            docker-compose run --rm app bash -c 'bitrise run test'
+                docker-compose run --rm app bash -c 'sleep 5'
+                docker-compose run --rm app bash -c 'bitrise run test'
   test:
     before_run:
-    - _collect_package_list_without_vendor
+      - _collect_package_list_without_vendor
     after_run:
-    - code-coverage
+      - code-coverage
     steps:
-    - script:
-        title: Go Vet
-        inputs:
-        - content: |
-            #!/bin/bash
-            set -ex
-            go vet $GOLIST_WITHOUT_VENDOR
-    - script:
-        title: Err check
-        inputs:
-        - content: |
-            #!/bin/bash
-            set -ex
-            go get github.com/kisielk/errcheck
-            errcheck -asserts=true -blank=true $GOLIST_WITHOUT_VENDOR
-    - script:
-        title: Go Lint
-        inputs:
-        - content: |
-            #!/bin/bash
-            set -ex
-            go get -u golang.org/x/lint/golint
+      - script:
+          title: Go Vet
+          inputs:
+            - content: |
+                #!/bin/bash
+                set -ex
+                go vet $GOLIST_WITHOUT_VENDOR
+      - script:
+          title: Err check
+          inputs:
+            - content: |
+                #!/bin/bash
+                set -ex
+                go get github.com/kisielk/errcheck
+                errcheck -asserts=true -blank=true $GOLIST_WITHOUT_VENDOR
+      - script:
+          title: Go Lint
+          inputs:
+            - content: |
+                #!/bin/bash
+                set -ex
+                go get -u golang.org/x/lint/golint
 
-            # lint
-            while read -r line; do
-              echo "-> Linting: $line"
-              golint -set_exit_status $line
-            done <<< "$GOLIST_WITHOUT_VENDOR"
+                # lint
+                while read -r line; do
+                  echo "-> Linting: $line"
+                  golint -set_exit_status $line
+                done <<< "$GOLIST_WITHOUT_VENDOR"
   test-with-docker:
     steps:
-    - script@1.1.5:
-        title: Go test (with DB)
-        inputs:
-        - content: |
-            #!/bin/bash
-            set -ex
+      - script@1.1.5:
+          title: Go test (with DB)
+          inputs:
+            - content: |
+                #!/bin/bash
+                set -ex
 
-            docker-compose run --rm app bash -c 'sleep 5'
-            docker-compose run --rm app bash -c 'go test ./... -tags=database'
+                docker-compose run --rm app bash -c 'sleep 5'
+                docker-compose run --rm app bash -c 'go test ./... -tags=database'
   up:
     steps:
-    - script@1.1.5:
-        title: Start server
-        inputs:
-        - content: |
-            #!/bin/bash
-            set -ex
-            docker-compose up
+      - script@1.1.5:
+          title: Start server
+          inputs:
+            - content: |
+                #!/bin/bash
+                set -ex
+                docker-compose up
   seed-db:
     steps:
-    - script@1.1.5:
-        title: Seed development db
-        inputs:
-        - content: |
-            #!/bin/bash
-            set -ex
-            docker-compose run --rm app bash -c 'go run db/seed/main.go'
+      - script@1.1.5:
+          title: Seed development db
+          inputs:
+            - content: |
+                #!/bin/bash
+                set -ex
+                docker-compose run --rm app bash -c 'go run db/seed/main.go'
