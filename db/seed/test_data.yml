@@ -46,3 +46,17 @@ app_versions:
       review_notes: Some review notes 2
       support_url: https://bit.ly/1GlKYXQ
       marteking_url: https://bit.ly/1OWTjYk
+screenshots:
+  - id: 9928de5b-c986-42ce-be1d-e99728a819b2
+    app_version_id: e244f7ee-d923-483b-b90b-200a21f0ddf1
+    filename: screenshot1.png
+    filesize: 709426
+    device_type: iPhone XS Max
+    screen_size: 6.5 inch
+    uploaded: true
+feature_graphics:
+  - id: cc55527f-209c-4884-926e-97e2f9dc99e1
+    app_version_id: 2fe1d042-657e-4624-83a9-2bc3abef5c2c
+    filename: feature_graphic.jpg
+    filesize: 103852
+    uploaded: true
