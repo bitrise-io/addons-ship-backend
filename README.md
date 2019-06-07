@@ -39,3 +39,5 @@ _Note: if you generate new migration while you are running dev console, the late
 ## Database seeding
 
 For having proper development data locally, you have to seed your database. There's a seeding script in the [db/seed/main.go](https://github.com/bitrise-io/addons-ship-backend/tree/master/db/seed/main.go) file. This reads the [test_data.yml](https://github.com/bitrise-io/addons-ship-backend/tree/master/db/seed/test_data.yml) file, parses it and creates the records in the development database. You can add additional data to this file and re-run the script, which will create the new ones also. In this case pay attention for the IDs of the objects, with those fields you can specify the connection between them.
+
+_Note: To be able to generate AWS presigned URLs, you have to set the related environment variables(`AWS_BUCKET`, `AWS_REGION`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`) in your .bitrise.secrets.yml_
