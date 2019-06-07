@@ -15,6 +15,8 @@ type App struct {
 
 // BeforeCreate ...
 func (a *App) BeforeCreate() error {
-	a.ID = uuid.NewV4()
+	if uuid.Equal(a.ID, uuid.UUID{}) {
+		a.ID = uuid.NewV4()
+	}
 	return nil
 }

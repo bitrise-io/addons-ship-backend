@@ -7,6 +7,7 @@ require (
 	github.com/bitrise-io/api-utils v0.0.0-20190529124821-14a19eb90ba5
 	github.com/bitrise-io/go-utils v0.0.0-20190507082533-8898129615c9
 	github.com/c2fo/testify v0.0.0-20150827203832-fba96363964a
+	github.com/go-yaml/yaml v2.1.0+incompatible
 	github.com/gorilla/mux v1.7.1 // indirect
 	github.com/jinzhu/gorm v1.9.8
 	github.com/justinas/alice v0.0.0-20171023064455-03f45bd4b7da

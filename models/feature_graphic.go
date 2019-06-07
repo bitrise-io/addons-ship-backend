@@ -26,7 +26,9 @@ type FeatureGraphic struct {
 
 // BeforeCreate ...
 func (f *FeatureGraphic) BeforeCreate(scope *gorm.Scope) error {
-	f.ID = uuid.NewV4()
+	if uuid.Equal(f.ID, uuid.UUID{}) {
+		f.ID = uuid.NewV4()
+	}
 	err := f.validate(scope, "create")
 	if err != nil {
 		return errors.WithStack(err)

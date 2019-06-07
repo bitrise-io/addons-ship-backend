@@ -23,7 +23,7 @@ func (s *FeatureGraphicService) Create(featureGraphic *FeatureGraphic) (*Feature
 
 // Find ...
 func (s *FeatureGraphicService) Find(featureGraphic *FeatureGraphic) (*FeatureGraphic, error) {
-	err := s.DB.Where(featureGraphic).First(featureGraphic).Error
+	err := s.DB.Preload("AppVersion").Preload("AppVersion.App").Where(featureGraphic).First(featureGraphic).Error
 	if err != nil {
 		return nil, err
 	}

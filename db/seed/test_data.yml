@@ -1,0 +1,62 @@
+apps:
+  - id: 1278ddd3-0b24-4cd6-8ca7-537748b5c284
+    slug: test-app-slug-1
+    api_token: test-api-token-1
+    plan: silver
+    bitrise_api_token: test-bitrise-api-token-1
+  - id: e6ea15c1-4ee5-4082-9ffc-c0f7d4a8cacf
+    slug: test-app-slug-2
+    api_token: test-api-token-2
+    plan: gold
+    bitrise_api_token: test-bitrise-api-token-2
+app_versions:
+  - id: e244f7ee-d923-483b-b90b-200a21f0ddf1
+    app_id: 1278ddd3-0b24-4cd6-8ca7-537748b5c284
+    platform: ios
+    version: 1.0
+    build_number: 12
+    build_slug: test-build-slug-1
+    last_update_time: '2019-06-02T10:51:30.693396Z'
+    scheme: scheme-1
+    configuration: config-1
+    app_store_info:
+      short_description: ''
+      full_description: Full description 1
+      whats_new: New is newer than old
+      promotional_text: This is awesome, believe me
+      keywords: awesome,app_version_1
+      review_notes: Some review notes
+      support_url: https://bit.ly/1GlKYXQ
+      marteking_url: https://bit.ly/1OWTjYk
+  - id: 2fe1d042-657e-4624-83a9-2bc3abef5c2c
+    app_id: 1278ddd3-0b24-4cd6-8ca7-537748b5c284
+    platform: android
+    version: 1.2
+    build_number: 34
+    build_slug: test-build-slug-2
+    last_update_time: '2019-06-02T11:51:30.693396Z'
+    scheme: scheme-2
+    configuration: config-2
+    app_store_info:
+      short_description: 'Short description 1'
+      full_description: Full description 2
+      whats_new: New is newer than old 2
+      promotional_text: This is awesome, believe me 2
+      keywords: awesome,app_version_2
+      review_notes: Some review notes 2
+      support_url: https://bit.ly/1GlKYXQ
+      marteking_url: https://bit.ly/1OWTjYk
+screenshots:
+  - id: 9928de5b-c986-42ce-be1d-e99728a819b2
+    app_version_id: e244f7ee-d923-483b-b90b-200a21f0ddf1
+    filename: screenshot1.png
+    filesize: 709426
+    device_type: iPhone XS Max
+    screen_size: 6.5 inch
+    uploaded: true
+feature_graphics:
+  - id: cc55527f-209c-4884-926e-97e2f9dc99e1
+    app_version_id: 2fe1d042-657e-4624-83a9-2bc3abef5c2c
+    filename: feature_graphic.jpg
+    filesize: 103852
+    uploaded: true

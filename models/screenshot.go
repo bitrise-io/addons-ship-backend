@@ -29,7 +29,9 @@ type Screenshot struct {
 
 // BeforeCreate ...
 func (s *Screenshot) BeforeCreate(scope *gorm.Scope) error {
-	s.ID = uuid.NewV4()
+	if uuid.Equal(s.ID, uuid.UUID{}) {
+		s.ID = uuid.NewV4()
+	}
 	return nil
 }
 

@@ -6,6 +6,7 @@ import (
 	"github.com/bitrise-io/addons-ship-backend/env"
 	"github.com/bitrise-io/addons-ship-backend/models"
 	"github.com/bitrise-io/api-utils/httpresponse"
+	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
 )
 
@@ -34,7 +35,10 @@ func FeatureGraphicGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Re
 	featureGraphic, err := env.FeatureGraphicService.Find(
 		&models.FeatureGraphic{AppVersionID: authorizedAppVersionID},
 	)
-	if err != nil {
+	switch {
+	case errors.Cause(err) == gorm.ErrRecordNotFound:
+		return httpresponse.RespondWithNotFoundError(w)
+	case err != nil:
 		return errors.Wrap(err, "SQL Error")
 	}
 

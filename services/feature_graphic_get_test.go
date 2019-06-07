@@ -10,8 +10,10 @@ import (
 	"github.com/bitrise-io/addons-ship-backend/models"
 	"github.com/bitrise-io/addons-ship-backend/services"
 	ctxpkg "github.com/bitrise-io/api-utils/context"
+	"github.com/bitrise-io/api-utils/httpresponse"
 	"github.com/bitrise-io/api-utils/providers"
 	"github.com/c2fo/testify/require"
+	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 )
@@ -106,6 +108,24 @@ func Test_FeatureGraphicGetHandler(t *testing.T) {
 					DownloadURL: "http://presigned.aws.url/test-app-slug/de438ddc-98e5-4226-a5f4-fd2d53474879/33c7223f-2203-4109-b439-6026e7a374c9.png",
 				},
 			},
+		})
+	})
+
+	t.Run("error - not found in database", func(t *testing.T) {
+		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppVersionID: uuid.NewV4(),
+			},
+			env: &env.AppEnv{
+				FeatureGraphicService: &testFeatureGraphicService{
+					findFn: func(featureGraphic *models.FeatureGraphic) (*models.FeatureGraphic, error) {
+						return nil, gorm.ErrRecordNotFound
+					},
+				},
+				AWS: &providers.AWSMock{},
+			},
+			expectedStatusCode: http.StatusNotFound,
+			expectedResponse:   httpresponse.StandardErrorRespModel{Message: "Not Found"},
 		})
 	})
 
