@@ -98,6 +98,15 @@ func runTestMigrations(t *testing.T, db *gorm.DB) {
 				return nil
 			},
 		},
+		{
+			message: "create feature_graphics table",
+			fn: func() error {
+				if !db.HasTable(&models.FeatureGraphic{}) {
+					return db.CreateTable(&models.FeatureGraphic{}).Error
+				}
+				return nil
+			},
+		},
 	} {
 		t.Log(migration.message)
 		panicIfErr(migration.fn())
