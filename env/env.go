@@ -22,15 +22,16 @@ const (
 
 // AppEnv ...
 type AppEnv struct {
-	Port              string
-	Environment       string
-	Logger            *zap.Logger
-	AppService        dataservices.AppService
-	AppVersionService dataservices.AppVersionService
-	ScreenshotService dataservices.ScreenshotService
-	BitriseAPI        bitrise.APIInterface
-	RequestParams     providers.RequestParamsInterface
-	AWS               providers.AWSInterface
+	Port                  string
+	Environment           string
+	Logger                *zap.Logger
+	AppService            dataservices.AppService
+	AppVersionService     dataservices.AppVersionService
+	ScreenshotService     dataservices.ScreenshotService
+	FeatureGraphicService dataservices.FeatureGraphicService
+	BitriseAPI            bitrise.APIInterface
+	RequestParams         providers.RequestParamsInterface
+	AWS                   providers.AWSInterface
 }
 
 // New ...
