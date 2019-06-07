@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 	"time"
 
 	"github.com/bitrise-io/addons-ship-backend/dataservices"
@@ -33,6 +34,8 @@ func main() {
 		log.Fatalf("Failed to parse test_data.yml: %v", err)
 	}
 
+	db.Exec("TRUNCATE TABLE apps CASCADE")
+
 	// create test apps
 	for _, appData := range testData.Apps {
 		app := models.App{
@@ -44,6 +47,7 @@ func main() {
 		}
 		if err := db.Create(&app).Error; err != nil {
 			fmt.Printf("Failed to seed db with app: %#v, app: %#v", err, app)
+			os.Exit(1)
 		}
 	}
 
@@ -52,6 +56,7 @@ func main() {
 		appStoreInfoBytes, err := json.Marshal(appVersionData.AppStoreInfo)
 		if err != nil {
 			fmt.Printf("Failed to marshal app store info: %#v, app store info: %#v", err, appVersionData.AppStoreInfo)
+			os.Exit(1)
 		}
 		appVersion := models.AppVersion{
 			Record:           models.Record{ID: appVersionData.ID},
@@ -66,6 +71,41 @@ func main() {
 		}
 		if err := db.Create(&appVersion).Error; err != nil {
 			fmt.Printf("Failed to seed db with app version: %#v, app version: %#v", err, appVersion)
+			os.Exit(1)
+		}
+	}
+
+	// create test screenshots
+	for _, screenshotData := range testData.Screenshots {
+		screenshot := models.Screenshot{
+			Record: models.Record{ID: screenshotData.ID},
+			UploadableObject: models.UploadableObject{
+				Filename: screenshotData.Filename,
+				Filesize: screenshotData.Filesize,
+			},
+			AppVersionID: screenshotData.AppVersionID,
+			DeviceType:   screenshotData.DeviceType,
+			ScreenSize:   screenshotData.ScreenSize,
+		}
+		if err := db.Create(&screenshot).Error; err != nil {
+			fmt.Printf("Failed to seed db with screenshot: %#v, screenshot: %#v", err, screenshot)
+			os.Exit(1)
+		}
+	}
+
+	// create test feature graphics
+	for _, featureGraphicData := range testData.FeatureGraphics {
+		featureGraphic := models.FeatureGraphic{
+			Record: models.Record{ID: featureGraphicData.ID},
+			UploadableObject: models.UploadableObject{
+				Filename: featureGraphicData.Filename,
+				Filesize: featureGraphicData.Filesize,
+			},
+			AppVersionID: featureGraphicData.AppVersionID,
+		}
+		if err := db.Create(&featureGraphic).Error; err != nil {
+			fmt.Printf("Failed to seed db with feawture graphic: %#v, feature graphic: %#v", err, featureGraphic)
+			os.Exit(1)
 		}
 	}
 }
@@ -102,7 +142,27 @@ type appVersion struct {
 	AppStoreInfo  appStoreInfo `yaml:"app_store_info"`
 }
 
+type screenshot struct {
+	ID           uuid.UUID `yaml:"id"`
+	AppVersionID uuid.UUID `yaml:"app_version_id"`
+	Filename     string    `yaml:"filename"`
+	Filesize     int64     `yaml:"filesize"`
+	Uploaded     bool      `yaml:"uploaded"`
+	DeviceType   string    `yaml:"device_type"`
+	ScreenSize   string    `yaml:"screen_size"`
+}
+
+type featureGraphic struct {
+	ID           uuid.UUID `yaml:"id"`
+	AppVersionID uuid.UUID `yaml:"app_version_id"`
+	Filename     string    `yaml:"filename"`
+	Filesize     int64     `yaml:"filesize"`
+	Uploaded     bool      `yaml:"uploaded"`
+}
+
 type testData struct {
-	Apps        []app        `yaml:"apps"`
-	AppVersions []appVersion `yaml:"app_versions"`
+	Apps            []app            `yaml:"apps"`
+	AppVersions     []appVersion     `yaml:"app_versions"`
+	Screenshots     []screenshot     `yaml:"screenshots"`
+	FeatureGraphics []featureGraphic `yaml:"feature_graphics"`
 }
