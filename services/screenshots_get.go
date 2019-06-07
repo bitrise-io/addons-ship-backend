@@ -2,17 +2,12 @@ package services
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/bitrise-io/addons-ship-backend/env"
 	"github.com/bitrise-io/addons-ship-backend/models"
 	"github.com/bitrise-io/api-utils/httpresponse"
 	"github.com/bitrise-io/api-utils/providers"
 	"github.com/pkg/errors"
-)
-
-const (
-	presignedURLExpirationInterval = 10 * time.Minute
 )
 
 // ScreenshotData ...

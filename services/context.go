@@ -40,6 +40,11 @@ func GetAuthorizedAppVersionIDFromContext(ctx context.Context) (uuid.UUID, error
 	return id, nil
 }
 
+// ContextWithAuthorizedAppVersionID ...
+func ContextWithAuthorizedAppVersionID(ctx context.Context, appVersionID uuid.UUID) context.Context {
+	return context.WithValue(ctx, ContextKeyAuthorizedAppVersionID, appVersionID)
+}
+
 // GetAuthorizedScreenshotIDFromContext ...
 func GetAuthorizedScreenshotIDFromContext(ctx context.Context) (uuid.UUID, error) {
 	id, ok := ctx.Value(ContextKeyAuthorizedScreenshotID).(uuid.UUID)
@@ -47,11 +52,6 @@ func GetAuthorizedScreenshotIDFromContext(ctx context.Context) (uuid.UUID, error
 		return uuid.UUID{}, errors.New("Authorized App Version Screenshot ID not found in Context")
 	}
 	return id, nil
-}
-
-// ContextWithAuthorizedAppVersionID ...
-func ContextWithAuthorizedAppVersionID(ctx context.Context, appVersionID uuid.UUID) context.Context {
-	return context.WithValue(ctx, ContextKeyAuthorizedAppVersionID, appVersionID)
 }
 
 // ContextWithAuthorizedScreenshotID ...

@@ -58,6 +58,22 @@ func New(appEnv *env.AppEnv) *mux.Router {
 			path: "/apps/{app-slug}/versions/{version-id}/screenshots/{screenshot-slug}", middleware: services.AuthorizedAppVersionScreenshotMiddleware(appEnv),
 			handler: services.ScreenshotDeleteHandler, allowedMethods: []string{"DELETE", "OPTIONS"},
 		},
+		{
+			path: "/apps/{app-slug}/versions/{version-id}/feature-graphic", middleware: services.AuthorizedAppVersionMiddleware(appEnv),
+			handler: services.FeatureGraphicGetHandler, allowedMethods: []string{"GET", "OPTIONS"},
+		},
+		{
+			path: "/apps/{app-slug}/versions/{version-id}/feature-graphic", middleware: services.AuthorizedAppVersionMiddleware(appEnv),
+			handler: services.FeatureGraphicPostHandler, allowedMethods: []string{"POST", "OPTIONS"},
+		},
+		{
+			path: "/apps/{app-slug}/versions/{version-id}/feature-graphic/uploaded", middleware: services.AuthorizedAppVersionMiddleware(appEnv),
+			handler: services.FeatureGraphicUploadedPatchHandler, allowedMethods: []string{"PATCH", "OPTIONS"},
+		},
+		{
+			path: "/apps/{app-slug}/versions/{version-id}/feature-graphic", middleware: services.AuthorizedAppVersionMiddleware(appEnv),
+			handler: services.FeatureGraphicDeleteHandler, allowedMethods: []string{"DELETE", "OPTIONS"},
+		},
 	} {
 		r.Handle(route.path, route.middleware.Then(services.Handler{Env: appEnv, H: route.handler})).
 			Methods(route.allowedMethods...)
