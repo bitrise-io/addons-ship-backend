@@ -24,6 +24,11 @@ func (s *ScreenshotService) BatchCreate(screenshots []*Screenshot) ([]*Screensho
 			tx.Rollback()
 			return nil, nil, result.Error
 		}
+
+		err := tx.Preload("AppVersion").Preload("AppVersion.App").First(screenshot).Error
+		if err != nil {
+			return nil, nil, err
+		}
 	}
 	return screenshots, nil, tx.Commit().Error
 }
