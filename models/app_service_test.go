@@ -18,7 +18,7 @@ func Test_AppService_Create(t *testing.T) {
 
 	appService := models.AppService{DB: dataservices.GetDB()}
 	testApp := &models.App{
-		AppSlug: "test-app_slug",
+		AppSlug: "test-app-slug",
 	}
 	createdApp, err := appService.Create(testApp)
 	require.NoError(t, err)
