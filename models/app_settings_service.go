@@ -10,7 +10,7 @@ type AppSettingsService struct {
 
 // Find ...
 func (s *AppSettingsService) Find(appSettings *AppSettings) (*AppSettings, error) {
-	err := s.DB.Where(appSettings).First(appSettings).Error
+	err := s.DB.Preload("App").Where(appSettings).First(appSettings).Error
 	if err != nil {
 		return nil, err
 	}
