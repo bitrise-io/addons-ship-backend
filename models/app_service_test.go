@@ -25,6 +25,7 @@ func Test_AppService_Create(t *testing.T) {
 	require.False(t, createdApp.ID.String() == "")
 	require.False(t, createdApp.CreatedAt.String() == "")
 	require.False(t, createdApp.UpdatedAt.String() == "")
+	require.Equal(t, createdApp.ID, createdApp.AppSettings.AppID)
 }
 
 func Test_AppService_Find(t *testing.T) {
