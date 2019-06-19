@@ -74,6 +74,10 @@ func New(appEnv *env.AppEnv) *mux.Router {
 			path: "/apps/{app-slug}/versions/{version-id}/feature-graphic", middleware: services.AuthorizedAppVersionMiddleware(appEnv),
 			handler: services.FeatureGraphicDeleteHandler, allowedMethods: []string{"DELETE", "OPTIONS"},
 		},
+		{
+			path: "/apps/{app-slug}/settings", middleware: services.AuthorizedAppMiddleware(appEnv),
+			handler: services.AppSettingsPatchHandler, allowedMethods: []string{"PATCH", "OPTIONS"},
+		},
 	} {
 		r.Handle(route.path, route.middleware.Then(services.Handler{Env: appEnv, H: route.handler})).
 			Methods(route.allowedMethods...)

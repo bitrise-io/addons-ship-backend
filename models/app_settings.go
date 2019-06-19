@@ -16,11 +16,21 @@ type IosSettings struct {
 	SelectedCodeSigningIdentity         string `json:"selected_code_signing_identity"`
 }
 
+// Valid ...
+func (s IosSettings) Valid() bool {
+	return s != (IosSettings{})
+}
+
 // AndroidSettings ...
 type AndroidSettings struct {
 	Track                  string `json:"track"`
 	SelectedKeystoreFile   string `json:"selected_keystore_file"`
 	SelectedServiceAccount string `json:"selected_service_account"`
+}
+
+// Valid ...
+func (s AndroidSettings) Valid() bool {
+	return s != (AndroidSettings{})
 }
 
 // AppSettings ...

@@ -29,6 +29,7 @@ type AppEnv struct {
 	AppVersionService     dataservices.AppVersionService
 	ScreenshotService     dataservices.ScreenshotService
 	FeatureGraphicService dataservices.FeatureGraphicService
+	AppSettingsService    dataservices.AppSettingsService
 	BitriseAPI            bitrise.APIInterface
 	RequestParams         providers.RequestParamsInterface
 	AWS                   providers.AWSInterface
@@ -51,6 +52,7 @@ func New(db *gorm.DB) (*AppEnv, error) {
 	env.AppVersionService = &models.AppVersionService{DB: db}
 	env.ScreenshotService = &models.ScreenshotService{DB: db}
 	env.FeatureGraphicService = &models.FeatureGraphicService{DB: db}
+	env.AppSettingsService = &models.AppSettingsService{DB: db}
 	if env.Environment == ServerEnvDevelopment {
 		env.BitriseAPI = &bitrise.APIDev{}
 	} else {
