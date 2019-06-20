@@ -96,16 +96,20 @@ func Test_AppSettingsPatchHandler(t *testing.T) {
 						require.Equal(t, testAppID, appSettings.AppID)
 						require.Equal(t, expectedIosSettings, appSettings.IosSettingsData)
 						require.Equal(t, expectedAndroidSettings, appSettings.AndroidSettingsData)
+						require.Equal(t, "ios-deploy", appSettings.IosWorkflow)
+						require.Equal(t, "android-deploy", appSettings.AndroidWorkflow)
 						return nil, nil
 					},
 				},
 			},
-			requestBody:        `{"ios_settings":{"app_sku":"2019061"},"android_settings":{"track":"2019062"}}`,
+			requestBody:        `{"ios_settings":{"app_sku":"2019061"},"android_settings":{"track":"2019062"},"ios_workflow":"ios-deploy","android_workflow":"android-deploy"}`,
 			expectedStatusCode: http.StatusOK,
 			expectedResponse: services.AppSettingsPatchResponse{
 				Data: services.AppSettingsPatchResponseData{
 					AppSettings: &models.AppSettings{
-						AppID: testAppID,
+						AppID:           testAppID,
+						IosWorkflow:     "ios-deploy",
+						AndroidWorkflow: "android-deploy",
 					},
 					IosSettings:     expectedIosSettingsModel,
 					AndroidSettings: expectedAndroidSettingsModel,
