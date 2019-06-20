@@ -19,6 +19,8 @@ func Test_ScreenshotService_BatchCreate(t *testing.T) {
 	defer dbCloseCallbackMethod()
 
 	screenshotService := models.ScreenshotService{DB: dataservices.GetDB()}
+	testApp := createTestApp(t, &models.App{AppSlug: "test-app-slug"})
+	testAppVersion := createTestAppVersion(t, &models.AppVersion{AppID: testApp.ID, Platform: "ios"})
 
 	t.Run("ok", func(t *testing.T) {
 		testScreenshots := []*models.Screenshot{
@@ -27,6 +29,7 @@ func Test_ScreenshotService_BatchCreate(t *testing.T) {
 					Filename: "screenshot.png",
 					Filesize: 1234,
 				},
+				AppVersionID: testAppVersion.ID,
 			},
 		}
 		createdScreeshots, verrs, err := screenshotService.BatchCreate(testScreenshots)
@@ -35,6 +38,8 @@ func Test_ScreenshotService_BatchCreate(t *testing.T) {
 		require.False(t, createdScreeshots[0].ID.String() == "")
 		require.False(t, createdScreeshots[0].CreatedAt.String() == "")
 		require.False(t, createdScreeshots[0].UpdatedAt.String() == "")
+		require.Equal(t, "ios", createdScreeshots[0].AppVersion.Platform)
+		require.Equal(t, "test-app-slug", createdScreeshots[0].AppVersion.App.AppSlug)
 	})
 
 	t.Run("when filesize is too big", func(t *testing.T) {
@@ -170,16 +175,16 @@ func Test_ScreenshotService_BatchUpdate(t *testing.T) {
 		testScreenshotsOfVersion1 := []models.Screenshot{
 			*createTestScreenshot(t, &models.Screenshot{
 				UploadableObject: models.UploadableObject{Filename: "screenshot1.png"},
-				AppVersion: *testAppVersions[0],
+				AppVersion:       *testAppVersions[0],
 			}),
 			*createTestScreenshot(t, &models.Screenshot{
 				UploadableObject: models.UploadableObject{Filename: "screenshot2.png"},
-				AppVersion: *testAppVersions[0],
+				AppVersion:       *testAppVersions[0],
 			}),
 		}
 		createTestScreenshot(t, &models.Screenshot{
 			UploadableObject: models.UploadableObject{Filename: "screenshot3.png"},
-			AppVersion: *testAppVersions[1],
+			AppVersion:       *testAppVersions[1],
 		})
 
 		testScreenshotsOfVersion1[0].Uploaded = true
