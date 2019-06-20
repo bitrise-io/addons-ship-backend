@@ -76,6 +76,10 @@ func New(appEnv *env.AppEnv) *mux.Router {
 		},
 		{
 			path: "/apps/{app-slug}/settings", middleware: services.AuthorizedAppMiddleware(appEnv),
+			handler: services.AppSettingsGetHandler, allowedMethods: []string{"GET", "OPTIONS"},
+		},
+		{
+			path: "/apps/{app-slug}/settings", middleware: services.AuthorizedAppMiddleware(appEnv),
 			handler: services.AppSettingsPatchHandler, allowedMethods: []string{"PATCH", "OPTIONS"},
 		},
 	} {
