@@ -15,7 +15,6 @@ require (
 	github.com/justinas/alice v0.0.0-20171023064455-03f45bd4b7da
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/lib/pq v1.1.0
-	github.com/nkovacs/streamquote v1.0.0 // indirect
 	github.com/opentracing/opentracing-go v1.1.0 // indirect
 	github.com/philhofer/fwd v1.0.0 // indirect
 	github.com/pkg/errors v0.8.1
