@@ -30,7 +30,6 @@ func (r *Request) SESEmailInput(template string, data map[string]interface{}) (*
 	}
 	return &ses.SendEmailInput{
 		Destination: &ses.Destination{
-			CcAddresses: []*string{},
 			ToAddresses: toAddresses,
 		},
 		Message: &ses.Message{
