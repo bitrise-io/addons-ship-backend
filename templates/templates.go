@@ -24,14 +24,5 @@ func Get(templateFileName string, data map[string]interface{}) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	// t, err := template.ParseFiles(templateFileName)
-	// if err != nil {
-	// 	return "", err
-	// }
-	// buf := new(bytes.Buffer)
-	// if err = t.Execute(buf, data); err != nil {
-	// 	return "", err
-	// }
-	// return buf.String(), nil
 	return body, nil
 }
