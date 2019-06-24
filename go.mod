@@ -5,6 +5,7 @@ go 1.12
 require (
 	github.com/aws/aws-sdk-go v1.19.34 // indirect
 	github.com/bitrise-io/api-utils v0.0.0-20190529124821-14a19eb90ba5
+	github.com/bitrise-io/go-crypto v0.0.0-20190621130134-8c226ef6074e
 	github.com/bitrise-io/go-utils v0.0.0-20190507082533-8898129615c9
 	github.com/c2fo/testify v0.0.0-20150827203832-fba96363964a
 	github.com/go-yaml/yaml v2.1.0+incompatible
