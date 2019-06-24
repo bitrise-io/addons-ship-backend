@@ -15,7 +15,7 @@ type SES struct {
 
 // SendMail ...
 func (m *SES) SendMail(r *Request, template string, data map[string]interface{}) (bool, error) {
-	sess, _ := session.NewSession(&aws.Config{
+	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String(m.Config.Region),
 		Credentials: credentials.NewStaticCredentials(
 			m.Config.AccessKeyID,
@@ -23,6 +23,9 @@ func (m *SES) SendMail(r *Request, template string, data map[string]interface{})
 			"",
 		),
 	})
+	if err != nil {
+		return false, err
+	}
 	svc := ses.New(sess)
 	input, err := r.SESEmailInput(template, data)
 	if err != nil {
