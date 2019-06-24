@@ -10,6 +10,7 @@ import (
 	"github.com/c2fo/testify/require"
 	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
+	uuid "github.com/satori/go.uuid"
 )
 
 func Test_AppService_Create(t *testing.T) {
@@ -62,5 +63,28 @@ func Test_AppService_Find(t *testing.T) {
 		foundApp, err := appService.Find(&models.App{AppSlug: "test-app-slug-3", APIToken: "test-api-token"})
 		require.Equal(t, errors.Cause(err), gorm.ErrRecordNotFound)
 		require.Nil(t, foundApp)
+	})
+}
+
+func Test_AppService_Delete(t *testing.T) {
+	dbCloseCallbackMethod := prepareDB(t)
+	defer dbCloseCallbackMethod()
+
+	appService := models.AppService{DB: dataservices.GetDB()}
+
+	testApp := createTestApp(t, &models.App{
+		AppSlug:  "test-app-slug-2",
+		APIToken: "test-api-token",
+	})
+
+	t.Run("when deleting an app", func(t *testing.T) {
+		err := appService.Delete(&models.App{Record: models.Record{ID: testApp.ID}})
+		require.NoError(t, err)
+	})
+
+	t.Run("error - when app is not found", func(t *testing.T) {
+		err := appService.Delete(&models.App{Record: models.Record{ID: uuid.NewV4()}})
+
+		require.Equal(t, err, gorm.ErrRecordNotFound)
 	})
 }

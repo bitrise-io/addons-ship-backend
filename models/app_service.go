@@ -20,3 +20,18 @@ func (a *AppService) Find(app *App) (*App, error) {
 	}
 	return app, nil
 }
+
+// Delete ...
+func (a *AppService) Delete(app *App) error {
+	result := a.DB.Delete(&app)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	if result.RowsAffected < 1 {
+		return gorm.ErrRecordNotFound
+	}
+
+	return nil
+}
