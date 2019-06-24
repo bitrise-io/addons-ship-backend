@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
+	"path/filepath"
 
 	"github.com/bitrise-io/api-utils/httpresponse"
 	"github.com/pkg/errors"
@@ -19,22 +21,32 @@ type APIInterface interface {
 	GetArtifactData(string, string, string) (*ArtifactData, error)
 	GetArtifactPublicInstallPageURL(string, string, string, string) (string, error)
 	GetAppDetails(authToken, appSlug string) (*AppDetails, error)
+	GetProvisioningProfiles(authToken, appSlug string) ([]ProvisioningProfile, error)
+	GetCodeSigningIdentities(authToken, appSlug string) ([]CodeSigningIdentity, error)
+	GetAndroidKeystoreFiles(authToken, appSlug string) ([]AndroidKeystoreFile, error)
+	GetServiceAccountFiles(authToken, appSlug string) ([]GenericProjectFile, error)
 }
 
 // API ...
 type API struct {
 	*http.Client
+	url string
 }
 
 // New ...
 func New() *API {
+	url, ok := os.LookupEnv("BITRISE_API_ROOT_URL")
+	if !ok {
+		url = apiBaseURL
+	}
 	return &API{
 		Client: &http.Client{},
+		url:    url,
 	}
 }
 
-func (a *API) doRequest(authToken, method, url string) (*http.Response, error) {
-	req, err := http.NewRequest(method, url, nil)
+func (a *API) doRequest(authToken, method, path string) (*http.Response, error) {
+	req, err := http.NewRequest(method, fmt.Sprintf("%s/%s", a.url, path), nil)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -85,7 +97,7 @@ func (a *API) GetArtifactData(authToken, appSlug, buildSlug string) (*ArtifactDa
 
 // GetArtifactPublicInstallPageURL ...
 func (a *API) GetArtifactPublicInstallPageURL(authToken, appSlug, buildSlug, artifactSlug string) (string, error) {
-	resp, err := a.doRequest(authToken, "GET", fmt.Sprintf("%s/apps/%s/builds/%s/artifacts/%s", apiBaseURL, appSlug, buildSlug, artifactSlug))
+	resp, err := a.doRequest(authToken, "GET", fmt.Sprintf("/apps/%s/builds/%s/artifacts/%s", appSlug, buildSlug, artifactSlug))
 	if err != nil {
 		return "", errors.WithStack(err)
 	}
@@ -102,7 +114,7 @@ func (a *API) GetArtifactPublicInstallPageURL(authToken, appSlug, buildSlug, art
 
 // GetAppDetails ...
 func (a *API) GetAppDetails(authToken, appSlug string) (*AppDetails, error) {
-	resp, err := a.doRequest(authToken, "GET", fmt.Sprintf("%s/apps/%s", apiBaseURL, appSlug))
+	resp, err := a.doRequest(authToken, "GET", "/apps/"+appSlug)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -117,12 +129,87 @@ func (a *API) GetAppDetails(authToken, appSlug string) (*AppDetails, error) {
 	return &responseModel.Data, nil
 }
 
-func (a *API) listArtifacts(authToken, appSlug, buildSlug, next string) (*artifactListResponseModel, error) {
-	url := fmt.Sprintf("%s/apps/%s/builds/%s/artifacts", apiBaseURL, appSlug, buildSlug)
-	if next != "" {
-		url = fmt.Sprintf("%s?next=%s", url, next)
+// GetProvisioningProfiles ...
+func (a *API) GetProvisioningProfiles(authToken, appSlug string) ([]ProvisioningProfile, error) {
+	resp, err := a.doRequest(authToken, "GET", fmt.Sprintf("/apps/%s/provisioning-profiles", appSlug))
+	if err != nil {
+		return nil, errors.WithStack(err)
 	}
-	resp, err := a.doRequest(authToken, "GET", url)
+	defer httpresponse.BodyCloseWithErrorLog(resp)
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.Errorf("Failed to fetch artifact data: status: %d", resp.StatusCode)
+	}
+	var responseModel provisioningProfileListResponseModel
+	if err := json.NewDecoder(resp.Body).Decode(&responseModel); err != nil {
+		return nil, errors.WithStack(err)
+	}
+	return responseModel.ProvisioningProfiles, nil
+}
+
+// GetCodeSigningIdentities ...
+func (a *API) GetCodeSigningIdentities(authToken, appSlug string) ([]CodeSigningIdentity, error) {
+	resp, err := a.doRequest(authToken, "GET", fmt.Sprintf("/apps/%s/build-certificates", appSlug))
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	defer httpresponse.BodyCloseWithErrorLog(resp)
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.Errorf("Failed to fetch artifact data: status: %d", resp.StatusCode)
+	}
+	var responseModel codeSigningIdentityListResponseModel
+	if err := json.NewDecoder(resp.Body).Decode(&responseModel); err != nil {
+		return nil, errors.WithStack(err)
+	}
+	return responseModel.CodeSigningIdentities, nil
+}
+
+// GetAndroidKeystoreFiles ...
+func (a *API) GetAndroidKeystoreFiles(authToken, appSlug string) ([]AndroidKeystoreFile, error) {
+	resp, err := a.doRequest(authToken, "GET", fmt.Sprintf("/apps/%s/android-keystore-files", appSlug))
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	defer httpresponse.BodyCloseWithErrorLog(resp)
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.Errorf("Failed to fetch artifact data: status: %d", resp.StatusCode)
+	}
+	var responseModel androidKeystoreFileListResponseModel
+	if err := json.NewDecoder(resp.Body).Decode(&responseModel); err != nil {
+		return nil, errors.WithStack(err)
+	}
+	return responseModel.AndroidKeystoreFiles, nil
+}
+
+// GetServiceAccountFiles ...
+func (a *API) GetServiceAccountFiles(authToken, appSlug string) ([]GenericProjectFile, error) {
+	resp, err := a.doRequest(authToken, "GET", fmt.Sprintf("/apps/%s/generic-project-files", appSlug))
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	defer httpresponse.BodyCloseWithErrorLog(resp)
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.Errorf("Failed to fetch artifact data: status: %d", resp.StatusCode)
+	}
+	var responseModel genericProjectFileListResponseModel
+	if err := json.NewDecoder(resp.Body).Decode(&responseModel); err != nil {
+		return nil, errors.WithStack(err)
+	}
+	serviceAccountFiles := []GenericProjectFile{}
+	for _, genFile := range responseModel.GenericProjectFiles {
+		if filepath.Ext(genFile.Filename) == ".json" {
+			serviceAccountFiles = append(serviceAccountFiles, genFile)
+		}
+	}
+
+	return serviceAccountFiles, nil
+}
+
+func (a *API) listArtifacts(authToken, appSlug, buildSlug, next string) (*artifactListResponseModel, error) {
+	path := fmt.Sprintf("/apps/%s/builds/%s/artifacts", appSlug, buildSlug)
+	if next != "" {
+		path = fmt.Sprintf("%s?next=%s", path, next)
+	}
+	resp, err := a.doRequest(authToken, "GET", path)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}

@@ -9,7 +9,12 @@ type AppService struct {
 
 // Create ...
 func (a *AppService) Create(app *App) (*App, error) {
-	return app, a.DB.Create(app).Error
+	result := a.DB.Create(app)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	app.AppSettings.App = app
+	return app, a.DB.Create(&app.AppSettings).Error
 }
 
 // Find ...
