@@ -3,14 +3,14 @@ services:
   db:
     image: postgres
     ports:
-      - "5432:5432"
+      - '5432:5432'
   app:
     build: .
     volumes:
       - .:/bitrise/src
     command: gin --immediate --appPort=3003
     ports:
-      - "3003:3003"
+      - '3003:3003'
     links:
       - db:postgres
     environment:

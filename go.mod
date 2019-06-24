@@ -3,10 +3,12 @@ module github.com/bitrise-io/addons-ship-backend
 go 1.12
 
 require (
-	github.com/aws/aws-sdk-go v1.19.34 // indirect
+	github.com/GeertJohan/go.rice v1.0.0
+	github.com/aws/aws-sdk-go v1.19.34
 	github.com/bitrise-io/api-utils v0.0.0-20190529124821-14a19eb90ba5
 	github.com/bitrise-io/go-utils v0.0.0-20190507082533-8898129615c9
 	github.com/c2fo/testify v0.0.0-20150827203832-fba96363964a
+	github.com/daaku/go.zipexe v1.0.1 // indirect
 	github.com/go-yaml/yaml v2.1.0+incompatible
 	github.com/gorilla/mux v1.7.1 // indirect
 	github.com/jinzhu/gorm v1.9.8
