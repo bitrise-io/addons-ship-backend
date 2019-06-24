@@ -24,6 +24,8 @@ const (
 type AppEnv struct {
 	Port                  string
 	Environment           string
+	AddonAccessToken      string
+	AddonHostURL          string
 	Logger                *zap.Logger
 	AppService            dataservices.AppService
 	AppVersionService     dataservices.AppVersionService
@@ -45,6 +47,14 @@ func New(db *gorm.DB) (*AppEnv, error) {
 	env.Environment, ok = os.LookupEnv("ENVIRONMENT")
 	if !ok {
 		env.Environment = ServerEnvDevelopment
+	}
+	env.AddonAccessToken, ok = os.LookupEnv("ADDON_ACCESS_TOKEN")
+	if !ok {
+		return nil, errors.New("No value set for env ADDON_ACCESS_TOKEN")
+	}
+	env.AddonHostURL, ok = os.LookupEnv("ADDON_HOST_URL")
+	if !ok {
+		return nil, errors.New("No value set for env ADDON_HOST_URL")
 	}
 	env.Logger = logging.WithContext(nil)
 	env.AppService = &models.AppService{DB: db}
