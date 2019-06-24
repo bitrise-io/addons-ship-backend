@@ -11,6 +11,7 @@ type App struct {
 	APIToken        string `json:"-"`
 
 	AppVersions []AppVersion `gorm:"foreignkey:AppID" json:"app_versions"`
+	AppSettings AppSettings  `gorm:"foreignkey:AppsID" json:"app_settings"`
 }
 
 // BeforeCreate ...

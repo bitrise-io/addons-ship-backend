@@ -49,6 +49,11 @@ func main() {
 			fmt.Printf("Failed to seed db with app: %#v, app: %#v", err, app)
 			os.Exit(1)
 		}
+		app.AppSettings.App = &app
+		if err := db.Create(&app.AppSettings).Error; err != nil {
+			fmt.Printf("Failed to create app setting for app at seeding: %#v, app: %#v", err, app)
+			os.Exit(1)
+		}
 	}
 
 	// create test app versions
