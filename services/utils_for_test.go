@@ -87,6 +87,9 @@ func behavesAsServiceCravingHandler(t *testing.T, method, url string, handler fu
 			} else if sn == "FeatureGraphicService" {
 				controllerTestCase.env.FeatureGraphicService = nil
 				controllerTestCase.expectedInternalErr = "No Feature Graphic Service defined for handler"
+			} else if sn == "AppSettingsService" {
+				controllerTestCase.env.AppSettingsService = nil
+				controllerTestCase.expectedInternalErr = "No App Settings Service defined for handler"
 			} else if sn == "RequestParams" {
 				controllerTestCase.env.RequestParams = nil
 				controllerTestCase.expectedInternalErr = "No RequestParams defined for handler"
