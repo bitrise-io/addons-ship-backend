@@ -12,6 +12,7 @@ import (
 	"github.com/bitrise-io/addons-ship-backend/env"
 	"github.com/bitrise-io/addons-ship-backend/services"
 	ctxpkg "github.com/bitrise-io/api-utils/context"
+	"github.com/bitrise-io/api-utils/httpresponse"
 	"github.com/c2fo/testify/require"
 )
 
@@ -123,4 +124,45 @@ func behavesAsContextCravingHandler(t *testing.T, method, url string, handler fu
 			performControllerTest(t, method, url, handler, controllerTestCase)
 		}
 	})
+}
+
+// -----------
+// Authentication
+// -----------
+
+type testAuthHandler struct{}
+
+func (h *testAuthHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	httpresponse.RespondWithSuccessNoErr(w, map[string]string{"message": "ok"})
+}
+
+type AuthenticationTestCase struct {
+	desc            string
+	requestHeaders  map[string]string
+	env             *env.AppEnv
+	authHandlerFunc func(*env.AppEnv, http.Handler) http.Handler
+
+	expectedStatusCode int
+	expectedBody       string
+}
+
+func performAuthenticationTest(t *testing.T,
+	httpMethod, url string,
+	tc AuthenticationTestCase,
+) {
+	t.Helper()
+
+	req, err := http.NewRequest(httpMethod, url, nil)
+	require.NoError(t, err)
+
+	for key, value := range tc.requestHeaders {
+		req.Header.Set(key, value)
+	}
+
+	rr := httptest.NewRecorder()
+	handler := tc.authHandlerFunc(tc.env, &testAuthHandler{})
+	handler.ServeHTTP(rr, req)
+
+	require.Equal(t, tc.expectedStatusCode, rr.Code)
+	require.Equal(t, tc.expectedBody, rr.Body.String())
 }
