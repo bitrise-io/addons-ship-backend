@@ -26,18 +26,32 @@ func createAuthorizeForAppVersionScreenshotAccessMiddleware(env *env.AppEnv) fun
 	}
 }
 
-// AuthorizedAppMiddleware ...
-func AuthorizedAppMiddleware(appEnv *env.AppEnv) alice.Chain {
-	commonMiddleware := middleware.CommonMiddleware()
+func createAuthenticateWithAddonAccessTokenMiddleware(env *env.AppEnv) func(http.Handler) http.Handler {
+	return func(h http.Handler) http.Handler {
+		return AuthenticateWithAddonAccessTokenHandlerFunc(env, h)
+	}
+}
+
+// CommonMiddleware ...
+func CommonMiddleware(appEnv *env.AppEnv) alice.Chain {
+	baseMiddleware := middleware.CommonMiddleware()
 
 	if appEnv.Environment == env.ServerEnvProduction {
-		commonMiddleware = commonMiddleware.Append(
+		baseMiddleware = baseMiddleware.Append(
 			middleware.CreateRedirectToHTTPSMiddleware(),
 		)
 	}
+	return baseMiddleware.Append(middleware.CreateOptionsRequestTerminatorMiddleware())
+}
 
-	return middleware.CommonMiddleware().Append(
-		middleware.CreateOptionsRequestTerminatorMiddleware(),
+// AuthenticateForProvisioning ...
+func AuthenticateForProvisioning(appEnv *env.AppEnv) alice.Chain {
+	return CommonMiddleware(appEnv).Append(createAuthenticateWithAddonAccessTokenMiddleware(appEnv))
+}
+
+// AuthorizedAppMiddleware ...
+func AuthorizedAppMiddleware(appEnv *env.AppEnv) alice.Chain {
+	return CommonMiddleware(appEnv).Append(
 		createAuthorizeForAppAccessMiddleware(appEnv),
 	)
 }
