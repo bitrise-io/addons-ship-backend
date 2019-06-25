@@ -27,6 +27,14 @@ func New(appEnv *env.AppEnv) *mux.Router {
 			handler: services.RootHandler, allowedMethods: []string{"GET", "OPTIONS"},
 		},
 		{
+			path: "/provision", middleware: services.AuthenticateForProvisioning(appEnv),
+			handler: services.ProvisionHandler, allowedMethods: []string{"POST", "OPTIONS"},
+		},
+		{
+			path: "/provision/{app-slug}", middleware: services.AuthenticateForDeprovisioning(appEnv),
+			handler: services.DeprovisionHandler, allowedMethods: []string{"DELETE", "OPTIONS"},
+		},
+		{
 			path: "/apps/{app-slug}", middleware: services.AuthorizedAppMiddleware(appEnv),
 			handler: services.AppGetHandler, allowedMethods: []string{"GET", "OPTIONS"},
 		},

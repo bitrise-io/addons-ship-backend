@@ -6,4 +6,5 @@ import "github.com/bitrise-io/addons-ship-backend/models"
 type AppService interface {
 	Create(*models.App) (*models.App, error)
 	Find(*models.App) (*models.App, error)
+	Delete(app *models.App) error
 }

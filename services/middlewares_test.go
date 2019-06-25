@@ -11,6 +11,46 @@ import (
 	"github.com/bitrise-io/api-utils/providers"
 )
 
+func Test_AuthenticateForProvisioning(t *testing.T) {
+	middleware.PerformTest(t, "GET", "/...", middleware.TestCase{
+		RequestHeaders: map[string]string{
+			"Authentication": "ADDON_AUTH_TOKEN",
+		},
+		ExpectedStatus: http.StatusOK,
+		ExpectedResponse: map[string]interface{}{
+			"message": "Success",
+		},
+		Middleware: services.AuthenticateForProvisioning(&env.AppEnv{
+			AddonAccessToken: "ADDON_AUTH_TOKEN",
+		}),
+	})
+}
+
+func Test_AuthenticateForDeprovisioning(t *testing.T) {
+	middleware.PerformTest(t, "GET", "/...", middleware.TestCase{
+		RequestHeaders: map[string]string{
+			"Authentication": "ADDON_AUTH_TOKEN",
+		},
+		ExpectedStatus: http.StatusOK,
+		ExpectedResponse: map[string]interface{}{
+			"message": "Success",
+		},
+		Middleware: services.AuthenticateForDeprovisioning(&env.AppEnv{
+			AddonAccessToken: "ADDON_AUTH_TOKEN",
+			RequestParams: &providers.RequestParamsMock{
+				Params: map[string]string{
+					"app-slug": "test_app_slug",
+				},
+			},
+			AppService: &testAppService{
+				findFn: func(app *models.App) (*models.App, error) {
+					return app, nil
+				},
+			},
+		}),
+	})
+}
+
 func Test_AuthorizedAppMiddleware(t *testing.T) {
 	middleware.PerformTest(t, "GET", "/...", middleware.TestCase{
 		RequestHeaders: map[string]string{

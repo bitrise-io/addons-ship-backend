@@ -12,6 +12,41 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
+// AuthorizeForAppDeprovisioningHandlerFunc ...
+func AuthorizeForAppDeprovisioningHandlerFunc(env *env.AppEnv, h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if env.RequestParams == nil {
+			httpresponse.RespondWithInternalServerError(w, errors.New("No Request Params provided"))
+			return
+		}
+		urlVars := env.RequestParams.Get(r)
+		appSlug := urlVars["app-slug"]
+		if appSlug == "" {
+			httpresponse.RespondWithBadRequestErrorNoErr(w, "App Slug not provided")
+			return
+		}
+
+		if env.AppService == nil {
+			httpresponse.RespondWithInternalServerError(w, errors.New("No App Service provided"))
+			return
+		}
+
+		app, err := env.AppService.Find(&models.App{AppSlug: appSlug})
+		switch {
+		case errors.Cause(err) == gorm.ErrRecordNotFound:
+			httpresponse.RespondWithNotFoundErrorNoErr(w)
+			return
+		case err != nil:
+			httpresponse.RespondWithInternalServerError(w, errors.WithStack(err))
+			return
+		}
+
+		// Access granted
+		ctx := ContextWithAuthorizedAppID(r.Context(), app.ID)
+		h.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
 // AuthorizeForAppAccessHandlerFunc ...
 func AuthorizeForAppAccessHandlerFunc(env *env.AppEnv, h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

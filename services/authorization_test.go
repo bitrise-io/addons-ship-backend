@@ -1,11 +1,7 @@
 package services_test
 
 import (
-	"context"
-	"encoding/json"
 	"net/http"
-	"net/http/httptest"
-	"strings"
 	"testing"
 
 	"github.com/bitrise-io/addons-ship-backend/env"
@@ -20,43 +16,177 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-// AuthorizationTestCase ...
-type AuthorizationTestCase struct {
-	requestHeaders     map[string]string
-	expectedStatusCode int
-	expectedResponse   interface{}
-
-	contextElements map[ctxpkg.RequestContextKey]interface{}
-}
-
-func performAuthorizationTest(t *testing.T,
-	httpMethod, url string,
-	handler http.Handler,
-	tc AuthorizationTestCase,
-) {
-	t.Helper()
-
-	r, err := http.NewRequest(httpMethod, url, nil)
-	require.NoError(t, err)
-
-	for headerKey, headerValue := range tc.requestHeaders {
-		r.Header.Set(headerKey, headerValue)
+func Test_AuthorizeForAppDeprovisioningHandlerFunc(t *testing.T) {
+	authHandler := &handlers.TestAuthHandler{
+		ContextElementList: map[string]ctxpkg.RequestContextKey{
+			"authorizedAppID": services.ContextKeyAuthorizedAppID,
+		},
 	}
+	httpMethod := "DELETE"
+	url := "/provision/test_app_slug"
 
-	for key, val := range tc.contextElements {
-		r = r.WithContext(context.WithValue(r.Context(), key, val))
-	}
+	t.Run("ok", func(t *testing.T) {
+		handler := services.AuthorizeForAppDeprovisioningHandlerFunc(&env.AppEnv{
+			RequestParams: &providers.RequestParamsMock{
+				Params: map[string]string{
+					"app-slug": "test_app_slug",
+				},
+			},
+			AppService: &testAppService{
+				findFn: func(app *models.App) (*models.App, error) {
+					require.Equal(t, app.AppSlug, "test_app_slug")
+					return &models.App{
+						Record:  models.Record{ID: uuid.FromStringOrNil("211afc15-127a-40f9-8cbe-1dadc1f86cdf")},
+						AppSlug: "test_app_slug",
+					}, nil
+				},
+			},
+		}, authHandler)
+		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppID: uuid.FromStringOrNil("211afc15-127a-40f9-8cbe-1dadc1f86cdf"),
+			},
+			requestHeaders: map[string]string{
+				"Authentication": "test-auth-token",
+			},
+			expectedStatusCode: http.StatusOK,
+			expectedResponse: map[string]interface{}{
+				"authorizedAppID": "211afc15-127a-40f9-8cbe-1dadc1f86cdf",
+			},
+		})
+	})
 
-	rr := httptest.NewRecorder()
-	handler.ServeHTTP(rr, r)
+	t.Run("when no Request Params object is provided", func(t *testing.T) {
+		handler := services.AuthorizeForAppDeprovisioningHandlerFunc(&env.AppEnv{
+			AppService: &testAppService{
+				findFn: func(app *models.App) (*models.App, error) {
+					require.Equal(t, app.AppSlug, "test_app_slug")
+					return &models.App{
+						Record:  models.Record{ID: uuid.FromStringOrNil("211afc15-127a-40f9-8cbe-1dadc1f86cdf")},
+						AppSlug: "test_app_slug",
+					}, nil
+				},
+			},
+		}, authHandler)
+		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppID: uuid.FromStringOrNil("211afc15-127a-40f9-8cbe-1dadc1f86cdf"),
+			},
+			requestHeaders: map[string]string{
+				"Authentication": "test-auth-token",
+			},
+			expectedStatusCode: http.StatusInternalServerError,
+			expectedResponse: map[string]interface{}{
+				"message": "Internal Server Error",
+			},
+		})
+	})
 
-	if tc.expectedResponse != nil {
-		expectedBytes, err := json.Marshal(tc.expectedResponse)
-		require.NoError(t, err)
-		require.Equal(t, string(expectedBytes), strings.Trim(rr.Body.String(), "\n"))
-	}
+	t.Run("when no app slug found in url params", func(t *testing.T) {
+		handler := services.AuthorizeForAppDeprovisioningHandlerFunc(&env.AppEnv{
+			RequestParams: &providers.RequestParamsMock{
+				Params: map[string]string{},
+			},
+			AppService: &testAppService{
+				findFn: func(app *models.App) (*models.App, error) {
+					return &models.App{
+						Record:  models.Record{ID: uuid.FromStringOrNil("211afc15-127a-40f9-8cbe-1dadc1f86cdf")},
+						AppSlug: "test_app_slug",
+					}, nil
+				},
+			},
+		}, authHandler)
+		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppID: uuid.FromStringOrNil("211afc15-127a-40f9-8cbe-1dadc1f86cdf"),
+			},
+			requestHeaders: map[string]string{
+				"Authentication": "test-auth-token",
+			},
+			expectedStatusCode: http.StatusBadRequest,
+			expectedResponse: map[string]interface{}{
+				"message": "App Slug not provided",
+			},
+		})
+	})
 
-	require.Equal(t, tc.expectedStatusCode, rr.Code)
+	t.Run("when no app service provided in app env", func(t *testing.T) {
+		handler := services.AuthorizeForAppDeprovisioningHandlerFunc(&env.AppEnv{
+			RequestParams: &providers.RequestParamsMock{
+				Params: map[string]string{
+					"app-slug": "test_app_slug",
+				},
+			},
+		}, authHandler)
+		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppID: uuid.FromStringOrNil("211afc15-127a-40f9-8cbe-1dadc1f86cdf"),
+			},
+			requestHeaders: map[string]string{
+				"Authentication": "test-auth-token",
+			},
+			expectedStatusCode: http.StatusInternalServerError,
+			expectedResponse: map[string]interface{}{
+				"message": "Internal Server Error",
+			},
+		})
+	})
+
+	t.Run("when app not found in database", func(t *testing.T) {
+		handler := services.AuthorizeForAppDeprovisioningHandlerFunc(&env.AppEnv{
+			RequestParams: &providers.RequestParamsMock{
+				Params: map[string]string{
+					"app-slug": "test_app_slug",
+				},
+			},
+			AppService: &testAppService{
+				findFn: func(app *models.App) (*models.App, error) {
+					require.Equal(t, app.AppSlug, "test_app_slug")
+					return &models.App{}, gorm.ErrRecordNotFound
+				},
+			},
+		}, authHandler)
+		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppID: uuid.FromStringOrNil("211afc15-127a-40f9-8cbe-1dadc1f86cdf"),
+			},
+			requestHeaders: map[string]string{
+				"Authentication": "test-auth-token",
+			},
+			expectedStatusCode: http.StatusNotFound,
+			expectedResponse: map[string]interface{}{
+				"message": "Not Found",
+			},
+		})
+	})
+
+	t.Run("when unexpected error happens at database query", func(t *testing.T) {
+		handler := services.AuthorizeForAppDeprovisioningHandlerFunc(&env.AppEnv{
+			RequestParams: &providers.RequestParamsMock{
+				Params: map[string]string{
+					"app-slug": "test_app_slug",
+				},
+			},
+			AppService: &testAppService{
+				findFn: func(app *models.App) (*models.App, error) {
+					require.Equal(t, app.AppSlug, "test_app_slug")
+					return &models.App{}, errors.New("SOME-SQL-ERROR")
+				},
+			},
+		}, authHandler)
+		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppID: uuid.FromStringOrNil("211afc15-127a-40f9-8cbe-1dadc1f86cdf"),
+			},
+			requestHeaders: map[string]string{
+				"Authentication": "test-auth-token",
+			},
+			expectedStatusCode: http.StatusInternalServerError,
+			expectedResponse: map[string]interface{}{
+				"message": "Internal Server Error",
+			},
+		})
+	})
 }
 
 func Test_AuthorizeForAppAccessHandlerFunc(t *testing.T) {
