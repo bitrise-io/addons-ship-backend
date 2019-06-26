@@ -20,8 +20,8 @@ type AppVersionPublishResponse struct {
 	Data *bitrise.TriggerResponse `json:"data"`
 }
 
-// AppVersionPublishHandler ...
-func AppVersionPublishHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request) error {
+// AppVersionPublishPostHandler ...
+func AppVersionPublishPostHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request) error {
 	authorizedAppVersionID, err := GetAuthorizedAppVersionIDFromContext(r.Context())
 	if err != nil {
 		return errors.WithStack(err)
@@ -83,7 +83,7 @@ func AppVersionPublishHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Re
 		BuildConfig: config,
 		InlineEnvs:  string(inlineEnvsBytes),
 		Secrets:     string(secretsBytes),
-		// add webhook URL
+		// add webhook UR
 	})
 	if err != nil {
 		return errors.WithStack(err)
