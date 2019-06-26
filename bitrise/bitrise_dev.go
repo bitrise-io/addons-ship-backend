@@ -103,3 +103,8 @@ func (a *APIDev) GetServiceAccountFiles(authToken, appSlug string) ([]GenericPro
 		},
 	}, nil
 }
+
+// TriggerDENTask ...
+func (a *APIDev) TriggerDENTask(params TaskParams) (*TriggerResponse, error) {
+	return &TriggerResponse{}, nil
+}

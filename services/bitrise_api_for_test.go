@@ -10,6 +10,7 @@ type testBitriseAPI struct {
 	getCodeSigningIdentitiesFn func(string, string) ([]bitrise.CodeSigningIdentity, error)
 	getAndroidKeystoreFilesFn  func(string, string) ([]bitrise.AndroidKeystoreFile, error)
 	getServiceAccountFilesFn   func(string, string) ([]bitrise.GenericProjectFile, error)
+	triggerDENTaskFn           func(params bitrise.TaskParams) (*bitrise.TriggerResponse, error)
 }
 
 func (a *testBitriseAPI) GetArtifactData(authToken, appSlug, buildSlug string) (*bitrise.ArtifactData, error) {
@@ -59,4 +60,11 @@ func (a *testBitriseAPI) GetServiceAccountFiles(authToken, appSlug string) ([]bi
 		panic("You have to override GetServiceAccountFiles function in tests")
 	}
 	return a.getServiceAccountFilesFn(authToken, appSlug)
+}
+
+func (a *testBitriseAPI) TriggerDENTask(params bitrise.TaskParams) (*bitrise.TriggerResponse, error) {
+	if a.triggerDENTaskFn == nil {
+		panic("You have to override TriggerDENTask function in tests")
+	}
+	return a.triggerDENTaskFn(params)
 }

@@ -1,6 +1,7 @@
 package bitrise
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -25,6 +26,7 @@ type APIInterface interface {
 	GetCodeSigningIdentities(authToken, appSlug string) ([]CodeSigningIdentity, error)
 	GetAndroidKeystoreFiles(authToken, appSlug string) ([]AndroidKeystoreFile, error)
 	GetServiceAccountFiles(authToken, appSlug string) ([]GenericProjectFile, error)
+	TriggerDENTask(params TaskParams) (*TriggerResponse, error)
 }
 
 // API ...
@@ -54,9 +56,6 @@ func (a *API) doRequest(authToken, method, path string) (*http.Response, error) 
 	resp, err := a.Do(req)
 	if err != nil {
 		return nil, errors.WithStack(err)
-	}
-	if resp.StatusCode != http.StatusOK {
-		return nil, errors.Errorf("Failed to fetch artifact data: status: %d", resp.StatusCode)
 	}
 	return resp, nil
 }
@@ -120,7 +119,7 @@ func (a *API) GetAppDetails(authToken, appSlug string) (*AppDetails, error) {
 	}
 	defer httpresponse.BodyCloseWithErrorLog(resp)
 	if resp.StatusCode != http.StatusOK {
-		return nil, errors.Errorf("Failed to fetch artifact data: status: %d", resp.StatusCode)
+		return nil, errors.Errorf("Failed to fetch app details: status: %d", resp.StatusCode)
 	}
 	var responseModel appShowResponseModel
 	if err := json.NewDecoder(resp.Body).Decode(&responseModel); err != nil {
@@ -137,7 +136,7 @@ func (a *API) GetProvisioningProfiles(authToken, appSlug string) ([]Provisioning
 	}
 	defer httpresponse.BodyCloseWithErrorLog(resp)
 	if resp.StatusCode != http.StatusOK {
-		return nil, errors.Errorf("Failed to fetch artifact data: status: %d", resp.StatusCode)
+		return nil, errors.Errorf("Failed to fetch provisioning profiles: status: %d", resp.StatusCode)
 	}
 	var responseModel provisioningProfileListResponseModel
 	if err := json.NewDecoder(resp.Body).Decode(&responseModel); err != nil {
@@ -154,7 +153,7 @@ func (a *API) GetCodeSigningIdentities(authToken, appSlug string) ([]CodeSigning
 	}
 	defer httpresponse.BodyCloseWithErrorLog(resp)
 	if resp.StatusCode != http.StatusOK {
-		return nil, errors.Errorf("Failed to fetch artifact data: status: %d", resp.StatusCode)
+		return nil, errors.Errorf("Failed to fetch build certificates: status: %d", resp.StatusCode)
 	}
 	var responseModel codeSigningIdentityListResponseModel
 	if err := json.NewDecoder(resp.Body).Decode(&responseModel); err != nil {
@@ -171,7 +170,7 @@ func (a *API) GetAndroidKeystoreFiles(authToken, appSlug string) ([]AndroidKeyst
 	}
 	defer httpresponse.BodyCloseWithErrorLog(resp)
 	if resp.StatusCode != http.StatusOK {
-		return nil, errors.Errorf("Failed to fetch artifact data: status: %d", resp.StatusCode)
+		return nil, errors.Errorf("Failed to fetch android keystore files: status: %d", resp.StatusCode)
 	}
 	var responseModel androidKeystoreFileListResponseModel
 	if err := json.NewDecoder(resp.Body).Decode(&responseModel); err != nil {
@@ -188,7 +187,7 @@ func (a *API) GetServiceAccountFiles(authToken, appSlug string) ([]GenericProjec
 	}
 	defer httpresponse.BodyCloseWithErrorLog(resp)
 	if resp.StatusCode != http.StatusOK {
-		return nil, errors.Errorf("Failed to fetch artifact data: status: %d", resp.StatusCode)
+		return nil, errors.Errorf("Failed to fetch service account files: status: %d", resp.StatusCode)
 	}
 	var responseModel genericProjectFileListResponseModel
 	if err := json.NewDecoder(resp.Body).Decode(&responseModel); err != nil {
@@ -202,6 +201,42 @@ func (a *API) GetServiceAccountFiles(authToken, appSlug string) ([]GenericProjec
 	}
 
 	return serviceAccountFiles, nil
+}
+
+// TriggerDENTask ...
+func (a *API) TriggerDENTask(params TaskParams) (*TriggerResponse, error) {
+	payloadBytes, err := json.Marshal(params)
+	if err != nil {
+		return nil, errors.Wrap(err, "Failed to JSON serialize")
+	}
+	req, err := http.NewRequest("POST", a.url+"/bitrise-den/tasks", bytes.NewBuffer(payloadBytes))
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	denAuthHeaderKey, ok := os.LookupEnv("BITRISE_DEN_SERVER_ADMIN_SECRET_HEADER_KEY")
+	if !ok {
+		return nil, errors.New("No value set for env BITRISE_DEN_SERVER_ADMIN_SECRET_HEADER_KEY")
+	}
+	denAdminSecret, _ := os.LookupEnv("BITRISE_DEN_SERVER_ADMIN_SECRET")
+	if !ok {
+		return nil, errors.New("No value set for env BITRISE_DEN_SERVER_ADMIN_SECRET")
+	}
+	req.Header.Set(denAuthHeaderKey, denAdminSecret)
+
+	resp, err := a.Do(req)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	defer httpresponse.BodyCloseWithErrorLog(resp)
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.Errorf("Failed to trigger DEN task: status: %d", resp.StatusCode)
+	}
+
+	var responseModel TriggerResponse
+	if err := json.NewDecoder(resp.Body).Decode(&responseModel); err != nil {
+		return nil, errors.WithStack(err)
+	}
+	return &responseModel, nil
 }
 
 func (a *API) listArtifacts(authToken, appSlug, buildSlug, next string) (*artifactListResponseModel, error) {
