@@ -83,7 +83,7 @@ func AppVersionPublishPostHandler(env *env.AppEnv, w http.ResponseWriter, r *htt
 		BuildConfig: config,
 		InlineEnvs:  string(inlineEnvsBytes),
 		Secrets:     string(secretsBytes),
-		// add webhook UR
+		WebhookURL:  env.AddonHostURL + "/webhook",
 	})
 	if err != nil {
 		return errors.WithStack(err)
