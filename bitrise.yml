@@ -135,6 +135,8 @@ workflows:
                 go get github.com/GeertJohan/go.rice/rice
                 cd ./templates
                 rice embed-go
+                cd ../services
+                rice embed-go
   send-mail:
     steps:
       - script@1.1.5:
