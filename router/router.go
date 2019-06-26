@@ -52,7 +52,7 @@ func New(appEnv *env.AppEnv) *mux.Router {
 		},
 		{
 			path: "/apps/{app-slug}/versions/{version-id}/publish", middleware: services.AuthorizedAppVersionMiddleware(appEnv),
-			handler: services.AppVersionPublishHandler, allowedMethods: []string{"POST", "OPTIONS"},
+			handler: services.AppVersionPublishPostHandler, allowedMethods: []string{"POST", "OPTIONS"},
 		},
 		{
 			path: "/apps/{app-slug}/versions/{version-id}/screenshots", middleware: services.AuthorizedAppVersionMiddleware(appEnv),
