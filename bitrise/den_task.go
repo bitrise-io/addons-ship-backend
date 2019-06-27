@@ -22,7 +22,7 @@ type TriggerResponse struct {
 	FinishedAt             *time.Time `json:"finished_at"`
 	GeneratedLogChunkCount *int       `json:"generated_log_chunk_count"`
 	TaskIdentifier         string     `json:"id"`
-	StartedAt              *time.Time `json:"finished_at"`
+	StartedAt              *time.Time `json:"started_at"`
 	Tags                   string     `json:"tags"`
 	TimedOut               bool       `json:"timed_out"`
 	TimeoutSeconds         int        `json:"timeout_seconds"`
