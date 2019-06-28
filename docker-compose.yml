@@ -4,6 +4,8 @@ services:
     image: postgres
     ports:
       - '5432:5432'
+  redis:
+    image: redis
   app:
     build: .
     volumes:
@@ -13,6 +15,7 @@ services:
       - '3003:3003'
     links:
       - db:postgres
+      - redis
     environment:
       PORT: 3003
       DB_HOST: postgres
@@ -30,3 +33,29 @@ services:
       BITRISE_DEN_SERVER_ADMIN_SECRET_HEADER_KEY: $BITRISE_DEN_SERVER_ADMIN_SECRET_HEADER_KEY
       BITRISE_DEN_SERVER_ADMIN_SECRET: $BITRISE_DEN_SERVER_ADMIN_SECRET
       BITRISE_API_ROOT_URL: $BITRISE_API_ROOT_URL
+      REDIS_URL: redis:6379
+  worker:
+    build: .
+    volumes:
+      - .:/bitrise/src
+    command: go run main.go
+    links:
+      - db:postgres
+      - redis
+    environment:
+      WORKER: 'true'
+      DB_HOST: postgres
+      DB_NAME: addons_ship_dev
+      DB_USER: postgres
+      DB_PWD: postgres
+      DB_SSL_MODE: disable
+      AWS_BUCKET: $AWS_BUCKET
+      AWS_REGION: $AWS_REGION
+      AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+      AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+      ADDON_ACCESS_TOKEN: development-token
+      ADDON_HOST_URL: localhost:3003
+      BITRISE_DEN_SERVER_ADMIN_SECRET_HEADER_KEY: $BITRISE_DEN_SERVER_ADMIN_SECRET_HEADER_KEY
+      BITRISE_DEN_SERVER_ADMIN_SECRET: $BITRISE_DEN_SERVER_ADMIN_SECRET
+      BITRISE_API_ROOT_URL: $BITRISE_API_ROOT_URL
+      REDIS_URL: redis:6379

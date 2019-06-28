@@ -24,12 +24,8 @@ func (c *Client) Close() error {
 
 func newPool(url string) *redis.Pool {
 	return &redis.Pool{
-		// Maximum number of idle connections in the pool.
-		MaxIdle: 80,
-		// max number of connections
+		MaxIdle:   50,
 		MaxActive: 1000,
-		// Dial is an application supplied function for creating and
-		// configuring a connection.
 		Dial: func() (redis.Conn, error) {
 			c, err := redis.Dial("tcp", url)
 			if err != nil {
