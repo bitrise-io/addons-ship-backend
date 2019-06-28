@@ -1,11 +1,14 @@
 package env
 
 import (
+	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/bitrise-io/addons-ship-backend/bitrise"
 	"github.com/bitrise-io/addons-ship-backend/dataservices"
 	"github.com/bitrise-io/addons-ship-backend/models"
+	"github.com/bitrise-io/addons-ship-backend/redis"
 	"github.com/bitrise-io/api-utils/logging"
 	"github.com/bitrise-io/api-utils/providers"
 	"github.com/jinzhu/gorm"
@@ -35,6 +38,7 @@ type AppEnv struct {
 	BitriseAPI            bitrise.APIInterface
 	RequestParams         providers.RequestParamsInterface
 	AWS                   providers.AWSInterface
+	LogStoreService       dataservices.LogStore
 }
 
 // New ...
@@ -76,6 +80,16 @@ func New(db *gorm.DB) (*AppEnv, error) {
 	}
 
 	env.AWS = &providers.AWS{Config: awsConfig}
+
+	redisExpiration := int64(1000)
+	redisExpirationStr, ok := os.LookupEnv("REDIS_KEY_EXPIRATION_TIME")
+	if ok {
+		redisExpiration, err = strconv.ParseInt(redisExpirationStr, 10, 64)
+		if err != nil {
+			fmt.Println("Invalid Redis expiration time, setting default to 1000 seconds...")
+		}
+	}
+	env.LogStoreService = &models.LogStoreService{Redis: redis.New(), Expiration: int(redisExpiration)}
 	return env, nil
 }
 
