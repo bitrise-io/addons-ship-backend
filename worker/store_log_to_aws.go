@@ -39,10 +39,11 @@ func (c *Context) StoreLogToAWS(job *work.Job) error {
 }
 
 // EnqueueStoreLogToAWS ...
-func EnqueueStoreLogToAWS(appEventID uuid.UUID, numberOfLogChunks int64) error {
+func EnqueueStoreLogToAWS(appEventID uuid.UUID, numberOfLogChunks int64, awsPath string) error {
 	enqueuer := work.NewEnqueuer(namespace, redisPool)
 	_, err := enqueuer.EnqueueUnique(storeLogToAWS, work.Q{
 		"event_id":             appEventID.String(),
+		"aws_path":             awsPath,
 		"number_of_log_chunks": numberOfLogChunks,
 	})
 	if err != nil {
