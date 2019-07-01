@@ -34,12 +34,13 @@ func (c *Context) StoreLogToAWS(job *work.Job) error {
 	if err != nil {
 		return errors.WithStack(err)
 	}
-
+	fmt.Println("[i] Job finished")
 	return nil
 }
 
 // EnqueueStoreLogToAWS ...
 func EnqueueStoreLogToAWS(appEventID uuid.UUID, numberOfLogChunks int64, awsPath string) error {
+	fmt.Println("[i] Job started: event ID: ", appEventID.String(), "AWS path: ", awsPath)
 	enqueuer := work.NewEnqueuer(namespace, redisPool)
 	_, err := enqueuer.EnqueueUnique(storeLogToAWS, work.Q{
 		"event_id":             appEventID.String(),
