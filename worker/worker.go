@@ -12,14 +12,7 @@ import (
 )
 
 var namespace = "ship_workers"
-var redisPool = &redis.Pool{
-	MaxActive: 5,
-	MaxIdle:   5,
-	Wait:      true,
-	Dial: func() (redis.Conn, error) {
-		return redis.Dial("tcp", "redis:6379")
-	},
-}
+var redisPool *redis.Pool
 
 // Context ...
 type Context struct {
@@ -30,7 +23,7 @@ type Context struct {
 func Start(appEnv *env.AppEnv) error {
 	urlStr := os.Getenv("REDIS_URL")
 	context := Context{env: appEnv}
-	pool := work.NewWorkerPool(context, 10, namespace, &redis.Pool{
+	redisPool = &redis.Pool{
 		MaxActive: 5,
 		MaxIdle:   5,
 		Wait:      true,
@@ -49,7 +42,8 @@ func Start(appEnv *env.AppEnv) error {
 			}
 			return c, nil
 		},
-	})
+	}
+	pool := work.NewWorkerPool(context, 10, namespace, redisPool)
 
 	pool.Job(storeLogToAWS, (&context).StoreLogToAWS)
 
