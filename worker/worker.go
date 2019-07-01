@@ -43,7 +43,11 @@ func Start(appEnv *env.AppEnv) error {
 			if err != nil {
 				return nil, errors.WithStack(err)
 			}
-			return redis.Dial("tcp", url, redis.DialPassword(pass))
+			c, err := redis.Dial("tcp", url, redis.DialPassword(pass))
+			if err != nil {
+				return nil, errors.WithStack(err)
+			}
+			return c, nil
 		},
 	})
 
