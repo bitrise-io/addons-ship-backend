@@ -18,7 +18,7 @@ type Client struct {
 // New ...
 func New() *Client {
 	url := os.Getenv("REDIS_URL")
-	return &Client{conn: newPool(url).Get()}
+	return &Client{conn: NewPool(url).Get()}
 }
 
 // Close ...
@@ -26,7 +26,8 @@ func (c *Client) Close() error {
 	return c.conn.Close()
 }
 
-func newPool(urlStr string) *redis.Pool {
+// NewPool ...
+func NewPool(urlStr string) *redis.Pool {
 	return &redis.Pool{
 		MaxIdle:   50,
 		MaxActive: 1000,

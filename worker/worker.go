@@ -8,7 +8,6 @@ import (
 	redispkg "github.com/bitrise-io/addons-ship-backend/redis"
 	"github.com/gocraft/work"
 	"github.com/gomodule/redigo/redis"
-	"github.com/pkg/errors"
 )
 
 var namespace = "ship_workers"
@@ -23,26 +22,7 @@ type Context struct {
 func Start(appEnv *env.AppEnv) error {
 	urlStr := os.Getenv("REDIS_URL")
 	context := Context{env: appEnv}
-	redisPool = &redis.Pool{
-		MaxActive: 5,
-		MaxIdle:   5,
-		Wait:      true,
-		Dial: func() (redis.Conn, error) {
-			url, err := redispkg.DialURL(urlStr)
-			if err != nil {
-				return nil, errors.WithStack(err)
-			}
-			pass, err := redispkg.DialPassword(urlStr)
-			if err != nil {
-				return nil, errors.WithStack(err)
-			}
-			c, err := redis.Dial("tcp", url, redis.DialPassword(pass))
-			if err != nil {
-				return nil, errors.WithStack(err)
-			}
-			return c, nil
-		},
-	}
+	redisPool = redispkg.NewPool(urlStr)
 	pool := work.NewWorkerPool(context, 10, namespace, redisPool)
 
 	pool.Job(storeLogToAWS, (&context).StoreLogToAWS)
