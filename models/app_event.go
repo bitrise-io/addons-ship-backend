@@ -16,6 +16,14 @@ type AppEvent struct {
 	App   App       `gorm:"foreignkey:AppID" json:"-"`
 }
 
+// BeforeCreate ...
+func (a *AppEvent) BeforeCreate() error {
+	if uuid.Equal(a.ID, uuid.UUID{}) {
+		a.ID = uuid.NewV4()
+	}
+	return nil
+}
+
 // LogAWSPath ...
 func (a *AppEvent) LogAWSPath() string {
 	return fmt.Sprintf("/logs/%s/%s", a.App.ID, a.ID)
