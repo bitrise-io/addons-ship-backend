@@ -12,7 +12,7 @@ var storeLogToAWS = "store_log_to_aws"
 
 // StoreLogToAWS ...
 func (c *Context) StoreLogToAWS(job *work.Job) error {
-	fmt.Println("[i] Job StoreLogToAWS started")
+	c.env.Logger.Info("[i] Job StoreLogToAWS started")
 	eventID := job.ArgString("event_id")
 	if eventID == (uuid.UUID{}).String() {
 		return errors.New("Failed to get App Event ID")
@@ -29,14 +29,13 @@ func (c *Context) StoreLogToAWS(job *work.Job) error {
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		fmt.Println(chunk.Content)
 		content = append(content, []byte(chunk.Content)...)
 	}
 	err := c.env.AWS.PutObject(awsPath, content)
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	fmt.Println("[i] Job StoreLogToAWS finished")
+	c.env.Logger.Info("[i] Job StoreLogToAWS finished")
 	return nil
 }
 
