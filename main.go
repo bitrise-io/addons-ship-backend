@@ -25,39 +25,33 @@ func main() {
 		}
 	}()
 
-	workerMode := os.Getenv("WORKER") == "true"
-	if workerMode {
-		appEnv, err := env.New(dataservices.GetDB())
-		if err != nil {
-			logger.Error("Failed to initialize Application Environment object for worker", zap.Any("error", err))
-			os.Exit(1)
-		}
+	tracer.Start(tracer.WithServiceName("addons-ship"))
+	defer tracer.Stop()
+
+	err := dataservices.InitializeConnection(dataservices.ConnectionParams{}, true)
+	if err != nil {
+		logger.Error("Failed to initialize DB connection", zap.Any("error", err))
+		os.Exit(1)
+	}
+	defer dataservices.Close()
+	log.Println(" [OK] Database connection established")
+
+	appEnv, err := env.New(dataservices.GetDB())
+	if err != nil {
+		logger.Error("Failed to initialize Application Environment object", zap.Any("error", err))
+		os.Exit(1)
+	}
+
+	go func() {
 		log.Println("Starting worker mode...")
 		log.Fatal(errors.WithStack(worker.Start(appEnv)))
-	} else {
-		tracer.Start(tracer.WithServiceName("addons-ship"))
-		defer tracer.Stop()
+	}()
 
-		err := dataservices.InitializeConnection(dataservices.ConnectionParams{}, true)
-		if err != nil {
-			logger.Error("Failed to initialize DB connection", zap.Any("error", err))
-			os.Exit(1)
-		}
-		defer dataservices.Close()
-		log.Println(" [OK] Database connection established")
+	// Routing
+	http.Handle("/", router.New(appEnv))
 
-		appEnv, err := env.New(dataservices.GetDB())
-		if err != nil {
-			logger.Error("Failed to initialize Application Environment object", zap.Any("error", err))
-			os.Exit(1)
-		}
-
-		// Routing
-		http.Handle("/", router.New(appEnv))
-
-		log.Println("Starting - using port:", appEnv.Port)
-		if err := http.ListenAndServe(":"+appEnv.Port, nil); err != nil {
-			logger.Error("Failed to initialize Ship Addon Backend", zap.Any("error", err))
-		}
+	log.Println("Starting - using port:", appEnv.Port)
+	if err := http.ListenAndServe(":"+appEnv.Port, nil); err != nil {
+		logger.Error("Failed to initialize Ship Addon Backend", zap.Any("error", err))
 	}
 }
