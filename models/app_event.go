@@ -26,5 +26,5 @@ func (a *AppEvent) BeforeCreate() error {
 
 // LogAWSPath ...
 func (a *AppEvent) LogAWSPath() string {
-	return fmt.Sprintf("/logs/%s/%s", a.App.ID, a.ID)
+	return fmt.Sprintf("logs/%s/%s.log", a.App.AppSlug, a.ID)
 }
