@@ -11,6 +11,12 @@ import (
 	"github.com/pkg/errors"
 )
 
+// Interface ...
+type Interface interface {
+	Get(string) (string, error)
+	Set(string, string, int) error
+}
+
 // Client ...
 type Client struct {
 	conn redis.Conn

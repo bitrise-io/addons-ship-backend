@@ -8,7 +8,7 @@ import (
 
 // LogStoreService ...
 type LogStoreService struct {
-	Redis      *redis.Client
+	Redis      redis.Interface
 	Expiration int
 }
 
