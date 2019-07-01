@@ -18,8 +18,8 @@ github.com/apache/thrift v0.12.0/go.mod h1:cp2SuWMxlEZw2r+iP2GNCdIi4C1qmUzdZFSVb
 github.com/aws/aws-sdk-go v1.19.34 h1:GlE1CUDxDef2CWe1oZW5kvj9bHkIpe/qZCzSavm0BNI=
 github.com/aws/aws-sdk-go v1.19.34/go.mod h1:KmX6BPdI08NWTb3/sm4ZGu5ShLoqVDhKgpiN924inxo=
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
-github.com/bitrise-io/api-utils v0.0.0-20190628153209-26198c26ea21 h1:QzXPk9IuiYV59sP7ZZ3yinKTw5CMLn0HYKSV3xOL+Fs=
-github.com/bitrise-io/api-utils v0.0.0-20190628153209-26198c26ea21/go.mod h1:FwXTOBcd4twhPfBS61C83oz3QkrUjIawlZc4T/EBqEc=
+github.com/bitrise-io/api-utils v0.0.0-20190701151100-c20ad3345943 h1:vbagiyqH1t851qXy8jFKekl6oYiOrTsxPGSkx8g8zPg=
+github.com/bitrise-io/api-utils v0.0.0-20190701151100-c20ad3345943/go.mod h1:FwXTOBcd4twhPfBS61C83oz3QkrUjIawlZc4T/EBqEc=
 github.com/bitrise-io/go-crypto v0.0.0-20190621130134-8c226ef6074e h1:Xt59QWp2gGHWaXHTpvzkIITa9j7zIbZDuAsHg9QkamA=
 github.com/bitrise-io/go-crypto v0.0.0-20190621130134-8c226ef6074e/go.mod h1:NuU9NwkIiHHcV3nXuGa2vxxadPUDujRRJjhf+OPZ5Mk=
 github.com/bitrise-io/go-utils v0.0.0-20190507082533-8898129615c9 h1:/VXAK6LQD11bNkHiz/w0MPeO7y4wPCrsoyPnYJ+0qbA=

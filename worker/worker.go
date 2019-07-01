@@ -6,6 +6,7 @@ import (
 
 	"github.com/bitrise-io/addons-ship-backend/env"
 	redispkg "github.com/bitrise-io/addons-ship-backend/redis"
+	"github.com/bitrise-io/api-utils/utils"
 	"github.com/gocraft/work"
 	"github.com/gomodule/redigo/redis"
 )
@@ -20,8 +21,11 @@ type Context struct {
 
 func init() {
 	if redisPool == nil {
-		urlStr := os.Getenv("REDIS_URL")
-		redisPool = redispkg.NewPool(urlStr)
+		redisPool = redispkg.NewPool(
+			os.Getenv("REDIS_URL"),
+			int(utils.GetInt64EnvWithDefault("WORKER_MAX_IDLE_CONNECTION", 50)),
+			int(utils.GetInt64EnvWithDefault("WORKER_MAX_ACTIVE_CONNECTION", 1000)),
+		)
 	}
 }
 

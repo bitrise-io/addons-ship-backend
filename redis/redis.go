@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/bitrise-io/api-utils/utils"
 	"github.com/gomodule/redigo/redis"
 	"github.com/pkg/errors"
 )
@@ -17,8 +18,13 @@ type Client struct {
 
 // New ...
 func New() *Client {
-	url := os.Getenv("REDIS_URL")
-	return &Client{conn: NewPool(url).Get()}
+	return &Client{
+		conn: NewPool(
+			os.Getenv("REDIS_URL"),
+			int(utils.GetInt64EnvWithDefault("REDIS_MAX_IDLE_CONNECTION", 50)),
+			int(utils.GetInt64EnvWithDefault("REDIS_MAX_ACTIVE_CONNECTION", 1000)),
+		).Get(),
+	}
 }
 
 // Close ...
@@ -27,10 +33,10 @@ func (c *Client) Close() error {
 }
 
 // NewPool ...
-func NewPool(urlStr string) *redis.Pool {
+func NewPool(urlStr string, maxIdle, maxActive int) *redis.Pool {
 	return &redis.Pool{
-		MaxIdle:   50,
-		MaxActive: 1000,
+		MaxIdle:   maxIdle,
+		MaxActive: maxActive,
 		Dial: func() (redis.Conn, error) {
 			url, err := DialURL(urlStr)
 			if err != nil {
