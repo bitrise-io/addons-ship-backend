@@ -18,11 +18,16 @@ type Context struct {
 	env *env.AppEnv
 }
 
+func init() {
+	if redisPool == nil {
+		urlStr := os.Getenv("REDIS_URL")
+		redisPool = redispkg.NewPool(urlStr)
+	}
+}
+
 // Start ...
 func Start(appEnv *env.AppEnv) error {
-	urlStr := os.Getenv("REDIS_URL")
 	context := Context{env: appEnv}
-	redisPool = redispkg.NewPool(urlStr)
 	pool := work.NewWorkerPool(context, 10, namespace, redisPool)
 
 	pool.Job(storeLogToAWS, (&context).StoreLogToAWS)

@@ -12,7 +12,7 @@ var storeLogToAWS = "store_log_to_aws"
 
 // StoreLogToAWS ...
 func (c *Context) StoreLogToAWS(job *work.Job) error {
-	fmt.Println("[i] Job started")
+	fmt.Println("[i] Job StoreLogToAWS started")
 	eventID := job.ArgString("event_id")
 	if eventID == (uuid.UUID{}).String() {
 		return errors.New("Failed to get App Event ID")
@@ -21,7 +21,7 @@ func (c *Context) StoreLogToAWS(job *work.Job) error {
 	if awsPath == "" {
 		return errors.New("Failed to get AWS path")
 	}
-	fmt.Println("[i] Job params: event ID: ", eventID, "AWS path: ", awsPath)
+
 	numberOfChunks := job.ArgInt64("number_of_log_chunks")
 	content := []byte{}
 	for i := int64(1); i <= numberOfChunks; i++ {
@@ -36,7 +36,7 @@ func (c *Context) StoreLogToAWS(job *work.Job) error {
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	fmt.Println("[i] Job finished")
+	fmt.Println("[i] Job StoreLogToAWS finished")
 	return nil
 }
 
