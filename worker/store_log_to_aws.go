@@ -12,6 +12,7 @@ var storeLogToAWS = "store_log_to_aws"
 
 // StoreLogToAWS ...
 func (c *Context) StoreLogToAWS(job *work.Job) error {
+	fmt.Println("[i] Job started")
 	eventID := job.ArgString("event_id")
 	if eventID == (uuid.UUID{}).String() {
 		return errors.New("Failed to get App Event ID")
@@ -20,6 +21,7 @@ func (c *Context) StoreLogToAWS(job *work.Job) error {
 	if awsPath == "" {
 		return errors.New("Failed to get AWS path")
 	}
+	fmt.Println("[i] Job params: event ID: ", eventID, "AWS path: ", awsPath)
 	numberOfChunks := job.ArgInt64("number_of_log_chunks")
 	content := []byte{}
 	for i := int64(1); i <= numberOfChunks; i++ {
@@ -40,7 +42,6 @@ func (c *Context) StoreLogToAWS(job *work.Job) error {
 
 // EnqueueStoreLogToAWS ...
 func EnqueueStoreLogToAWS(appEventID uuid.UUID, numberOfLogChunks int64, awsPath string) error {
-	fmt.Println("[i] Job started: event ID: ", appEventID.String(), "AWS path: ", awsPath)
 	enqueuer := work.NewEnqueuer(namespace, redisPool)
 	_, err := enqueuer.EnqueueUnique(storeLogToAWS, work.Q{
 		"event_id":             appEventID.String(),
