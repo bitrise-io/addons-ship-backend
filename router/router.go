@@ -94,6 +94,10 @@ func New(appEnv *env.AppEnv) *mux.Router {
 			path: "/apps/{app-slug}/settings", middleware: services.AuthorizedAppMiddleware(appEnv),
 			handler: services.AppSettingsPatchHandler, allowedMethods: []string{"PATCH", "OPTIONS"},
 		},
+		{
+			path: "/apps/{app-slug}/events", middleware: services.AuthorizedAppMiddleware(appEnv),
+			handler: services.AppEventsGetHandler, allowedMethods: []string{"GET", "OPTIONS"},
+		},
 	} {
 		r.Handle(route.path, route.middleware.Then(services.Handler{Env: appEnv, H: route.handler})).
 			Methods(route.allowedMethods...)

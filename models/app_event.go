@@ -17,10 +17,18 @@ type AppEvent struct {
 	App   App       `gorm:"foreignkey:AppID" json:"-"`
 }
 
+// BeforeCreate ...
+func (a *AppEvent) BeforeCreate() error {
+	if uuid.Equal(a.ID, uuid.UUID{}) {
+		a.ID = uuid.NewV4()
+	}
+	return nil
+}
+
 // LogAWSPath ...
 func (a *AppEvent) LogAWSPath() (string, error) {
 	if a.App.AppSlug == "" {
 		return "", errors.New("App has empty App Slug, App has to be preloaded")
 	}
-	return fmt.Sprintf("/logs/%s/%s", a.App.AppSlug, a.ID), nil
+	return fmt.Sprintf("logs/%s/%s.log", a.App.AppSlug, a.ID), nil
 }
