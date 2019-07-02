@@ -23,6 +23,7 @@ func Test_AppVersionPublishPostHandler(t *testing.T) {
 	handler := services.AppVersionPublishPostHandler
 
 	testAppVersionID := uuid.FromStringOrNil("de438ddc-98e5-4226-a5f4-fd2d53474879")
+	testTaskIdentifier := uuid.FromStringOrNil("13a94c5d-4609-404e-ae69-c625e93b8b71")
 
 	behavesAsServiceCravingHandler(t, httpMethod, url, handler, []string{"AppVersionService", "BitriseAPI"}, ControllerTestCase{
 		contextElements: map[ctxpkg.RequestContextKey]interface{}{
@@ -116,19 +117,19 @@ func Test_AppVersionPublishPostHandler(t *testing.T) {
 						require.Equal(t, `{"BITRISE_ACCESS_TOKEN":"bitrise-api-addon-token"}`, params.Secrets)
 						require.Equal(t, "http://ship.addon.url/webhook", params.WebhookURL)
 						require.Equal(t, "resign_archive_app_store", params.Workflow)
-						return &bitrise.TriggerResponse{TaskIdentifier: "abcd-efgh-1234"}, nil
+						return &bitrise.TriggerResponse{TaskIdentifier: testTaskIdentifier}, nil
 					},
 				},
 				PublishTaskService: &testPublishTaskService{
 					createFn: func(publishTask *models.PublishTask) (*models.PublishTask, error) {
-						require.Equal(t, "abcd-efgh-1234", publishTask.TaskID)
+						require.Equal(t, testTaskIdentifier, publishTask.TaskID)
 						return publishTask, nil
 					},
 				},
 			},
 			expectedStatusCode: http.StatusOK,
 			expectedResponse: services.AppVersionPublishResponse{
-				Data: &bitrise.TriggerResponse{TaskIdentifier: "abcd-efgh-1234"},
+				Data: &bitrise.TriggerResponse{TaskIdentifier: testTaskIdentifier},
 			},
 		})
 	})
