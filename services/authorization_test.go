@@ -777,3 +777,100 @@ func Test_AuthorizeForAppVersionScreenshotAccessHandlerFunc(t *testing.T) {
 		})
 	})
 }
+
+func Test_AuthorizeForWebhookHandlerFunc(t *testing.T) {
+	authHandler := &handlers.TestAuthHandler{
+		ContextElementList: map[string]ctxpkg.RequestContextKey{
+			"authorizedAppVersionID": services.ContextKeyAuthorizedAppVersionID,
+		},
+	}
+	httpMethod := "POST"
+	url := "/webhook"
+
+	t.Run("ok", func(t *testing.T) {
+		handler := services.AuthorizeForWebhookHandlerFunc(&env.AppEnv{
+			PublishTaskService: &testPublishTaskService{
+				findFn: func(publishTask *models.PublishTask) (*models.PublishTask, error) {
+					require.Equal(t, "abcd-efgh-1234", publishTask.TaskID)
+					publishTask.AppVersionID = uuid.FromStringOrNil("de438ddc-98e5-4226-a5f4-fd2d53474879")
+					return publishTask, nil
+				},
+			},
+		}, authHandler)
+		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
+			requestPayload:     map[string]string{"task_id": "abcd-efgh-1234"},
+			expectedStatusCode: http.StatusOK,
+			expectedResponse: map[string]interface{}{
+				"authorizedAppVersionID": "de438ddc-98e5-4226-a5f4-fd2d53474879",
+			},
+		})
+	})
+
+	t.Run("when request payload is invalid", func(t *testing.T) {
+		handler := services.AuthorizeForWebhookHandlerFunc(&env.AppEnv{
+			PublishTaskService: &testPublishTaskService{
+				findFn: func(publishTask *models.PublishTask) (*models.PublishTask, error) {
+					require.Equal(t, "abcd-efgh-1234", publishTask.TaskID)
+					publishTask.AppVersionID = uuid.FromStringOrNil("de438ddc-98e5-4226-a5f4-fd2d53474879")
+					return publishTask, nil
+				},
+			},
+		}, authHandler)
+		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
+			requestPayload:     "invalid-json",
+			expectedStatusCode: http.StatusBadRequest,
+			expectedResponse: map[string]interface{}{
+				"message": "Invalid request body, JSON decode failed",
+			},
+		})
+	})
+
+	t.Run("when no publish task service is defined", func(t *testing.T) {
+		handler := services.AuthorizeForWebhookHandlerFunc(&env.AppEnv{
+			PublishTaskService: nil,
+		}, authHandler)
+		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
+			requestPayload:     map[string]string{"task_id": "abcd-efgh-1234"},
+			expectedStatusCode: http.StatusInternalServerError,
+			expectedResponse: map[string]interface{}{
+				"message": "Internal Server Error",
+			},
+		})
+	})
+
+	t.Run("when no publish task found by task id", func(t *testing.T) {
+		handler := services.AuthorizeForWebhookHandlerFunc(&env.AppEnv{
+			PublishTaskService: &testPublishTaskService{
+				findFn: func(publishTask *models.PublishTask) (*models.PublishTask, error) {
+					require.Equal(t, "abcd-efgh-1234", publishTask.TaskID)
+					return nil, gorm.ErrRecordNotFound
+				},
+			},
+		}, authHandler)
+		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
+			requestPayload:     map[string]string{"task_id": "abcd-efgh-1234"},
+			expectedStatusCode: http.StatusNotFound,
+			expectedResponse: map[string]interface{}{
+				"message": "Not Found",
+			},
+		})
+	})
+
+	t.Run("when error happens at finding publish task", func(t *testing.T) {
+		handler := services.AuthorizeForWebhookHandlerFunc(&env.AppEnv{
+			PublishTaskService: &testPublishTaskService{
+				findFn: func(publishTask *models.PublishTask) (*models.PublishTask, error) {
+					require.Equal(t, "abcd-efgh-1234", publishTask.TaskID)
+					return nil, errors.New("SOME-SQL-ERROR")
+				},
+			},
+		}, authHandler)
+		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
+			requestPayload:     map[string]string{"task_id": "abcd-efgh-1234"},
+			expectedStatusCode: http.StatusInternalServerError,
+			expectedResponse: map[string]interface{}{
+				"message": "Internal Server Error",
+			},
+		})
+	})
+}

@@ -180,6 +180,7 @@ func performAuthenticationTest(t *testing.T,
 // AuthorizationTestCase ...
 type AuthorizationTestCase struct {
 	requestHeaders     map[string]string
+	requestPayload     interface{}
 	expectedStatusCode int
 	expectedResponse   interface{}
 
@@ -193,7 +194,10 @@ func performAuthorizationTest(t *testing.T,
 ) {
 	t.Helper()
 
-	r, err := http.NewRequest(httpMethod, url, nil)
+	requestPayloadBytes, err := json.Marshal(tc.requestPayload)
+	require.NoError(t, err)
+
+	r, err := http.NewRequest(httpMethod, url, bytes.NewBuffer(requestPayloadBytes))
 	require.NoError(t, err)
 
 	for headerKey, headerValue := range tc.requestHeaders {
