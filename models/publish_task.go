@@ -11,3 +11,11 @@ type PublishTask struct {
 	AppVersionID uuid.UUID  `db:"app_version_id" json:"-"`
 	AppVersion   AppVersion `gorm:"foreignkey:AppVersionID" json:"-"`
 }
+
+// BeforeCreate ...
+func (t *PublishTask) BeforeCreate() error {
+	if uuid.Equal(t.ID, uuid.UUID{}) {
+		t.ID = uuid.NewV4()
+	}
+	return nil
+}
