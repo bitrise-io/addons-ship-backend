@@ -15,11 +15,12 @@ func up20190702111710(tx *sql.Tx) error {
         id uuid primary key NOT NULL,
         app_version_id uuid NOT NULL REFERENCES apps (id),
         task_id text NOT NULL,
-        completed boolean DEFAULT false,
         created_at timestamp with time zone NOT NULL,
         updated_at timestamp with time zone NOT NULL,
         deleted_at timestamp with time zone
-    );`)
+    );
+
+    CREATE UNIQUE INDEX publish_tasks_task_id_idx ON publish_tasks(task_id);`)
 	return err
 }
 
