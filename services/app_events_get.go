@@ -58,7 +58,11 @@ func AppEventsGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request
 func newAppEventsGetResponse(appEvents []models.AppEvent, awsProvider providers.AWSInterface) ([]AppEventData, error) {
 	data := []AppEventData{}
 	for _, appEvent := range appEvents {
-		presignedURL, err := awsProvider.GeneratePresignedGETURL(appEvent.LogAWSPath(), presignedURLExpirationInterval)
+		awsPath, err := appEvent.LogAWSPath()
+		if err != nil {
+			return []AppEventData{}, errors.WithStack(err)
+		}
+		presignedURL, err := awsProvider.GeneratePresignedGETURL(awsPath, presignedURLExpirationInterval)
 		if err != nil {
 			return []AppEventData{}, errors.WithStack(err)
 		}

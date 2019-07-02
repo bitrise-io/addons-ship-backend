@@ -146,6 +146,27 @@ func Test_AppEventsGetHandler(t *testing.T) {
 		})
 	})
 
+	t.Run("error when app is not preloaded", func(t *testing.T) {
+		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppID: uuid.NewV4(),
+			},
+			env: &env.AppEnv{
+				AppEventService: &testAppEventService{
+					findAllFn: func(app *models.App) ([]models.AppEvent, error) {
+						return []models.AppEvent{models.AppEvent{}}, nil
+					},
+				},
+				AWS: &providers.AWSMock{
+					GeneratePresignedGETURLFn: func(path string, expiration time.Duration) (string, error) {
+						return "", nil
+					},
+				},
+			},
+			expectedInternalErr: "App has empty App Slug, App has to be preloaded",
+		})
+	})
+
 	t.Run("error - when generating AWS presigned URL", func(t *testing.T) {
 		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
 			contextElements: map[ctxpkg.RequestContextKey]interface{}{
@@ -154,7 +175,7 @@ func Test_AppEventsGetHandler(t *testing.T) {
 			env: &env.AppEnv{
 				AppEventService: &testAppEventService{
 					findAllFn: func(app *models.App) ([]models.AppEvent, error) {
-						return []models.AppEvent{models.AppEvent{}}, nil
+						return []models.AppEvent{models.AppEvent{App: models.App{AppSlug: "test-app-slug"}}}, nil
 					},
 				},
 				AWS: &providers.AWSMock{

@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 
+	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -25,6 +26,9 @@ func (a *AppEvent) BeforeCreate() error {
 }
 
 // LogAWSPath ...
-func (a *AppEvent) LogAWSPath() string {
-	return fmt.Sprintf("logs/%s/%s.log", a.App.AppSlug, a.ID)
+func (a *AppEvent) LogAWSPath() (string, error) {
+	if a.App.AppSlug == "" {
+		return "", errors.New("App has empty App Slug, App has to be preloaded")
+	}
+	return fmt.Sprintf("logs/%s/%s.log", a.App.AppSlug, a.ID), nil
 }
