@@ -5,12 +5,14 @@ go 1.12
 require (
 	github.com/GeertJohan/go.rice v1.0.0
 	github.com/aws/aws-sdk-go v1.19.34
-	github.com/bitrise-io/api-utils v0.0.0-20190626080550-3933f80a6b21
+	github.com/bitrise-io/api-utils v0.0.0-20190701151100-c20ad3345943
 	github.com/bitrise-io/go-crypto v0.0.0-20190621130134-8c226ef6074e
 	github.com/bitrise-io/go-utils v0.0.0-20190507082533-8898129615c9
 	github.com/c2fo/testify v0.0.0-20150827203832-fba96363964a
 	github.com/daaku/go.zipexe v1.0.1 // indirect
 	github.com/go-yaml/yaml v2.1.0+incompatible
+	github.com/gocraft/work v0.5.1
+	github.com/gomodule/redigo v2.0.0+incompatible
 	github.com/gorilla/mux v1.7.1 // indirect
 	github.com/jinzhu/gorm v1.9.8
 	github.com/justinas/alice v0.0.0-20171023064455-03f45bd4b7da
@@ -20,6 +22,7 @@ require (
 	github.com/philhofer/fwd v1.0.0 // indirect
 	github.com/pkg/errors v0.8.1
 	github.com/pressly/goose v2.6.0+incompatible
+	github.com/robfig/cron v1.2.0 // indirect
 	github.com/rs/cors v1.6.0 // indirect
 	github.com/satori/go.uuid v1.2.0
 	github.com/stretchr/testify v1.3.0 // indirect
