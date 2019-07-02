@@ -40,21 +40,22 @@ func WebhookPostHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request)
 		return httpresponse.RespondWithBadRequestError(w, "Invalid request body, JSON decode failed")
 	}
 
-	switch params.TypeID {
-	case "log":
-		data, ok := params.Data.(LogChunkData)
-		if !ok {
-			return httpresponse.RespondWithBadRequestError(w, "Invalid format of log type webhook data")
-		}
-	case "status":
-		data, ok := params.Data.(StatusData)
-		if !ok {
-			return httpresponse.RespondWithBadRequestError(w, "Invalid format of status type webhook data")
-		}
-		switch data.NewStatus {
-		case "started":
-		case "finidhed":
+	// switch params.TypeID {
+	// case "log":
+	// 	data, ok := params.Data.(LogChunkData)
+	// 	if !ok {
+	// 		return httpresponse.RespondWithBadRequestError(w, "Invalid format of log type webhook data")
+	// 	}
+	// case "status":
+	// 	data, ok := params.Data.(StatusData)
+	// 	if !ok {
+	// 		return httpresponse.RespondWithBadRequestError(w, "Invalid format of status type webhook data")
+	// 	}
+	// 	switch data.NewStatus {
+	// 	case "started":
+	// 	case "finidhed":
 
-		}
-	}
+	// 	}
+	// }
+	return nil
 }

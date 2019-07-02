@@ -78,6 +78,10 @@ func AppVersionPublishPostHandler(env *env.AppEnv, w http.ResponseWriter, r *htt
 		return errors.WithStack(err)
 	}
 
+	if env.PublishTaskService == nil {
+		return errors.New("No Publish Task Service defined for handler")
+	}
+
 	response, err := env.BitriseAPI.TriggerDENTask(bitrise.TaskParams{
 		Workflow:    workflowToTrigger,
 		BuildConfig: config,
@@ -88,6 +92,15 @@ func AppVersionPublishPostHandler(env *env.AppEnv, w http.ResponseWriter, r *htt
 	if err != nil {
 		return errors.WithStack(err)
 	}
+
+	_, err = env.PublishTaskService.Create(&models.PublishTask{
+		TaskID:     response.TaskIdentifier,
+		AppVersion: *appVersion,
+	})
+	if err != nil {
+		return errors.Wrap(err, "SQL Error")
+	}
+
 	return httpresponse.RespondWithSuccess(w, AppVersionPublishResponse{
 		Data: response,
 	})
