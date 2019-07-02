@@ -116,6 +116,15 @@ func runTestMigrations(t *testing.T, db *gorm.DB) {
 				return nil
 			},
 		},
+		{
+			message: "create app_events table",
+			fn: func() error {
+				if !db.HasTable(&models.AppEvent{}) {
+					return db.CreateTable(&models.AppEvent{}).Error
+				}
+				return nil
+			},
+		},
 	} {
 		t.Log(migration.message)
 		panicIfErr(migration.fn())
