@@ -119,8 +119,17 @@ func runTestMigrations(t *testing.T, db *gorm.DB) {
 		{
 			message: "create app_events table",
 			fn: func() error {
-				if !db.HasTable(&models.AppEvent{}) {
-					return db.CreateTable(&models.AppEvent{}).Error
+				if !db.HasTable(&models.AppVersionEvent{}) {
+					return db.CreateTable(&models.AppVersionEvent{}).Error
+				}
+				return nil
+			},
+		},
+		{
+			message: "create publish_tasks table",
+			fn: func() error {
+				if !db.HasTable(&models.PublishTask{}) {
+					return db.CreateTable(&models.PublishTask{}).Error
 				}
 				return nil
 			},

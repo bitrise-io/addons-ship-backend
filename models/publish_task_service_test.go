@@ -17,10 +17,10 @@ func Test_PublishTaskService_Create(t *testing.T) {
 	dbCloseCallbackMethod := prepareDB(t)
 	defer dbCloseCallbackMethod()
 
-	appEventService := models.PublishTaskService{DB: dataservices.GetDB()}
+	appVersionEventService := models.PublishTaskService{DB: dataservices.GetDB()}
 	testPublishTask := &models.PublishTask{TaskID: "abcd-efgh-1234"}
 
-	createdPublishTask, err := appEventService.Create(testPublishTask)
+	createdPublishTask, err := appVersionEventService.Create(testPublishTask)
 	require.NoError(t, err)
 	require.False(t, createdPublishTask.ID.String() == "")
 	require.False(t, createdPublishTask.CreatedAt.String() == "")

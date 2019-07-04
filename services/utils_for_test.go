@@ -90,9 +90,9 @@ func behavesAsServiceCravingHandler(t *testing.T, method, url string, handler fu
 			} else if sn == "AppSettingsService" {
 				controllerTestCase.env.AppSettingsService = nil
 				controllerTestCase.expectedInternalErr = "No App Settings Service defined for handler"
-			} else if sn == "AppEventService" {
-				controllerTestCase.env.AppEventService = nil
-				controllerTestCase.expectedInternalErr = "No App Event Service defined for handler"
+			} else if sn == "AppVersionEventService" {
+				controllerTestCase.env.AppVersionEventService = nil
+				controllerTestCase.expectedInternalErr = "No App Version Event Service defined for handler"
 			} else if sn == "RequestParams" {
 				controllerTestCase.env.RequestParams = nil
 				controllerTestCase.expectedInternalErr = "No RequestParams defined for handler"
