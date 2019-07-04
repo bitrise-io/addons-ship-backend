@@ -14,7 +14,7 @@ func (a *AppVersionEventService) Create(appVersionEvent *AppVersionEvent) (*AppV
 
 // Find ...
 func (a *AppVersionEventService) Find(appVersionEvent *AppVersionEvent) (*AppVersionEvent, error) {
-	err := a.DB.Where(appVersionEvent).Preload("App").First(appVersionEvent).Error
+	err := a.DB.Where(appVersionEvent).Preload("AppVersion").Preload("AppVersion.App").First(appVersionEvent).Error
 	if err != nil {
 		return nil, err
 	}
