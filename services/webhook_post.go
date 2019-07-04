@@ -43,6 +43,7 @@ func WebhookPostHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request)
 	if err != nil {
 		return errors.WithStack(err)
 	}
+	fmt.Println("Auth Version ID:", authorizedAppVersionID)
 
 	if env.AppVersionService == nil {
 		return errors.New("No App Version Service provided")
@@ -57,6 +58,7 @@ func WebhookPostHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request)
 		return httpresponse.RespondWithBadRequestError(w, "Invalid request body, JSON decode failed")
 	}
 
+	fmt.Println("Body parsed")
 	appVersion, err := env.AppVersionService.Find(&models.AppVersion{Record: models.Record{ID: authorizedAppVersionID}})
 	if err != nil {
 		return errors.WithStack(err)
@@ -68,11 +70,14 @@ func WebhookPostHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request)
 			return httpresponse.RespondWithBadRequestError(w, "Invalid format of log type webhook data")
 		}
 		redisKey := fmt.Sprintf("%s%d", authorizedAppVersionID.String(), data.Position)
-		env.LogStoreService.Set(redisKey, models.LogChunk{
+		err := env.LogStoreService.Set(redisKey, models.LogChunk{
 			TaskID:  params.TaskID,
 			Pos:     data.Position,
 			Content: data.Chunk,
 		})
+		if err != nil {
+			return errors.WithStack(err)
+		}
 	case "status":
 		data, ok := params.Data.(StatusData)
 		if !ok {
@@ -90,6 +95,7 @@ func WebhookPostHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request)
 			}
 			return httpresponse.RespondWithSuccess(w, nil)
 		case "finidhed":
+			fmt.Println("FINISHED")
 			var eventText, eventStatus string
 			if data.ExitCode > 0 {
 				eventStatus = "failed"

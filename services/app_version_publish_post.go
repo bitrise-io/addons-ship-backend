@@ -2,6 +2,7 @@ package services
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	rice "github.com/GeertJohan/go.rice"
@@ -93,9 +94,11 @@ func AppVersionPublishPostHandler(env *env.AppEnv, w http.ResponseWriter, r *htt
 		return errors.WithStack(err)
 	}
 
+	fmt.Printf("%#v\n", response)
+
 	_, err = env.PublishTaskService.Create(&models.PublishTask{
-		TaskID:     response.TaskIdentifier,
-		AppVersion: *appVersion,
+		TaskID:       response.TaskIdentifier,
+		AppVersionID: authorizedAppVersionID,
 	})
 	if err != nil {
 		return errors.Wrap(err, "SQL Error")

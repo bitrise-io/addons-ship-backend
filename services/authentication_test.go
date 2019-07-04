@@ -70,71 +70,55 @@ func Test_AuthenticateWithAddonAccessTokenHandlerFunc(t *testing.T) {
 	})
 }
 
-func Test_AuthenticateWithDENSecretnHandlerFunc(t *testing.T) {
+func Test_AuthenticateWithDENSecretHandlerFunc(t *testing.T) {
 	for _, tc := range []struct {
 		testName           string
-		denSecretKey       string
-		denSecretValue     string
+		denWebhookSecret   string
 		requestHeaders     map[string]string
 		expectedStatusCode int
 		expectedBody       string
 	}{
 		{
 			testName:           "ok",
-			denSecretKey:       "Test-Secret-Key",
-			denSecretValue:     "test-auth-key",
-			requestHeaders:     map[string]string{"Test-Secret-Key": "test-auth-key"},
+			denWebhookSecret:   "test-auth-key",
+			requestHeaders:     map[string]string{"Bitrise-Den-Webhook-Secret": "test-auth-key"},
 			expectedStatusCode: http.StatusOK,
 			expectedBody:       `{"message":"ok"}` + "\n",
 		},
 		{
-			testName:           "when no den secret key is set in envs",
-			denSecretKey:       "",
-			denSecretValue:     "test-auth-key",
-			requestHeaders:     map[string]string{"Test-Secret-Key": "test-auth-key"},
-			expectedStatusCode: http.StatusInternalServerError,
-			expectedBody:       `{"message":"Internal Server Error"}` + "\n",
-		},
-		{
 			testName:           "when value in request header is empty",
-			denSecretKey:       "Test-Secret-Key",
-			denSecretValue:     "test-auth-key",
-			requestHeaders:     map[string]string{"Test-Secret-Key": ""},
+			denWebhookSecret:   "test-auth-key",
+			requestHeaders:     map[string]string{"Bitrise-Den-Webhook-Secret": ""},
 			expectedStatusCode: http.StatusUnauthorized,
 			expectedBody:       `{"message":"Unauthorized"}` + "\n",
 		},
 		{
-			testName:           "when no den secret key is set in envs",
-			denSecretKey:       "Test-Secret-Key",
-			denSecretValue:     "",
-			requestHeaders:     map[string]string{"Test-Secret-Key": "test-auth-key"},
+			testName:           "when no den webhook secret is set in envs",
+			denWebhookSecret:   "",
+			requestHeaders:     map[string]string{"Bitrise-Den-Webhook-Secret": "test-auth-key"},
 			expectedStatusCode: http.StatusInternalServerError,
 			expectedBody:       `{"message":"Internal Server Error"}` + "\n",
 		},
 		{
-			testName:           "ok",
-			denSecretKey:       "Test-Secret-Key",
-			denSecretValue:     "test-auth-key",
-			requestHeaders:     map[string]string{"Test-Secret-Key": "some-totally-different-key"},
+			testName:           "invalid secret provided in request",
+			denWebhookSecret:   "test-auth-key",
+			requestHeaders:     map[string]string{"Bitrise-Den-Webhook-Secret": "some-totally-different-key"},
 			expectedStatusCode: http.StatusUnauthorized,
 			expectedBody:       `{"message":"Unauthorized"}` + "\n",
 		},
 	} {
 		t.Run(tc.testName, func(t *testing.T) {
-			revokeSecretKeyFn, err := envutil.RevokableSetenv("BITRISE_DEN_SERVER_ADMIN_SECRET_HEADER_KEY", tc.denSecretKey)
-			require.NoError(t, err)
-			revokeSecretValueFn, err := envutil.RevokableSetenv("BITRISE_DEN_SERVER_ADMIN_SECRET", tc.denSecretValue)
+			revokeFn, err := envutil.RevokableSetenv("BITRISE_DEN_WEBHOOK_SECRET", tc.denWebhookSecret)
 			require.NoError(t, err)
 
 			performAuthenticationTest(t, "GET", "...", AuthenticationTestCase{
 				requestHeaders:     tc.requestHeaders,
-				authHandlerFunc:    services.AuthenticateWithDENSecretnHandlerFunc,
+				authHandlerFunc:    services.AuthenticateWithDENSecretHandlerFunc,
 				expectedStatusCode: tc.expectedStatusCode,
 				expectedBody:       tc.expectedBody,
 			})
 
-			require.NoError(t, revokeSecretKeyFn())
-			require.NoError(t, revokeSecretValueFn())
+			require.NoError(t, revokeFn())
 		})
 	}
 }

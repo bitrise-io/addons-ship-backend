@@ -38,6 +38,18 @@ func createAuthorizeForAppDeprovisioningMiddleware(env *env.AppEnv) func(http.Ha
 	}
 }
 
+func createAuthorizeForWebhookHandlingMiddleware(env *env.AppEnv) func(http.Handler) http.Handler {
+	return func(h http.Handler) http.Handler {
+		return AuthorizeForWebhookHandlerFunc(env, h)
+	}
+}
+
+func createAuthenticateForWebhookHandlingMiddleware(env *env.AppEnv) func(http.Handler) http.Handler {
+	return func(h http.Handler) http.Handler {
+		return AuthenticateWithDENSecretHandlerFunc(env, h)
+	}
+}
+
 // CommonMiddleware ...
 func CommonMiddleware(appEnv *env.AppEnv) alice.Chain {
 	baseMiddleware := middleware.CommonMiddleware()
@@ -80,5 +92,13 @@ func AuthorizedAppVersionMiddleware(appEnv *env.AppEnv) alice.Chain {
 func AuthorizedAppVersionScreenshotMiddleware(appEnv *env.AppEnv) alice.Chain {
 	return AuthorizedAppVersionMiddleware(appEnv).Append(
 		createAuthorizeForAppVersionScreenshotAccessMiddleware(appEnv),
+	)
+}
+
+// AuthenticateForWebhookHandling ...
+func AuthenticateForWebhookHandling(appEnv *env.AppEnv) alice.Chain {
+	return CommonMiddleware(appEnv).Append(
+		createAuthenticateForWebhookHandlingMiddleware(appEnv),
+		createAuthorizeForWebhookHandlingMiddleware(appEnv),
 	)
 }

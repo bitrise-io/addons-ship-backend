@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/bitrise-io/go-utils/pointers"
+	"github.com/satori/go.uuid"
 )
 
 // APIDev ...
@@ -106,5 +107,7 @@ func (a *APIDev) GetServiceAccountFiles(authToken, appSlug string) ([]GenericPro
 
 // TriggerDENTask ...
 func (a *APIDev) TriggerDENTask(params TaskParams) (*TriggerResponse, error) {
-	return &TriggerResponse{}, nil
+	return &TriggerResponse{
+		TaskIdentifier: uuid.NewV4(),
+	}, nil
 }

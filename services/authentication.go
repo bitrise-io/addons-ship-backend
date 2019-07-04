@@ -32,22 +32,17 @@ func AuthenticateWithAddonAccessTokenHandlerFunc(env *env.AppEnv, h http.Handler
 	})
 }
 
-// AuthenticateWithDENSecretnHandlerFunc ...
-func AuthenticateWithDENSecretnHandlerFunc(env *env.AppEnv, h http.Handler) http.Handler {
+// AuthenticateWithDENSecretHandlerFunc ...
+func AuthenticateWithDENSecretHandlerFunc(env *env.AppEnv, h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		denAuthHeaderKey, ok := os.LookupEnv("BITRISE_DEN_SERVER_ADMIN_SECRET_HEADER_KEY")
-		if !ok || denAuthHeaderKey == "" {
-			httpresponse.RespondWithInternalServerError(w, errors.New("No value set for BITRISE_DEN_SERVER_ADMIN_SECRET_HEADER_KEY env"))
-			return
-		}
-		authToken := r.Header.Get(denAuthHeaderKey)
+		authToken := r.Header.Get("Bitrise-Den-Webhook-Secret")
 		if authToken == "" {
 			httpresponse.RespondWithUnauthorizedNoErr(w)
 			return
 		}
-		denAdminSecret, ok := os.LookupEnv("BITRISE_DEN_SERVER_ADMIN_SECRET")
+		denAdminSecret, ok := os.LookupEnv("BITRISE_DEN_WEBHOOK_SECRET")
 		if !ok || denAdminSecret == "" {
-			httpresponse.RespondWithInternalServerError(w, errors.New("No value set for BITRISE_DEN_SERVER_ADMIN_SECRET env"))
+			httpresponse.RespondWithInternalServerError(w, errors.New("No value set for BITRISE_DEN_WEBHOOK_SECRET env"))
 			return
 		}
 
