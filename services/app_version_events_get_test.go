@@ -18,44 +18,44 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-func Test_AppEventsGetHandler(t *testing.T) {
+func Test_AppVersionEventsGetHandler(t *testing.T) {
 	httpMethod := "GET"
 	url := "/apps/{app-slug}/events"
-	handler := services.AppEventsGetHandler
+	handler := services.AppVersionEventsGetHandler
 
-	behavesAsServiceCravingHandler(t, httpMethod, url, handler, []string{"AppEventService", "AWS"}, ControllerTestCase{
+	behavesAsServiceCravingHandler(t, httpMethod, url, handler, []string{"AppVersionEventService", "AWS"}, ControllerTestCase{
 		contextElements: map[ctxpkg.RequestContextKey]interface{}{
-			services.ContextKeyAuthorizedAppID: uuid.NewV4(),
+			services.ContextKeyAuthorizedAppVersionID: uuid.NewV4(),
 		},
 		env: &env.AppEnv{
-			AppEventService: &testAppEventService{
-				findAllFn: func(app *models.App) ([]models.AppEvent, error) {
-					return []models.AppEvent{}, nil
+			AppVersionEventService: &testAppVersionEventService{
+				findAllFn: func(appVersion *models.AppVersion) ([]models.AppVersionEvent, error) {
+					return []models.AppVersionEvent{}, nil
 				},
 			},
 			AWS: &providers.AWSMock{},
 		},
 	})
 
-	behavesAsContextCravingHandler(t, httpMethod, url, handler, []ctxpkg.RequestContextKey{services.ContextKeyAuthorizedAppID}, ControllerTestCase{
+	behavesAsContextCravingHandler(t, httpMethod, url, handler, []ctxpkg.RequestContextKey{services.ContextKeyAuthorizedAppVersionID}, ControllerTestCase{
 		contextElements: map[ctxpkg.RequestContextKey]interface{}{
-			services.ContextKeyAuthorizedAppID: uuid.NewV4(),
+			services.ContextKeyAuthorizedAppVersionID: uuid.NewV4(),
 		},
 		env: &env.AppEnv{
-			AppEventService: &testAppEventService{},
-			AWS:             &providers.AWSMock{},
+			AppVersionEventService: &testAppVersionEventService{},
+			AWS: &providers.AWSMock{},
 		},
 	})
 
 	t.Run("ok - minimal", func(t *testing.T) {
 		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
 			contextElements: map[ctxpkg.RequestContextKey]interface{}{
-				services.ContextKeyAuthorizedAppID: uuid.NewV4(),
+				services.ContextKeyAuthorizedAppVersionID: uuid.NewV4(),
 			},
 			env: &env.AppEnv{
-				AppEventService: &testAppEventService{
-					findAllFn: func(app *models.App) ([]models.AppEvent, error) {
-						return []models.AppEvent{}, nil
+				AppVersionEventService: &testAppVersionEventService{
+					findAllFn: func(appVersion *models.AppVersion) ([]models.AppVersionEvent, error) {
+						return []models.AppVersionEvent{}, nil
 					},
 				},
 				AWS: &providers.AWSMock{
@@ -65,28 +65,29 @@ func Test_AppEventsGetHandler(t *testing.T) {
 				},
 			},
 			expectedStatusCode: http.StatusOK,
-			expectedResponse: services.AppEventsGetResponse{
-				Data: []services.AppEventData{},
+			expectedResponse: services.AppVersionEventsGetResponse{
+				Data: []services.AppVersionEventData{},
 			},
 		})
 	})
 
 	t.Run("ok - more complex", func(t *testing.T) {
-		testAppEventUUID := uuid.FromStringOrNil("b22daf1a-7a4b-482d-a6c5-f55dbd229afc")
+		testAppVersionEventUUID := uuid.FromStringOrNil("b22daf1a-7a4b-482d-a6c5-f55dbd229afc")
 
 		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
 			contextElements: map[ctxpkg.RequestContextKey]interface{}{
-				services.ContextKeyAuthorizedAppID: uuid.FromStringOrNil("de438ddc-98e5-4226-a5f4-fd2d53474879"),
+				services.ContextKeyAuthorizedAppVersionID: uuid.FromStringOrNil("de438ddc-98e5-4226-a5f4-fd2d53474879"),
 			},
 			env: &env.AppEnv{
-				AppEventService: &testAppEventService{
-					findAllFn: func(app *models.App) ([]models.AppEvent, error) {
-						require.Equal(t, app.ID.String(), "de438ddc-98e5-4226-a5f4-fd2d53474879")
-						app.AppSlug = "test-app-slug"
-						return []models.AppEvent{
-							models.AppEvent{
-								Record: models.Record{ID: testAppEventUUID},
-								App:    *app,
+				AppVersionEventService: &testAppVersionEventService{
+					findAllFn: func(appVersion *models.AppVersion) ([]models.AppVersionEvent, error) {
+						require.Equal(t, appVersion.ID.String(), "de438ddc-98e5-4226-a5f4-fd2d53474879")
+						appVersion.App.AppSlug = "test-app-slug"
+						return []models.AppVersionEvent{
+							models.AppVersionEvent{
+								Record:       models.Record{ID: testAppVersionEventUUID},
+								AppVersionID: appVersion.ID,
+								AppVersion:   *appVersion,
 							},
 						}, nil
 					},
@@ -98,13 +99,13 @@ func Test_AppEventsGetHandler(t *testing.T) {
 				},
 			},
 			expectedStatusCode: http.StatusOK,
-			expectedResponse: services.AppEventsGetResponse{
-				Data: []services.AppEventData{
-					services.AppEventData{
-						AppEvent: models.AppEvent{
-							Record: models.Record{ID: testAppEventUUID},
+			expectedResponse: services.AppVersionEventsGetResponse{
+				Data: []services.AppVersionEventData{
+					services.AppVersionEventData{
+						AppVersionEvent: models.AppVersionEvent{
+							Record: models.Record{ID: testAppVersionEventUUID},
 						},
-						LogDownloadURL: "http://presigned.aws.url/logs/test-app-slug/b22daf1a-7a4b-482d-a6c5-f55dbd229afc.log",
+						LogDownloadURL: "http://presigned.aws.url/logs/test-app-slug/de438ddc-98e5-4226-a5f4-fd2d53474879/b22daf1a-7a4b-482d-a6c5-f55dbd229afc.log",
 					},
 				},
 			},
@@ -114,11 +115,11 @@ func Test_AppEventsGetHandler(t *testing.T) {
 	t.Run("error - not found in database", func(t *testing.T) {
 		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
 			contextElements: map[ctxpkg.RequestContextKey]interface{}{
-				services.ContextKeyAuthorizedAppID: uuid.NewV4(),
+				services.ContextKeyAuthorizedAppVersionID: uuid.NewV4(),
 			},
 			env: &env.AppEnv{
-				AppEventService: &testAppEventService{
-					findAllFn: func(app *models.App) ([]models.AppEvent, error) {
+				AppVersionEventService: &testAppVersionEventService{
+					findAllFn: func(appVersion *models.AppVersion) ([]models.AppVersionEvent, error) {
 						return nil, gorm.ErrRecordNotFound
 					},
 				},
@@ -132,11 +133,11 @@ func Test_AppEventsGetHandler(t *testing.T) {
 	t.Run("error - unexpected error in database", func(t *testing.T) {
 		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
 			contextElements: map[ctxpkg.RequestContextKey]interface{}{
-				services.ContextKeyAuthorizedAppID: uuid.NewV4(),
+				services.ContextKeyAuthorizedAppVersionID: uuid.NewV4(),
 			},
 			env: &env.AppEnv{
-				AppEventService: &testAppEventService{
-					findAllFn: func(app *models.App) ([]models.AppEvent, error) {
+				AppVersionEventService: &testAppVersionEventService{
+					findAllFn: func(appVersion *models.AppVersion) ([]models.AppVersionEvent, error) {
 						return nil, errors.New("SOME-SQL-ERROR")
 					},
 				},
@@ -149,12 +150,12 @@ func Test_AppEventsGetHandler(t *testing.T) {
 	t.Run("error when app is not preloaded", func(t *testing.T) {
 		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
 			contextElements: map[ctxpkg.RequestContextKey]interface{}{
-				services.ContextKeyAuthorizedAppID: uuid.NewV4(),
+				services.ContextKeyAuthorizedAppVersionID: uuid.NewV4(),
 			},
 			env: &env.AppEnv{
-				AppEventService: &testAppEventService{
-					findAllFn: func(app *models.App) ([]models.AppEvent, error) {
-						return []models.AppEvent{models.AppEvent{}}, nil
+				AppVersionEventService: &testAppVersionEventService{
+					findAllFn: func(appVersion *models.AppVersion) ([]models.AppVersionEvent, error) {
+						return []models.AppVersionEvent{models.AppVersionEvent{}}, nil
 					},
 				},
 				AWS: &providers.AWSMock{
@@ -170,12 +171,14 @@ func Test_AppEventsGetHandler(t *testing.T) {
 	t.Run("error - when generating AWS presigned URL", func(t *testing.T) {
 		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
 			contextElements: map[ctxpkg.RequestContextKey]interface{}{
-				services.ContextKeyAuthorizedAppID: uuid.FromStringOrNil("de438ddc-98e5-4226-a5f4-fd2d53474879"),
+				services.ContextKeyAuthorizedAppVersionID: uuid.FromStringOrNil("de438ddc-98e5-4226-a5f4-fd2d53474879"),
 			},
 			env: &env.AppEnv{
-				AppEventService: &testAppEventService{
-					findAllFn: func(app *models.App) ([]models.AppEvent, error) {
-						return []models.AppEvent{models.AppEvent{App: models.App{AppSlug: "test-app-slug"}}}, nil
+				AppVersionEventService: &testAppVersionEventService{
+					findAllFn: func(appVersion *models.AppVersion) ([]models.AppVersionEvent, error) {
+						return []models.AppVersionEvent{
+							models.AppVersionEvent{AppVersion: models.AppVersion{App: models.App{AppSlug: "test-app_slug"}}},
+						}, nil
 					},
 				},
 				AWS: &providers.AWSMock{
