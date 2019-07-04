@@ -8,8 +8,8 @@ import (
 	"github.com/c2fo/testify/require"
 )
 
-func createTestAppEvent(t *testing.T, appEvent *models.AppEvent) *models.AppEvent {
-	err := dataservices.GetDB().Create(appEvent).Error
+func createTestAppVersionEvent(t *testing.T, appVersionEvent *models.AppVersionEvent) *models.AppVersionEvent {
+	err := dataservices.GetDB().Create(appVersionEvent).Error
 	require.NoError(t, err)
-	return appEvent
+	return appVersionEvent
 }

@@ -25,21 +25,21 @@ const (
 
 // AppEnv ...
 type AppEnv struct {
-	Port                  string
-	Environment           string
-	AddonAccessToken      string
-	AddonHostURL          string
-	Logger                *zap.Logger
-	AppService            dataservices.AppService
-	AppVersionService     dataservices.AppVersionService
-	ScreenshotService     dataservices.ScreenshotService
-	FeatureGraphicService dataservices.FeatureGraphicService
-	AppSettingsService    dataservices.AppSettingsService
-	AppEventService       dataservices.AppEventService
-	BitriseAPI            bitrise.APIInterface
-	RequestParams         providers.RequestParamsInterface
-	AWS                   providers.AWSInterface
-	LogStoreService       dataservices.LogStore
+	Port                   string
+	Environment            string
+	AddonAccessToken       string
+	AddonHostURL           string
+	Logger                 *zap.Logger
+	AppService             dataservices.AppService
+	AppVersionService      dataservices.AppVersionService
+	ScreenshotService      dataservices.ScreenshotService
+	FeatureGraphicService  dataservices.FeatureGraphicService
+	AppSettingsService     dataservices.AppSettingsService
+	AppVersionEventService dataservices.AppVersionEventService
+	BitriseAPI             bitrise.APIInterface
+	RequestParams          providers.RequestParamsInterface
+	AWS                    providers.AWSInterface
+	LogStoreService        dataservices.LogStore
 }
 
 // New ...
@@ -68,7 +68,7 @@ func New(db *gorm.DB) (*AppEnv, error) {
 	env.ScreenshotService = &models.ScreenshotService{DB: db}
 	env.FeatureGraphicService = &models.FeatureGraphicService{DB: db}
 	env.AppSettingsService = &models.AppSettingsService{DB: db}
-	env.AppEventService = &models.AppEventService{DB: db}
+	env.AppVersionEventService = &models.AppVersionEventService{DB: db}
 	if env.Environment == ServerEnvDevelopment {
 		env.BitriseAPI = &bitrise.APIDev{}
 	} else {
