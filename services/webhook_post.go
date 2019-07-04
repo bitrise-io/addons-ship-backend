@@ -47,8 +47,8 @@ func WebhookPostHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request)
 	if env.AppVersionService == nil {
 		return errors.New("No App Version Service provided")
 	}
-	if env.AppEventService == nil {
-		return errors.New("No App Event Service provided")
+	if env.AppVersionEventService == nil {
+		return errors.New("No App Version Event Service provided")
 	}
 
 	var params WebhookPayload
@@ -80,10 +80,10 @@ func WebhookPostHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request)
 		}
 		switch data.NewStatus {
 		case "started":
-			_, err := env.AppEventService.Create(&models.AppEvent{
-				Status: "in_progress",
-				Text:   "Publishing has started",
-				App:    appVersion.App,
+			_, err := env.AppVersionEventService.Create(&models.AppVersionEvent{
+				Status:       "in_progress",
+				Text:         "Publishing has started",
+				AppVersionID: appVersion.ID,
 			})
 			if err != nil {
 				return errors.WithStack(err)
@@ -98,10 +98,10 @@ func WebhookPostHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request)
 				eventStatus = "success"
 				eventText = "Successfully published"
 			}
-			event, err := env.AppEventService.Create(&models.AppEvent{
-				Status: eventStatus,
-				Text:   eventText,
-				App:    appVersion.App,
+			event, err := env.AppVersionEventService.Create(&models.AppVersionEvent{
+				Status:       eventStatus,
+				Text:         eventText,
+				AppVersionID: appVersion.ID,
 			})
 			if err != nil {
 				return errors.WithStack(err)
