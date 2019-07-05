@@ -52,6 +52,8 @@ func main() {
 			os.Exit(1)
 		}
 
+		appEnv.WorkerService = &worker.Service{}
+
 		// Routing
 		http.Handle("/", router.New(appEnv))
 

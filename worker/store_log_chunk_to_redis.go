@@ -3,7 +3,6 @@ package worker
 import (
 	"encoding/json"
 	"fmt"
-	"time"
 
 	"github.com/bitrise-io/addons-ship-backend/models"
 	"github.com/gocraft/work"
@@ -47,25 +46,6 @@ func (c *Context) StoreLogChunkToRedis(job *work.Job) error {
 		return errors.WithStack(err)
 	}
 	c.env.Logger.Info("[i] Job StoreLogChunkToRedis finished")
-	return nil
-}
-
-// EnqueueStoreLogChunkToRedis ...
-func EnqueueStoreLogChunkToRedis(publishTaskExternalID string, logChunk models.LogChunk, secondsFromNow time.Duration) error {
-	enqueuer := work.NewEnqueuer(namespace, redisPool)
-	var err error
-	jobParams := work.Q{
-		"task_id":   publishTaskExternalID,
-		"log_chunk": logChunk,
-	}
-	if secondsFromNow == 0 {
-		_, err = enqueuer.EnqueueUnique(storeLogChunkToRedis, jobParams)
-	} else {
-		_, err = enqueuer.EnqueueUniqueIn(storeLogChunkToRedis, int64(secondsFromNow), jobParams)
-	}
-	if err != nil {
-		return errors.WithStack(err)
-	}
 	return nil
 }
 

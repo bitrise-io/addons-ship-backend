@@ -6,19 +6,17 @@ import (
 
 	"github.com/bitrise-io/addons-ship-backend/env"
 	"github.com/bitrise-io/addons-ship-backend/models"
-	"github.com/bitrise-io/addons-ship-backend/worker"
 	"github.com/bitrise-io/api-utils/httpresponse"
 	"github.com/pkg/errors"
 )
 
-// WebhookPostLogHelper ...
-func WebhookPostLogHelper(env *env.AppEnv, w http.ResponseWriter, r *http.Request, params WebhookPayload) error {
+func webhookPostLogHelper(env *env.AppEnv, w http.ResponseWriter, r *http.Request, params WebhookPayload) error {
 	data, err := parseLogChunkData(params.Data)
 	if err != nil {
 		return errors.WithStack(err)
 	}
 
-	err = worker.EnqueueStoreLogChunkToRedis(params.TaskID.String(), models.LogChunk{
+	err = env.WorkerService.EnqueueStoreLogChunkToRedis(params.TaskID.String(), models.LogChunk{
 		TaskID:  params.TaskID,
 		Pos:     data.Position,
 		Content: data.Chunk,

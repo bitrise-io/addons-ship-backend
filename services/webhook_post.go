@@ -61,9 +61,9 @@ func WebhookPostHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request)
 	}
 	switch params.TypeID {
 	case "log":
-		return WebhookPostLogHelper(env, w, r, params)
+		return webhookPostLogHelper(env, w, r, params)
 	case "status":
-		return WebhookPostStatusHelper(env, w, r, params, appVersion)
+		return webhookPostStatusHelper(env, w, r, params, appVersion)
 	default:
 		return errors.Errorf("Invalid type of webhook: %s", params.TypeID)
 	}

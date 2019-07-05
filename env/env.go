@@ -43,6 +43,7 @@ type AppEnv struct {
 	Redis                  redis.Interface
 	RedisExpirationTime    int
 	LogStoreService        dataservices.LogStore
+	WorkerService          dataservices.WorkerService
 }
 
 // New ...
@@ -98,6 +99,7 @@ func New(db *gorm.DB) (*AppEnv, error) {
 	env.RedisExpirationTime = int(redisExpiration)
 	env.Redis = redis.New()
 	env.LogStoreService = &models.LogStoreService{Redis: redis.New(), Expiration: env.RedisExpirationTime}
+
 	return env, nil
 }
 
