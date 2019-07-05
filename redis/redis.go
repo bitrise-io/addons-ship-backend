@@ -13,8 +13,9 @@ import (
 
 // Interface ...
 type Interface interface {
-	Get(string) (string, error)
-	Set(string, string, int) error
+	GetString(string) (string, error)
+	GetInt64(key string) (int64, error)
+	Set(string, interface{}, int) error
 }
 
 // Client ...
@@ -62,7 +63,7 @@ func NewPool(urlStr string, maxIdle, maxActive int) *redis.Pool {
 }
 
 // Set ...
-func (c *Client) Set(key, value string, ttl int) error {
+func (c *Client) Set(key string, value interface{}, ttl int) error {
 	_, err := c.conn.Do("SET", key, value)
 	if err != nil {
 		return err
@@ -77,11 +78,20 @@ func (c *Client) Set(key, value string, ttl int) error {
 	return nil
 }
 
-// Get ...
-func (c *Client) Get(key string) (string, error) {
+// GetString ...
+func (c *Client) GetString(key string) (string, error) {
 	value, err := redis.String(c.conn.Do("GET", key))
 	if err != nil {
 		return "", err
+	}
+	return value, nil
+}
+
+// GetInt64 ...
+func (c *Client) GetInt64(key string) (int64, error) {
+	value, err := redis.Int64(c.conn.Do("GET", key))
+	if err != nil {
+		return 0, err
 	}
 	return value, nil
 }

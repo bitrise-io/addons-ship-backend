@@ -40,6 +40,8 @@ type AppEnv struct {
 	BitriseAPI             bitrise.APIInterface
 	RequestParams          providers.RequestParamsInterface
 	AWS                    providers.AWSInterface
+	Redis                  redis.Interface
+	RedisExpirationTime    int
 	LogStoreService        dataservices.LogStore
 }
 
@@ -93,7 +95,9 @@ func New(db *gorm.DB) (*AppEnv, error) {
 			fmt.Println("Invalid Redis expiration time, setting default to 1000 seconds...")
 		}
 	}
-	env.LogStoreService = &models.LogStoreService{Redis: redis.New(), Expiration: int(redisExpiration)}
+	env.RedisExpirationTime = int(redisExpiration)
+	env.Redis = redis.New()
+	env.LogStoreService = &models.LogStoreService{Redis: redis.New(), Expiration: env.RedisExpirationTime}
 	return env, nil
 }
 
