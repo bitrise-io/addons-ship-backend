@@ -24,7 +24,7 @@ func webhookPostStatusHelper(env *env.AppEnv, w http.ResponseWriter, r *http.Req
 			AppVersionID: appVersion.ID,
 		})
 		if err != nil {
-			return errors.WithStack(err)
+			return errors.Wrap(err, "SQL Error")
 		}
 		err = env.Redis.Set(fmt.Sprintf("%s_chunk_count", params.TaskID.String()), 0, env.RedisExpirationTime)
 		if err != nil {

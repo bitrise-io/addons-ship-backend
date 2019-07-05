@@ -13,7 +13,7 @@ import (
 func webhookPostLogHelper(env *env.AppEnv, w http.ResponseWriter, r *http.Request, params WebhookPayload) error {
 	data, err := parseLogChunkData(params.Data)
 	if err != nil {
-		return errors.WithStack(err)
+		return httpresponse.RespondWithBadRequestError(w, "Invalid format of log data")
 	}
 
 	err = env.WorkerService.EnqueueStoreLogChunkToRedis(params.TaskID.String(), models.LogChunk{
