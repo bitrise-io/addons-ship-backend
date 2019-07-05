@@ -10,6 +10,7 @@ import (
 	"github.com/bitrise-io/addons-ship-backend/worker"
 	"github.com/bitrise-io/api-utils/httpresponse"
 	"github.com/pkg/errors"
+	"go.uber.org/zap"
 )
 
 // WebhookPostStatusHelper ...
@@ -31,7 +32,7 @@ func WebhookPostStatusHelper(env *env.AppEnv, w http.ResponseWriter, r *http.Req
 		redisKey := fmt.Sprintf("%s_chunk_count", params.TaskID.String())
 		err = env.Redis.Set(redisKey, 0, env.RedisExpirationTime)
 		if err != nil {
-			fmt.Println(err)
+			env.Logger.Error("Failed to set chunk count", zap.Error(err))
 			return errors.WithStack(err)
 		}
 		return httpresponse.RespondWithSuccess(w, httpresponse.StandardErrorRespModel{Message: "ok"})
@@ -56,7 +57,7 @@ func WebhookPostStatusHelper(env *env.AppEnv, w http.ResponseWriter, r *http.Req
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		err = worker.EnqueueStoreLogToAWS(params.TaskID, data.LogChunkCount, logAWSPath)
+		err = worker.EnqueueStoreLogToAWS(params.TaskID, data.LogChunkCount, logAWSPath, 30)
 		if err != nil {
 			return errors.Wrap(err, "Worker error")
 		}

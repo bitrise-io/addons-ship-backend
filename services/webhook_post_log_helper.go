@@ -2,11 +2,11 @@ package services
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/bitrise-io/addons-ship-backend/env"
 	"github.com/bitrise-io/addons-ship-backend/models"
+	"github.com/bitrise-io/addons-ship-backend/worker"
 	"github.com/bitrise-io/api-utils/httpresponse"
 	"github.com/pkg/errors"
 )
@@ -17,27 +17,16 @@ func WebhookPostLogHelper(env *env.AppEnv, w http.ResponseWriter, r *http.Reques
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	fmt.Printf("%#v\n", data)
-	chunkCountRedisKey := fmt.Sprintf("%s_chunk_count", params.TaskID.String())
-	latestChunkIndex, err := env.Redis.GetInt64(chunkCountRedisKey)
-	if err != nil {
-		fmt.Println(err)
-		return errors.WithStack(err)
-	}
-	chunkRedisKey := fmt.Sprintf("%s%d", params.TaskID.String(), latestChunkIndex+1)
-	err = env.LogStoreService.Set(chunkRedisKey, models.LogChunk{
+
+	err = worker.EnqueueStoreLogChunkToRedis(params.TaskID.String(), models.LogChunk{
 		TaskID:  params.TaskID,
 		Pos:     data.Position,
 		Content: data.Chunk,
-	})
+	}, 5)
 	if err != nil {
-		return errors.WithStack(err)
+		return errors.Wrap(err, "Worker error")
 	}
-	err = env.Redis.Set(chunkCountRedisKey, latestChunkIndex+1, env.RedisExpirationTime)
-	if err != nil {
-		fmt.Println(err)
-		return errors.WithStack(err)
-	}
+
 	return httpresponse.RespondWithSuccess(w, httpresponse.StandardErrorRespModel{Message: "ok"})
 }
 

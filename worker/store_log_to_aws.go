@@ -2,7 +2,10 @@ package worker
 
 import (
 	"fmt"
+	"sort"
+	"time"
 
+	"github.com/bitrise-io/addons-ship-backend/models"
 	"github.com/gocraft/work"
 	"github.com/pkg/errors"
 	"github.com/satori/go.uuid"
@@ -14,9 +17,9 @@ var storeLogToAWS = "store_log_to_aws"
 // StoreLogToAWS ...
 func (c *Context) StoreLogToAWS(job *work.Job) error {
 	c.env.Logger.Info("[i] Job StoreLogToAWS started")
-	eventID := job.ArgString("den_task_id")
-	if eventID == (uuid.UUID{}).String() {
-		c.env.Logger.Error("Failed to get App Event ID", zap.String("den_task_id", eventID))
+	denTaskID := job.ArgString("den_task_id")
+	if denTaskID == (uuid.UUID{}).String() {
+		c.env.Logger.Error("Failed to get App Event ID", zap.String("den_task_id", denTaskID))
 		return errors.New("Failed to get App Event ID")
 	}
 	awsPath := job.ArgString("aws_path")
@@ -26,13 +29,24 @@ func (c *Context) StoreLogToAWS(job *work.Job) error {
 	}
 
 	numberOfChunks := job.ArgInt64("number_of_log_chunks")
-	content := []byte{}
+	chunks := []models.LogChunk{}
 	for i := int64(1); i <= numberOfChunks; i++ {
-		chunk, err := c.env.LogStoreService.Get(fmt.Sprintf("%s%d", eventID, i))
+		chunk, err := c.env.LogStoreService.Get(fmt.Sprintf("%s%d", denTaskID, i))
 		if err != nil {
-			c.env.Logger.Warn("Failed to get log chunk", zap.Error(err))
+			c.env.Logger.Error("Failed to get log chunk", zap.String("redis_key", fmt.Sprintf("%s%d", denTaskID, i)), zap.Error(err))
 			continue
 		}
+		chunks = append(chunks, chunk)
+	}
+	sort.Slice(chunks, func(i, j int) bool {
+		if chunks[i].Pos < chunks[j].Pos {
+			return true
+		}
+		return false
+	})
+
+	content := []byte{}
+	for _, chunk := range chunks {
 		content = append(content, []byte(chunk.Content)...)
 	}
 	err := c.env.AWS.PutObject(awsPath, content)
@@ -41,17 +55,24 @@ func (c *Context) StoreLogToAWS(job *work.Job) error {
 		return errors.WithStack(err)
 	}
 	c.env.Logger.Info("[i] Job StoreLogToAWS finished")
+
 	return nil
 }
 
 // EnqueueStoreLogToAWS ...
-func EnqueueStoreLogToAWS(publishTaskExternalID uuid.UUID, numberOfLogChunks int64, awsPath string) error {
+func EnqueueStoreLogToAWS(publishTaskExternalID uuid.UUID, numberOfLogChunks int64, awsPath string, secondsFromNow time.Duration) error {
 	enqueuer := work.NewEnqueuer(namespace, redisPool)
-	_, err := enqueuer.EnqueueUnique(storeLogToAWS, work.Q{
+	var err error
+	jobParams := work.Q{
 		"den_task_id":          publishTaskExternalID.String(),
 		"aws_path":             awsPath,
 		"number_of_log_chunks": numberOfLogChunks,
-	})
+	}
+	if secondsFromNow == 0 {
+		_, err = enqueuer.EnqueueUnique(storeLogToAWS, jobParams)
+	} else {
+		_, err = enqueuer.EnqueueUniqueIn(storeLogToAWS, int64(secondsFromNow), jobParams)
+	}
 	if err != nil {
 		return errors.WithStack(err)
 	}
