@@ -60,3 +60,14 @@ feature_graphics:
     filename: feature_graphic.jpg
     filesize: 103852
     uploaded: true
+app_version_events:
+  - id: 18e73619-6260-46c8-8ff8-bd9b8e267479
+    app_version_id: e244f7ee-d923-483b-b90b-200a21f0ddf1
+    status: in-progress
+    event_text: some description
+    created_at: 2019-07-03 12:28:39
+  - id: 4d7a86a6-e9e6-4738-a127-71b3b89ff026
+    app_version_id: e244f7ee-d923-483b-b90b-200a21f0ddf1
+    status: finished
+    event_text: some new description
+    created_at: 2019-07-03 13:28:39
