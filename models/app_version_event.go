@@ -11,7 +11,7 @@ import (
 type AppVersionEvent struct {
 	Record
 	Status string `json:"status"`
-	Text   string `json:"event_text"`
+	Text   string `json:"event_text" gorm:"column:event_text"`
 
 	AppVersionID uuid.UUID  `db:"app_version_id" json:"-"`
 	AppVersion   AppVersion `gorm:"foreignkey:AppVersionID" json:"-"`

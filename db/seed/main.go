@@ -11,7 +11,7 @@ import (
 	"github.com/bitrise-io/addons-ship-backend/dataservices"
 	"github.com/bitrise-io/addons-ship-backend/models"
 	"github.com/go-yaml/yaml"
-	"github.com/satori/go.uuid"
+	uuid "github.com/satori/go.uuid"
 )
 
 func main() {
@@ -113,6 +113,21 @@ func main() {
 			os.Exit(1)
 		}
 	}
+
+	// create test app version events
+	for _, appVersionEventData := range testData.AppVersionEvents {
+		appEvent := models.AppVersionEvent{
+			Record:       models.Record{ID: appVersionEventData.ID, CreatedAt: appVersionEventData.CreatedAt},
+			Status:       appVersionEventData.Status,
+			Text:         appVersionEventData.Text,
+			AppVersionID: appVersionEventData.AppVersionID,
+		}
+
+		if err := db.Create(&appEvent).Error; err != nil {
+			fmt.Printf("Failed to seed db with app event: %#v, app event: %#v", err, appEvent)
+			os.Exit(1)
+		}
+	}
 }
 
 type app struct {
@@ -147,6 +162,14 @@ type appVersion struct {
 	AppStoreInfo  appStoreInfo `yaml:"app_store_info"`
 }
 
+type appVersionEvent struct {
+	ID           uuid.UUID `yaml:"id"`
+	AppVersionID uuid.UUID `yaml:"app_version_id"`
+	Status       string    `yaml:"status"`
+	Text         string    `yaml:"event_text"`
+	CreatedAt    time.Time `yaml:"created_at"`
+}
+
 type screenshot struct {
 	ID           uuid.UUID `yaml:"id"`
 	AppVersionID uuid.UUID `yaml:"app_version_id"`
@@ -166,8 +189,9 @@ type featureGraphic struct {
 }
 
 type testData struct {
-	Apps            []app            `yaml:"apps"`
-	AppVersions     []appVersion     `yaml:"app_versions"`
-	Screenshots     []screenshot     `yaml:"screenshots"`
-	FeatureGraphics []featureGraphic `yaml:"feature_graphics"`
+	Apps             []app             `yaml:"apps"`
+	AppVersions      []appVersion      `yaml:"app_versions"`
+	Screenshots      []screenshot      `yaml:"screenshots"`
+	FeatureGraphics  []featureGraphic  `yaml:"feature_graphics"`
+	AppVersionEvents []appVersionEvent `yaml:"app_version_events"`
 }
