@@ -36,7 +36,11 @@ func Test_AppVersionPublishPostHandler(t *testing.T) {
 				},
 			},
 			PublishTaskService: &testPublishTaskService{},
-			BitriseAPI:         &testBitriseAPI{},
+			BitriseAPI: &testBitriseAPI{
+				getArtifactDataFn: func(string, string, string) (*bitrise.ArtifactData, error) {
+					return &bitrise.ArtifactData{}, nil
+				},
+			},
 		},
 	})
 
@@ -47,7 +51,11 @@ func Test_AppVersionPublishPostHandler(t *testing.T) {
 		env: &env.AppEnv{
 			AppVersionService:  &testAppVersionService{},
 			PublishTaskService: &testPublishTaskService{},
-			BitriseAPI:         &testBitriseAPI{},
+			BitriseAPI: &testBitriseAPI{
+				getArtifactDataFn: func(string, string, string) (*bitrise.ArtifactData, error) {
+					return &bitrise.ArtifactData{}, nil
+				},
+			},
 		},
 	})
 

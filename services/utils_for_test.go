@@ -93,6 +93,9 @@ func behavesAsServiceCravingHandler(t *testing.T, method, url string, handler fu
 			} else if sn == "AppVersionEventService" {
 				controllerTestCase.env.AppVersionEventService = nil
 				controllerTestCase.expectedInternalErr = "No App Version Event Service defined for handler"
+			} else if sn == "PublishTaskService" {
+				controllerTestCase.env.PublishTaskService = nil
+				controllerTestCase.expectedInternalErr = "No Publish Task Service defined for handler"
 			} else if sn == "RequestParams" {
 				controllerTestCase.env.RequestParams = nil
 				controllerTestCase.expectedInternalErr = "No RequestParams defined for handler"
