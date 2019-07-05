@@ -8,7 +8,6 @@ import (
 
 	"github.com/bitrise-io/addons-ship-backend/env"
 	"github.com/bitrise-io/addons-ship-backend/models"
-	"github.com/bitrise-io/addons-ship-backend/worker"
 	"github.com/bitrise-io/api-utils/httprequest"
 	"github.com/bitrise-io/api-utils/httpresponse"
 	"github.com/pkg/errors"
@@ -43,7 +42,6 @@ func WebhookPostHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request)
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	fmt.Println("Auth Version ID:", authorizedAppVersionID)
 
 	if env.AppVersionService == nil {
 		return errors.New("No App Version Service provided")
@@ -58,70 +56,17 @@ func WebhookPostHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request)
 		return httpresponse.RespondWithBadRequestError(w, "Invalid request body, JSON decode failed")
 	}
 
-	fmt.Println("Body parsed")
+	fmt.Printf("%#v\n", params)
 	appVersion, err := env.AppVersionService.Find(&models.AppVersion{Record: models.Record{ID: authorizedAppVersionID}})
 	if err != nil {
 		return errors.WithStack(err)
 	}
 	switch params.TypeID {
 	case "log":
-		data, ok := params.Data.(LogChunkData)
-		if !ok {
-			return httpresponse.RespondWithBadRequestError(w, "Invalid format of log type webhook data")
-		}
-		redisKey := fmt.Sprintf("%s%d", authorizedAppVersionID.String(), data.Position)
-		err := env.LogStoreService.Set(redisKey, models.LogChunk{
-			TaskID:  params.TaskID,
-			Pos:     data.Position,
-			Content: data.Chunk,
-		})
-		if err != nil {
-			return errors.WithStack(err)
-		}
+		return WebhookPostLogHelper(env, w, r, params)
 	case "status":
-		data, ok := params.Data.(StatusData)
-		if !ok {
-			return httpresponse.RespondWithBadRequestError(w, "Invalid format of status type webhook data")
-		}
-		switch data.NewStatus {
-		case "started":
-			_, err := env.AppVersionEventService.Create(&models.AppVersionEvent{
-				Status:       "in_progress",
-				Text:         "Publishing has started",
-				AppVersionID: appVersion.ID,
-			})
-			if err != nil {
-				return errors.WithStack(err)
-			}
-			return httpresponse.RespondWithSuccess(w, nil)
-		case "finidhed":
-			fmt.Println("FINISHED")
-			var eventText, eventStatus string
-			if data.ExitCode > 0 {
-				eventStatus = "failed"
-				eventText = "Failed to publish"
-			} else {
-				eventStatus = "success"
-				eventText = "Successfully published"
-			}
-			event, err := env.AppVersionEventService.Create(&models.AppVersionEvent{
-				Status:       eventStatus,
-				Text:         eventText,
-				AppVersionID: appVersion.ID,
-			})
-			if err != nil {
-				return errors.WithStack(err)
-			}
-			logAWSPath, err := event.LogAWSPath()
-			if err != nil {
-				return errors.WithStack(err)
-			}
-			err = worker.EnqueueStoreLogToAWS(authorizedAppVersionID, data.LogChunkCount, logAWSPath)
-			if err != nil {
-				return errors.Wrap(err, "Worker error")
-			}
-			return httpresponse.RespondWithSuccess(w, nil)
-		}
+		return WebhookPostStatusHelper(env, w, r, params, appVersion)
+	default:
+		return errors.Errorf("Invalid type of webhook: %s", params.TypeID)
 	}
-	return nil
 }
