@@ -3,7 +3,6 @@ package services
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 
@@ -184,14 +183,12 @@ func AuthorizeForWebhookHandlerFunc(env *env.AppEnv, h http.Handler) http.Handle
 			httpresponse.RespondWithBadRequestErrorNoErr(w, "Invalid request body, JSON decode failed")
 			return
 		}
-		// if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
-		// }
 
 		if env.PublishTaskService == nil {
 			httpresponse.RespondWithInternalServerError(w, errors.New("No Publish Task Service provided"))
 			return
 		}
-		fmt.Printf("%#v\n", payload)
+
 		publishTask, err := env.PublishTaskService.Find(&models.PublishTask{TaskID: payload.TaskID})
 		switch {
 		case errors.Cause(err) == gorm.ErrRecordNotFound:

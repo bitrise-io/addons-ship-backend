@@ -25,7 +25,7 @@ func Test_AppVersionPublishPostHandler(t *testing.T) {
 	testAppVersionID := uuid.FromStringOrNil("de438ddc-98e5-4226-a5f4-fd2d53474879")
 	testTaskIdentifier := uuid.FromStringOrNil("13a94c5d-4609-404e-ae69-c625e93b8b71")
 
-	behavesAsServiceCravingHandler(t, httpMethod, url, handler, []string{"AppVersionService", "BitriseAPI"}, ControllerTestCase{
+	behavesAsServiceCravingHandler(t, httpMethod, url, handler, []string{"AppVersionService", "PublishTaskService", "BitriseAPI"}, ControllerTestCase{
 		contextElements: map[ctxpkg.RequestContextKey]interface{}{
 			services.ContextKeyAuthorizedAppVersionID: uuid.NewV4(),
 		},

@@ -99,7 +99,7 @@ func New(appEnv *env.AppEnv) *mux.Router {
 			handler: services.AppVersionEventsGetHandler, allowedMethods: []string{"GET", "OPTIONS"},
 		},
 		{
-			path: "/webhook", middleware: services.AuthenticateForWebhookHandling(appEnv),
+			path: "/webhook", middleware: services.AuthorizeForWebhookHandling(appEnv),
 			handler: services.WebhookPostHandler, allowedMethods: []string{"POST", "OPTIONS"},
 		},
 	} {

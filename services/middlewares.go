@@ -95,8 +95,8 @@ func AuthorizedAppVersionScreenshotMiddleware(appEnv *env.AppEnv) alice.Chain {
 	)
 }
 
-// AuthenticateForWebhookHandling ...
-func AuthenticateForWebhookHandling(appEnv *env.AppEnv) alice.Chain {
+// AuthorizeForWebhookHandling ...
+func AuthorizeForWebhookHandling(appEnv *env.AppEnv) alice.Chain {
 	return CommonMiddleware(appEnv).Append(
 		createAuthenticateForWebhookHandlingMiddleware(appEnv),
 		createAuthorizeForWebhookHandlingMiddleware(appEnv),
