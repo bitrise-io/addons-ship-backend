@@ -14,7 +14,7 @@ type LogStoreService struct {
 
 // Get ...
 func (s *LogStoreService) Get(key string) (LogChunk, error) {
-	chunkStr, err := s.Redis.Get(key)
+	chunkStr, err := s.Redis.GetString(key)
 	if err != nil {
 		return LogChunk{}, err
 	}

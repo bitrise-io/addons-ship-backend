@@ -2,7 +2,6 @@ package services
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	rice "github.com/GeertJohan/go.rice"
@@ -41,9 +40,10 @@ func AppVersionPublishPostHandler(env *env.AppEnv, w http.ResponseWriter, r *htt
 	case err != nil:
 		return errors.Wrap(err, "SQL Error")
 	}
-	var workflowToTrigger string
+	var workflowToTrigger, stackIDForTrigger string
 	if appVersion.Platform == "ios" {
 		workflowToTrigger = "resign_archive_app_store"
+		stackIDForTrigger = "osx-vs4mac-stable"
 	}
 
 	if env.BitriseAPI == nil {
@@ -84,6 +84,7 @@ func AppVersionPublishPostHandler(env *env.AppEnv, w http.ResponseWriter, r *htt
 	}
 
 	response, err := env.BitriseAPI.TriggerDENTask(bitrise.TaskParams{
+		StackID:     stackIDForTrigger,
 		Workflow:    workflowToTrigger,
 		BuildConfig: config,
 		InlineEnvs:  string(inlineEnvsBytes),
@@ -93,8 +94,6 @@ func AppVersionPublishPostHandler(env *env.AppEnv, w http.ResponseWriter, r *htt
 	if err != nil {
 		return errors.WithStack(err)
 	}
-
-	fmt.Printf("%#v\n", response)
 
 	_, err = env.PublishTaskService.Create(&models.PublishTask{
 		TaskID:       response.TaskIdentifier,
