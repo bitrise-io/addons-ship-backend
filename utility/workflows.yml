@@ -1,61 +1,47 @@
 format_version: '7'
 default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
-project_type: other
 workflows:
-  primary:
-    steps:
-      - script@1.1.5:
-          title: Do anything with Script step
-          inputs:
-            - content: |-
-                #!/usr/bin/env bash
-                set -ex
-                echo "Hello lil' friend!"
+  resign_archive_app_store:
+  steps:
+    - certificate-and-profile-installer@1.10.1: {}
+    - script@1.1.5:
+        inputs:
+          - content: |-
+              #!/usr/bin/env bash
+              # fail if any commands fails
+              set -e
+              # debug log
+              set -x
 
-# format_version: '7'
-# default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
-# workflows:
-#   resign_archive_app_store:
-#   steps:
-#     - certificate-and-profile-installer@1.10.1: {}
-#     - script@1.1.5:
-#         inputs:
-#           - content: |-
-#               #!/usr/bin/env bash
-#               # fail if any commands fails
-#               set -e
-#               # debug log
-#               set -x
+              brew install jq
+        title: Install jq
+    # - script:
+    #     title: Auth to Bitrise API
+    #     inputs:
+    #       - content: |
+    #           #!/usr/bin/env bash
+    #           set -ex
 
-#               brew install jq
-#         title: Install jq
-#     - script:
-#         title: Auth to Bitrise API
-#         inputs:
-#           - content: |
-#               #!/usr/bin/env bash
-#               set -ex
+    #           curl -H "Authorization: ${BITRISE_ACCESS_TOKEN}" https://api.bitrise.io/v0.1/me
+    - script:
+        title: Get artifact from the build
+        inputs:
+          - content: |
+              #!/usr/bin/env bash
+              set -ex
 
-#               curl -H "Authorization: ${BITRISE_ACCESS_TOKEN}" https://api.bitrise.io/v0.1/me
-#     - script:
-#         title: Get artifact from the build
-#         inputs:
-#           - content: |
-#               #!/usr/bin/env bash
-#               set -ex
-
-#               download_url=$(curl -X GET "https://api.bitrise.io/v0.1/apps/${BITRISE_APP_SLUG}/builds/${BITRISE_BUILD_SLUG}/artifacts/${BITRISE_ARTIFACT_SLUG}" -H "accept: application/json" -H "Authorization: ${BITRISE_ACCESS_TOKEN}" | jq -r '.data.expiring_download_url')
-#               envman add --key BITRISE_DOWNLOAD_URL --value $download_url
-#     - resource-archive@2.0.1:
-#         inputs:
-#           - extract_to_path: './'
-#           - archive_url: '$BITRISE_DOWNLOAD_URL'
-#     - export-xcarchive@1.0.1:
-#         inputs:
-#           - archive_path: unarchived/Xcode-10_default.xcarchive
-#           - upload_bitcode: 'no'
-#           - compile_bitcode: 'no'
-#           - export_method: app-store
-#     - deploy-to-bitrise-io:
-#         inputs:
-#           - notify_user_groups: none
+              download_url=$(curl -X GET "https://api.bitrise.io/v0.1/apps/${BITRISE_APP_SLUG}/builds/${BITRISE_BUILD_SLUG}/artifacts/${BITRISE_ARTIFACT_SLUG}" -H "accept: application/json" -H "Authorization: ${BITRISE_ACCESS_TOKEN}" | jq -r '.data.expiring_download_url')
+              envman add --key BITRISE_DOWNLOAD_URL --value $download_url
+    - resource-archive@2.0.1:
+        inputs:
+          - extract_to_path: './'
+          - archive_url: '$BITRISE_DOWNLOAD_URL'
+    - export-xcarchive@1.0.1:
+        inputs:
+          - archive_path: unarchived/Xcode-10_default.xcarchive
+          - upload_bitcode: 'no'
+          - compile_bitcode: 'no'
+          - export_method: app-store
+    - deploy-to-bitrise-io:
+        inputs:
+          - notify_user_groups: none
