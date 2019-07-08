@@ -15,8 +15,9 @@ import (
 
 // AppData ...
 type AppData struct {
-	Title      string  `json:"title"`
-	AppIconURL *string `json:"app_icon_url"`
+	Title       string  `json:"title"`
+	AppIconURL  *string `json:"app_icon_url"`
+	ProjectType string  `json:"project_type"`
 }
 
 // AppVersionGetResponseData ...
@@ -120,8 +121,9 @@ func newArtifactVersionGetResponse(appVersion *models.AppVersion, artifact *bitr
 		size = int64(floatSize)
 	}
 	appData := AppData{
-		Title:      appDetails.Title,
-		AppIconURL: appDetails.AvatarURL,
+		Title:       appDetails.Title,
+		AppIconURL:  appDetails.AvatarURL,
+		ProjectType: appDetails.ProjectType,
 	}
 	appStoreInfo, err := appVersion.AppStoreInfo()
 	if err != nil {
