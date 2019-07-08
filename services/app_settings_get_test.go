@@ -106,6 +106,8 @@ func Test_AppSettingsGetHandler(t *testing.T) {
 					AppSettings: &models.AppSettings{
 						App: &models.App{AppSlug: testAppSlug, BitriseAPIToken: testAppApiToken},
 					},
+					IosSettings:     &services.IosSettingsData{},
+					AndroidSettings: &services.AndroidSettingsData{},
 				},
 			},
 		})
@@ -174,7 +176,7 @@ func Test_AppSettingsGetHandler(t *testing.T) {
 					AppSettings: &models.AppSettings{
 						AppID: testAppID,
 					},
-					IosSettings: services.IosSettingsData{
+					IosSettings: &services.IosSettingsData{
 						IosSettings: expectedIosSettingsModel,
 						AvailableProvisioningProfiles: []bitrise.ProvisioningProfile{
 							bitrise.ProvisioningProfile{Filename: "provision-profile.provisionprofile", Slug: "prov-profile-slug"},
@@ -183,7 +185,7 @@ func Test_AppSettingsGetHandler(t *testing.T) {
 							bitrise.CodeSigningIdentity{Filename: "code-signing-id.cert", Slug: "code-signing-slug"},
 						},
 					},
-					AndroidSettings: services.AndroidSettingsData{
+					AndroidSettings: &services.AndroidSettingsData{
 						AndroidSettings: expectedAndroidSettingsModel,
 						AvailableKeystoreFiles: []bitrise.AndroidKeystoreFile{
 							bitrise.AndroidKeystoreFile{Filename: "android.keystore", Slug: "android-keystore-slug"},
@@ -260,8 +262,8 @@ func Test_AppSettingsGetHandler(t *testing.T) {
 					AppSettings: &models.AppSettings{
 						AppID: testAppID,
 					},
-					IosSettings: services.IosSettingsData{},
-					AndroidSettings: services.AndroidSettingsData{
+					IosSettings: nil,
+					AndroidSettings: &services.AndroidSettingsData{
 						AndroidSettings: expectedAndroidSettingsModel,
 						AvailableKeystoreFiles: []bitrise.AndroidKeystoreFile{
 							bitrise.AndroidKeystoreFile{Filename: "android.keystore", Slug: "android-keystore-slug"},
@@ -338,7 +340,7 @@ func Test_AppSettingsGetHandler(t *testing.T) {
 					AppSettings: &models.AppSettings{
 						AppID: testAppID,
 					},
-					IosSettings: services.IosSettingsData{
+					IosSettings: &services.IosSettingsData{
 						IosSettings: expectedIosSettingsModel,
 						AvailableProvisioningProfiles: []bitrise.ProvisioningProfile{
 							bitrise.ProvisioningProfile{Filename: "provision-profile.provisionprofile", Slug: "prov-profile-slug"},
@@ -347,7 +349,7 @@ func Test_AppSettingsGetHandler(t *testing.T) {
 							bitrise.CodeSigningIdentity{Filename: "code-signing-id.cert", Slug: "code-signing-slug"},
 						},
 					},
-					AndroidSettings: services.AndroidSettingsData{},
+					AndroidSettings: nil,
 				},
 			},
 		})

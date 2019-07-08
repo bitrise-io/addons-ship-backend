@@ -28,8 +28,8 @@ type AndroidSettingsData struct {
 // AppSettingsGetResponseData ...
 type AppSettingsGetResponseData struct {
 	*models.AppSettings
-	IosSettings     IosSettingsData     `json:"ios_settings,omitempty"`
-	AndroidSettings AndroidSettingsData `json:"android_settings,omitempty"`
+	IosSettings     *IosSettingsData     `json:"ios_settings,omitempty"`
+	AndroidSettings *AndroidSettingsData `json:"android_settings,omitempty"`
 }
 
 // AppSettingsGetResponse ...
@@ -63,8 +63,8 @@ func AppSettingsGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Reque
 	if err != nil {
 		return errors.Wrap(err, "Failed to fetch app details")
 	}
-	var iosSettingsData IosSettingsData
-	var androidSettingsData AndroidSettingsData
+	var iosSettingsData *IosSettingsData
+	var androidSettingsData *AndroidSettingsData
 
 	if appDetails.ProjectType != "android" {
 		iosSettingsData, err = makeIosSettingsData(env, appSettings)
@@ -89,40 +89,40 @@ func AppSettingsGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Reque
 	})
 }
 
-func makeIosSettingsData(env *env.AppEnv, appSettings *models.AppSettings) (IosSettingsData, error) {
+func makeIosSettingsData(env *env.AppEnv, appSettings *models.AppSettings) (*IosSettingsData, error) {
 	provisioningProfiles, err := env.BitriseAPI.GetProvisioningProfiles(appSettings.App.BitriseAPIToken, appSettings.App.AppSlug)
 	if err != nil {
-		return IosSettingsData{}, errors.Wrap(err, "Failed to fetch provisioning profiles")
+		return nil, errors.Wrap(err, "Failed to fetch provisioning profiles")
 	}
 	codeSigningIdentities, err := env.BitriseAPI.GetCodeSigningIdentities(appSettings.App.BitriseAPIToken, appSettings.App.AppSlug)
 	if err != nil {
-		return IosSettingsData{}, errors.Wrap(err, "Failed to fetch code signing identities")
+		return nil, errors.Wrap(err, "Failed to fetch code signing identities")
 	}
 	iosSettings, err := appSettings.IosSettings()
 	if err != nil {
-		return IosSettingsData{}, errors.WithStack(err)
+		return nil, errors.WithStack(err)
 	}
-	return IosSettingsData{
+	return &IosSettingsData{
 		IosSettings:                    iosSettings,
 		AvailableProvisioningProfiles:  provisioningProfiles,
 		AvailableCodeSigningIdentities: codeSigningIdentities,
 	}, nil
 }
 
-func makeAndroidSettingsData(env *env.AppEnv, appSettings *models.AppSettings) (AndroidSettingsData, error) {
+func makeAndroidSettingsData(env *env.AppEnv, appSettings *models.AppSettings) (*AndroidSettingsData, error) {
 	androidKeyStoreFiles, err := env.BitriseAPI.GetAndroidKeystoreFiles(appSettings.App.BitriseAPIToken, appSettings.App.AppSlug)
 	if err != nil {
-		return AndroidSettingsData{}, errors.Wrap(err, "Failed to fetch android keystore files")
+		return nil, errors.Wrap(err, "Failed to fetch android keystore files")
 	}
 	serviceAccountfiles, err := env.BitriseAPI.GetServiceAccountFiles(appSettings.App.BitriseAPIToken, appSettings.App.AppSlug)
 	if err != nil {
-		return AndroidSettingsData{}, errors.Wrap(err, "Failed to fetch service account files")
+		return nil, errors.Wrap(err, "Failed to fetch service account files")
 	}
 	androidSettings, err := appSettings.AndroidSettings()
 	if err != nil {
-		return AndroidSettingsData{}, errors.WithStack(err)
+		return nil, errors.WithStack(err)
 	}
-	return AndroidSettingsData{
+	return &AndroidSettingsData{
 		AndroidSettings:              androidSettings,
 		AvailableKeystoreFiles:       androidKeyStoreFiles,
 		AvailableServiceAccountFiles: serviceAccountfiles,
