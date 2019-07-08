@@ -436,6 +436,44 @@ func Test_AppSettingsGetHandler(t *testing.T) {
 		})
 	})
 
+	t.Run("when failed to fetch app details", func(t *testing.T) {
+		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppID: testAppID,
+			},
+			env: &env.AppEnv{
+				AppSettingsService: &testAppSettingsService{
+					findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
+						require.Equal(t, appSettings.AppID, testAppID)
+						return &models.AppSettings{
+							App:                 &models.App{AppSlug: testAppSlug, BitriseAPIToken: testAppApiToken},
+							IosSettingsData:     json.RawMessage(`{}`),
+							AndroidSettingsData: json.RawMessage(`{}`),
+						}, nil
+					},
+				},
+				BitriseAPI: &testBitriseAPI{
+					getAppDetailsFn: func(string, string) (*bitrise.AppDetails, error) {
+						return nil, errors.New("BITRISE-API-ERROR")
+					},
+					getProvisioningProfilesFn: func(apiToken, appSlug string) ([]bitrise.ProvisioningProfile, error) {
+						return nil, nil
+					},
+					getCodeSigningIdentitiesFn: func(apiToken, appSlug string) ([]bitrise.CodeSigningIdentity, error) {
+						return nil, nil
+					},
+					getAndroidKeystoreFilesFn: func(apiToken, appSlug string) ([]bitrise.AndroidKeystoreFile, error) {
+						return nil, nil
+					},
+					getServiceAccountFilesFn: func(apiToken, appSlug string) ([]bitrise.GenericProjectFile, error) {
+						return nil, nil
+					},
+				},
+			},
+			expectedInternalErr: "Failed to fetch app details: BITRISE-API-ERROR",
+		})
+	})
+
 	t.Run("when failed to fetch prov profiles", func(t *testing.T) {
 		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
 			contextElements: map[ctxpkg.RequestContextKey]interface{}{
