@@ -14,7 +14,7 @@ import (
 func webhookPostStatusHelper(env *env.AppEnv, w http.ResponseWriter, r *http.Request, params WebhookPayload, appVersion *models.AppVersion) error {
 	data, err := parseStatusData(params.Data)
 	if err != nil {
-		return errors.WithStack(err)
+		return httpresponse.RespondWithBadRequestError(w, "Invalid format of status data")
 	}
 	switch data.NewStatus {
 	case "started":
@@ -46,7 +46,7 @@ func webhookPostStatusHelper(env *env.AppEnv, w http.ResponseWriter, r *http.Req
 			AppVersionID: appVersion.ID,
 		})
 		if err != nil {
-			return errors.WithStack(err)
+			return errors.Wrap(err, "SQL Error")
 		}
 		logAWSPath, err := event.LogAWSPath()
 		if err != nil {

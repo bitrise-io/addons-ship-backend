@@ -17,7 +17,7 @@ func init() {
 	}
 	file3 := &embedded.EmbeddedFile{
 		Filename:    "rice-box.go",
-		FileModTime: time.Unix(1562152052, 0),
+		FileModTime: time.Unix(1562318085, 0),
 
 		Content: string(""),
 	}
@@ -31,7 +31,7 @@ func init() {
 	// define dirs
 	dir1 := &embedded.EmbeddedDir{
 		Filename:   "",
-		DirModTime: time.Unix(1561701795, 0),
+		DirModTime: time.Unix(1562314716, 0),
 		ChildFiles: []*embedded.EmbeddedFile{
 			file2, // "mail.html"
 			file3, // "rice-box.go"
@@ -46,7 +46,7 @@ func init() {
 	// register embeddedBox
 	embedded.RegisterEmbeddedBox(``, &embedded.EmbeddedBox{
 		Name: ``,
-		Time: time.Unix(1561701795, 0),
+		Time: time.Unix(1562314716, 0),
 		Dirs: map[string]*embedded.EmbeddedDir{
 			"": dir1,
 		},

@@ -105,6 +105,9 @@ func behavesAsServiceCravingHandler(t *testing.T, method, url string, handler fu
 			} else if sn == "BitriseAPI" {
 				controllerTestCase.env.BitriseAPI = nil
 				controllerTestCase.expectedInternalErr = "No Bitrise API Service defined for handler"
+			} else if sn == "WorkerService" {
+				controllerTestCase.env.WorkerService = nil
+				controllerTestCase.expectedInternalErr = "No Worker Service defined for handler"
 			} else {
 				t.Fatalf("Invalid service element name defined: %s", sn)
 			}

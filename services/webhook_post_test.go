@@ -21,13 +21,14 @@ func Test_WebhookPostHandler(t *testing.T) {
 	url := "/webhook"
 	handler := services.WebhookPostHandler
 
-	behavesAsServiceCravingHandler(t, httpMethod, url, handler, []string{"AppVersionService", "AppVersionEventService"}, ControllerTestCase{
+	behavesAsServiceCravingHandler(t, httpMethod, url, handler, []string{"AppVersionService", "AppVersionEventService", "WorkerService"}, ControllerTestCase{
 		contextElements: map[ctxpkg.RequestContextKey]interface{}{
 			services.ContextKeyAuthorizedAppVersionID: uuid.NewV4(),
 		},
 		env: &env.AppEnv{
 			AppVersionService:      &testAppVersionService{},
 			AppVersionEventService: &testAppVersionEventService{},
+			WorkerService:          &testWorkerService{},
 		},
 		requestBody: `{}`,
 	})
@@ -148,11 +149,70 @@ func Test_WebhookPostHandler(t *testing.T) {
 	})
 
 	t.Run("when incoming webhook has 'status' type", func(t *testing.T) {
+		testAppVersionID := uuid.FromStringOrNil("e2915475-381d-4252-b5ec-c0fe511b12e8")
+
+		t.Run("when status data has invalid format", func(t *testing.T) {
+			performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+				contextElements: map[ctxpkg.RequestContextKey]interface{}{
+					services.ContextKeyAuthorizedAppVersionID: testAppVersionID,
+				},
+				env: &env.AppEnv{
+					AppVersionService: &testAppVersionService{
+						findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
+							return &models.AppVersion{}, nil
+						},
+					},
+					AppVersionEventService: &testAppVersionEventService{
+						createFn: func(*models.AppVersionEvent) (*models.AppVersionEvent, error) {
+							return nil, nil
+						},
+					},
+					WorkerService: &testWorkerService{},
+					Redis: &redis.Mock{
+						SetFn: func(string, interface{}, int) error {
+							return nil
+						},
+					},
+				},
+				requestBody:        `{"type_id":"status","data":"some invalid JSON"}`,
+				expectedStatusCode: http.StatusBadRequest,
+				expectedResponse:   httpresponse.StandardErrorRespModel{Message: "Invalid format of status data"},
+			})
+		})
+
+		t.Run("when status in payload is not valid", func(t *testing.T) {
+			performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+				contextElements: map[ctxpkg.RequestContextKey]interface{}{
+					services.ContextKeyAuthorizedAppVersionID: testAppVersionID,
+				},
+				env: &env.AppEnv{
+					AppVersionService: &testAppVersionService{
+						findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
+							return &models.AppVersion{}, nil
+						},
+					},
+					AppVersionEventService: &testAppVersionEventService{
+						createFn: func(*models.AppVersionEvent) (*models.AppVersionEvent, error) {
+							return nil, nil
+						},
+					},
+					WorkerService: &testWorkerService{},
+					Redis: &redis.Mock{
+						SetFn: func(string, interface{}, int) error {
+							return nil
+						},
+					},
+				},
+				requestBody:         `{"type_id":"status","data":{"new_status":"some invalid status"}}`,
+				expectedInternalErr: "Invalid status of incoming webhook: some invalid status",
+			})
+		})
+
 		t.Run("when status is 'started'", func(t *testing.T) {
 			t.Run("ok - minimal", func(t *testing.T) {
 				performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
 					contextElements: map[ctxpkg.RequestContextKey]interface{}{
-						services.ContextKeyAuthorizedAppVersionID: uuid.NewV4(),
+						services.ContextKeyAuthorizedAppVersionID: testAppVersionID,
 					},
 					env: &env.AppEnv{
 						AppVersionService: &testAppVersionService{
@@ -181,16 +241,21 @@ func Test_WebhookPostHandler(t *testing.T) {
 			t.Run("ok - more complex", func(t *testing.T) {
 				performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
 					contextElements: map[ctxpkg.RequestContextKey]interface{}{
-						services.ContextKeyAuthorizedAppVersionID: uuid.NewV4(),
+						services.ContextKeyAuthorizedAppVersionID: testAppVersionID,
 					},
 					env: &env.AppEnv{
 						AppVersionService: &testAppVersionService{
 							findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
-								return &models.AppVersion{}, nil
+								return &models.AppVersion{Record: models.Record{ID: testAppVersionID}}, nil
 							},
 						},
 						AppVersionEventService: &testAppVersionEventService{
-							createFn: func(*models.AppVersionEvent) (*models.AppVersionEvent, error) {
+							createFn: func(event *models.AppVersionEvent) (*models.AppVersionEvent, error) {
+								require.Equal(t, &models.AppVersionEvent{
+									Status:       "in_progress",
+									Text:         "Publishing has started",
+									AppVersionID: testAppVersionID,
+								}, event)
 								return nil, nil
 							},
 						},
@@ -214,7 +279,7 @@ func Test_WebhookPostHandler(t *testing.T) {
 			t.Run("when error happens at creating new app version event", func(t *testing.T) {
 				performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
 					contextElements: map[ctxpkg.RequestContextKey]interface{}{
-						services.ContextKeyAuthorizedAppVersionID: uuid.NewV4(),
+						services.ContextKeyAuthorizedAppVersionID: testAppVersionID,
 					},
 					env: &env.AppEnv{
 						AppVersionService: &testAppVersionService{
@@ -266,6 +331,263 @@ func Test_WebhookPostHandler(t *testing.T) {
 					expectedInternalErr: "SOME-REDIS-ERROR",
 				})
 			})
+		})
+		t.Run("when status is 'finished'", func(t *testing.T) {
+			t.Run("ok - minimal", func(t *testing.T) {
+				performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+					contextElements: map[ctxpkg.RequestContextKey]interface{}{
+						services.ContextKeyAuthorizedAppVersionID: uuid.NewV4(),
+					},
+					env: &env.AppEnv{
+						AppVersionService: &testAppVersionService{
+							findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
+								return &models.AppVersion{}, nil
+							},
+						},
+						AppVersionEventService: &testAppVersionEventService{
+							createFn: func(event *models.AppVersionEvent) (*models.AppVersionEvent, error) {
+								event.AppVersion = models.AppVersion{Record: models.Record{ID: uuid.NewV4()}, App: models.App{AppSlug: "test-app-slug"}}
+								return event, nil
+							},
+						},
+						WorkerService: &testWorkerService{
+							enqueueStoreLogToAWSFn: func(uuid.UUID, int64, string, time.Duration) error {
+								return nil
+							},
+						},
+					},
+					requestBody:        `{"type_id":"status","data":{"new_status":"finished"}}`,
+					expectedStatusCode: http.StatusOK,
+					expectedResponse:   httpresponse.StandardErrorRespModel{Message: "ok"},
+				})
+			})
+
+			t.Run("ok - more complex - success", func(t *testing.T) {
+				performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+					contextElements: map[ctxpkg.RequestContextKey]interface{}{
+						services.ContextKeyAuthorizedAppVersionID: uuid.NewV4(),
+					},
+					env: &env.AppEnv{
+						AppVersionService: &testAppVersionService{
+							findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
+								return &models.AppVersion{Record: models.Record{ID: testAppVersionID}}, nil
+							},
+						},
+						AppVersionEventService: &testAppVersionEventService{
+							createFn: func(event *models.AppVersionEvent) (*models.AppVersionEvent, error) {
+								require.Equal(t, &models.AppVersionEvent{
+									Status:       "success",
+									Text:         "Successfully published",
+									AppVersionID: testAppVersionID,
+								}, event)
+								event.ID = uuid.FromStringOrNil("507db32c-9f92-43b6-9a53-d8d7594736c7")
+								event.AppVersion = models.AppVersion{Record: models.Record{ID: testAppVersionID}, App: models.App{AppSlug: "test-app-slug"}}
+								return event, nil
+							},
+						},
+						WorkerService: &testWorkerService{
+							enqueueStoreLogToAWSFn: func(taskID uuid.UUID, logChunkCount int64, awsPath string, secondsToStartFromNow time.Duration) error {
+								require.Equal(t, "96e72f92-6e4c-40d5-b829-48a1ea6440a1", taskID.String())
+								require.Equal(t, 2, logChunkCount)
+								require.Equal(t, "logs/test-app-slug/e2915475-381d-4252-b5ec-c0fe511b12e8/507db32c-9f92-43b6-9a53-d8d7594736c7.log", awsPath)
+								require.Equal(t, 30, secondsToStartFromNow)
+								return nil
+							},
+						},
+					},
+					requestBody:        `{"type_id":"status","task_id":"96e72f92-6e4c-40d5-b829-48a1ea6440a1","data":{"new_status":"finished","exit_code":0,"generated_log_chunk_count":2}}`,
+					expectedStatusCode: http.StatusOK,
+					expectedResponse:   httpresponse.StandardErrorRespModel{Message: "ok"},
+				})
+			})
+
+			t.Run("ok - more complex - failed", func(t *testing.T) {
+				performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+					contextElements: map[ctxpkg.RequestContextKey]interface{}{
+						services.ContextKeyAuthorizedAppVersionID: uuid.NewV4(),
+					},
+					env: &env.AppEnv{
+						AppVersionService: &testAppVersionService{
+							findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
+								return &models.AppVersion{Record: models.Record{ID: testAppVersionID}}, nil
+							},
+						},
+						AppVersionEventService: &testAppVersionEventService{
+							createFn: func(event *models.AppVersionEvent) (*models.AppVersionEvent, error) {
+								require.Equal(t, &models.AppVersionEvent{
+									Status:       "failed",
+									Text:         "Failed to publish",
+									AppVersionID: testAppVersionID,
+								}, event)
+								event.ID = uuid.FromStringOrNil("507db32c-9f92-43b6-9a53-d8d7594736c7")
+								event.AppVersion = models.AppVersion{Record: models.Record{ID: testAppVersionID}, App: models.App{AppSlug: "test-app-slug"}}
+								return event, nil
+							},
+						},
+						WorkerService: &testWorkerService{
+							enqueueStoreLogToAWSFn: func(taskID uuid.UUID, logChunkCount int64, awsPath string, secondsToStartFromNow time.Duration) error {
+								require.Equal(t, "96e72f92-6e4c-40d5-b829-48a1ea6440a1", taskID.String())
+								require.Equal(t, 2, logChunkCount)
+								require.Equal(t, "logs/test-app-slug/e2915475-381d-4252-b5ec-c0fe511b12e8/507db32c-9f92-43b6-9a53-d8d7594736c7.log", awsPath)
+								require.Equal(t, 30, secondsToStartFromNow)
+								return nil
+							},
+						},
+					},
+					requestBody:        `{"type_id":"status","task_id":"96e72f92-6e4c-40d5-b829-48a1ea6440a1","data":{"new_status":"finished","exit_code":-1,"generated_log_chunk_count":2}}`,
+					expectedStatusCode: http.StatusOK,
+					expectedResponse:   httpresponse.StandardErrorRespModel{Message: "ok"},
+				})
+			})
+
+			t.Run("when error happens at creating new app version event", func(t *testing.T) {
+				performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+					contextElements: map[ctxpkg.RequestContextKey]interface{}{
+						services.ContextKeyAuthorizedAppVersionID: testAppVersionID,
+					},
+					env: &env.AppEnv{
+						AppVersionService: &testAppVersionService{
+							findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
+								return &models.AppVersion{}, nil
+							},
+						},
+						AppVersionEventService: &testAppVersionEventService{
+							createFn: func(*models.AppVersionEvent) (*models.AppVersionEvent, error) {
+								return nil, errors.New("SOME-SQL-ERROR")
+							},
+						},
+						WorkerService: &testWorkerService{},
+					},
+					requestBody:         `{"type_id":"status","data":{"new_status":"finished"}}`,
+					expectedInternalErr: "SQL Error: SOME-SQL-ERROR",
+				})
+			})
+
+			t.Run("when AWS path cannot be constructed", func(t *testing.T) {
+				performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+					contextElements: map[ctxpkg.RequestContextKey]interface{}{
+						services.ContextKeyAuthorizedAppVersionID: uuid.NewV4(),
+					},
+					env: &env.AppEnv{
+						AppVersionService: &testAppVersionService{
+							findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
+								return &models.AppVersion{}, nil
+							},
+						},
+						AppVersionEventService: &testAppVersionEventService{
+							createFn: func(event *models.AppVersionEvent) (*models.AppVersionEvent, error) {
+								event.AppVersion = models.AppVersion{Record: models.Record{ID: uuid.NewV4()}}
+								return event, nil
+							},
+						},
+						WorkerService: &testWorkerService{
+							enqueueStoreLogToAWSFn: func(uuid.UUID, int64, string, time.Duration) error {
+								return nil
+							},
+						},
+					},
+					requestBody:         `{"type_id":"status","data":{"new_status":"finished"}}`,
+					expectedInternalErr: "App has empty App Slug, App has to be preloaded",
+				})
+			})
+
+			t.Run("when error happens at enqueuing new job", func(t *testing.T) {
+				performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+					contextElements: map[ctxpkg.RequestContextKey]interface{}{
+						services.ContextKeyAuthorizedAppVersionID: uuid.NewV4(),
+					},
+					env: &env.AppEnv{
+						AppVersionService: &testAppVersionService{
+							findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
+								return &models.AppVersion{}, nil
+							},
+						},
+						AppVersionEventService: &testAppVersionEventService{
+							createFn: func(event *models.AppVersionEvent) (*models.AppVersionEvent, error) {
+								event.AppVersion = models.AppVersion{Record: models.Record{ID: uuid.NewV4()}, App: models.App{AppSlug: "test-app-slug"}}
+								return event, nil
+							},
+						},
+						WorkerService: &testWorkerService{
+							enqueueStoreLogToAWSFn: func(uuid.UUID, int64, string, time.Duration) error {
+								return errors.New("SOME-WORKER-ERROR")
+							},
+						},
+					},
+					requestBody:         `{"type_id":"status","data":{"new_status":"finished"}}`,
+					expectedInternalErr: "Worker error: SOME-WORKER-ERROR",
+				})
+			})
+		})
+	})
+
+	t.Run("when request body is invalid", func(t *testing.T) {
+		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppVersionID: uuid.NewV4(),
+			},
+			env: &env.AppEnv{
+				AppVersionService: &testAppVersionService{
+					findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
+						return &models.AppVersion{}, nil
+					},
+				},
+				AppVersionEventService: &testAppVersionEventService{},
+				WorkerService: &testWorkerService{
+					enqueueStoreLogChunkToRedisFn: func(string, models.LogChunk, time.Duration) error {
+						return nil
+					},
+				},
+			},
+			requestBody:        `invalid JSON`,
+			expectedStatusCode: http.StatusBadRequest,
+			expectedResponse:   httpresponse.StandardErrorRespModel{Message: "Invalid request body, JSON decode failed"},
+		})
+	})
+
+	t.Run("when error happens at finding app version by authorized ID", func(t *testing.T) {
+		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppVersionID: uuid.NewV4(),
+			},
+			env: &env.AppEnv{
+				AppVersionService: &testAppVersionService{
+					findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
+						return nil, errors.New("SOME-SQL-ERROR")
+					},
+				},
+				AppVersionEventService: &testAppVersionEventService{},
+				WorkerService: &testWorkerService{
+					enqueueStoreLogChunkToRedisFn: func(string, models.LogChunk, time.Duration) error {
+						return nil
+					},
+				},
+			},
+			requestBody:         `{"type_id":"log"}`,
+			expectedInternalErr: "SQL Error: SOME-SQL-ERROR",
+		})
+	})
+
+	t.Run("when webhook type is invalid", func(t *testing.T) {
+		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppVersionID: uuid.NewV4(),
+			},
+			env: &env.AppEnv{
+				AppVersionService: &testAppVersionService{
+					findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
+						return &models.AppVersion{}, nil
+					},
+				},
+				AppVersionEventService: &testAppVersionEventService{},
+				WorkerService: &testWorkerService{
+					enqueueStoreLogChunkToRedisFn: func(string, models.LogChunk, time.Duration) error {
+						return nil
+					},
+				},
+			},
+			requestBody:         `{"type_id":"invalid hook type"}`,
+			expectedInternalErr: "Invalid type of webhook: invalid hook type",
 		})
 	})
 }

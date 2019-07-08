@@ -60,7 +60,7 @@ func WebhookPostHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request)
 
 	appVersion, err := env.AppVersionService.Find(&models.AppVersion{Record: models.Record{ID: authorizedAppVersionID}})
 	if err != nil {
-		return errors.WithStack(err)
+		return errors.Wrap(err, "SQL Error")
 	}
 	switch params.TypeID {
 	case "log":
