@@ -28,6 +28,7 @@ type AndroidSettingsData struct {
 // AppSettingsGetResponseData ...
 type AppSettingsGetResponseData struct {
 	*models.AppSettings
+	ProjectType     string              `json:"project_type"`
 	IosSettings     IosSettingsData     `json:"ios_settings"`
 	AndroidSettings AndroidSettingsData `json:"android_settings"`
 }
@@ -57,6 +58,11 @@ func AppSettingsGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Reque
 
 	if env.BitriseAPI == nil {
 		return errors.New("No Bitrise API Service defined for handler")
+	}
+
+	appDetails, err := env.BitriseAPI.GetAppDetails(appSettings.App.BitriseAPIToken, appSettings.App.AppSlug)
+	if err != nil {
+		return errors.Wrap(err, "Failed to fetch app details")
 	}
 
 	provisioningProfiles, err := env.BitriseAPI.GetProvisioningProfiles(appSettings.App.BitriseAPIToken, appSettings.App.AppSlug)
@@ -92,6 +98,7 @@ func AppSettingsGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Reque
 	return httpresponse.RespondWithSuccess(w, AppSettingsGetResponse{
 		Data: AppSettingsGetResponseData{
 			AppSettings: appSettings,
+			ProjectType: appDetails.ProjectType,
 			IosSettings: IosSettingsData{
 				IosSettings:                    iosSettings,
 				AvailableProvisioningProfiles:  provisioningProfiles,
