@@ -21,6 +21,7 @@ var (
 // APIInterface ...
 type APIInterface interface {
 	GetArtifactData(string, string, string) (*ArtifactData, error)
+	GetArtifacts(authToken, appSlug, buildSlug string) ([]ArtifactListElementResponseModel, error)
 	GetArtifactPublicInstallPageURL(string, string, string, string) (string, error)
 	GetAppDetails(authToken, appSlug string) (*AppDetails, error)
 	GetProvisioningProfiles(authToken, appSlug string) ([]ProvisioningProfile, error)
@@ -94,6 +95,27 @@ func (a *API) GetArtifactData(authToken, appSlug, buildSlug string) (*ArtifactDa
 		next = responseModel.Paging.Next
 	}
 	return nil, errors.New("No matching artifact found")
+}
+
+// GetArtifacts ...
+func (a *API) GetArtifacts(authToken, appSlug, buildSlug string) ([]ArtifactListElementResponseModel, error) {
+	var artifacts []ArtifactListElementResponseModel
+	responseModel, err := a.listArtifacts(authToken, appSlug, buildSlug, "")
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	artifacts = append(artifacts, responseModel.Data...)
+
+	next := responseModel.Paging.Next
+	for next != "" {
+		responseModel, err = a.listArtifacts(authToken, appSlug, buildSlug, next)
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
+		artifacts = append(artifacts, responseModel.Data...)
+		next = responseModel.Paging.Next
+	}
+	return artifacts, nil
 }
 
 // GetArtifactPublicInstallPageURL ...
@@ -265,9 +287,8 @@ func getInstallableArtifactsFromResponseModel(respModel *artifactListResponseMod
 	for _, buildArtifact := range respModel.Data {
 		if validArtifact(buildArtifact) {
 			var artifactMeta ArtifactMeta
-			err := json.Unmarshal([]byte(buildArtifact.ArtifactMeta), &artifactMeta)
-			if err != nil {
-				return nil, errors.WithStack(err)
+			if buildArtifact.ArtifactMeta != nil {
+				artifactMeta = *buildArtifact.ArtifactMeta
 			}
 			return &ArtifactData{
 				Meta: artifactMeta,
@@ -278,7 +299,7 @@ func getInstallableArtifactsFromResponseModel(respModel *artifactListResponseMod
 	return nil, nil
 }
 
-func validArtifact(artifact artifactListElementResponseModel) bool {
+func validArtifact(artifact ArtifactListElementResponseModel) bool {
 	for _, artifactType := range validArtifactTypes {
 		if artifact.ArtifactType == nil {
 			return false

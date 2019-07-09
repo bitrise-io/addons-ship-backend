@@ -34,6 +34,7 @@ type AppVersionGetResponseData struct {
 	PublicInstallPageURL string              `json:"public_install_page_url"`
 	AppInfo              AppData             `json:"app_info"`
 	AppStoreInfo         models.AppStoreInfo `json:"app_store_info"`
+	PublishEnabled       bool                `json:"publish_enabled"`
 }
 
 // AppVersionGetResponse ...
@@ -65,7 +66,7 @@ func AppVersionGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Reques
 		return errors.New("No Bitrise API Service defined for handler")
 	}
 
-	artifactData, err := env.BitriseAPI.GetArtifactData(
+	artifacts, err := env.BitriseAPI.GetArtifacts(
 		appVersion.App.BitriseAPIToken,
 		appVersion.App.AppSlug,
 		appVersion.BuildSlug,
@@ -74,29 +75,12 @@ func AppVersionGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Reques
 		return errors.WithStack(err)
 	}
 
-	artifactPublicInstallPageURL, err := env.BitriseAPI.GetArtifactPublicInstallPageURL(
-		appVersion.App.BitriseAPIToken,
-		appVersion.App.AppSlug,
-		appVersion.BuildSlug,
-		artifactData.Slug,
-	)
-	if err != nil {
-		return errors.WithStack(err)
+	if appVersion.Platform == "ios" {
+		return appVersionGetIosHelper(env, w, r, appVersion, artifacts)
+	} else if appVersion.Platform == "android" {
+		return appVersionGetAndroidHelper(env, w, r, appVersion, artifacts)
 	}
-
-	appDetails, err := env.BitriseAPI.GetAppDetails(appVersion.App.BitriseAPIToken, appVersion.App.AppSlug)
-	if err != nil {
-		return errors.WithStack(err)
-	}
-
-	responseData, err := newArtifactVersionGetResponse(appVersion, &artifactData.Meta, artifactPublicInstallPageURL, appDetails)
-	if err != nil {
-		return errors.WithStack(err)
-	}
-
-	return httpresponse.RespondWithSuccess(w, AppVersionGetResponse{
-		Data: responseData,
-	})
+	return errors.Errorf("Invalid platform type of app version: %s", appVersion.Platform)
 }
 
 func newArtifactVersionGetResponse(appVersion *models.AppVersion, artifact *bitrise.ArtifactMeta, publicInstallPageURL string, appDetails *bitrise.AppDetails) (AppVersionGetResponseData, error) {
