@@ -3,7 +3,6 @@ package services_test
 import (
 	"net/http"
 	"testing"
-	"time"
 
 	"github.com/bitrise-io/addons-ship-backend/env"
 	"github.com/bitrise-io/addons-ship-backend/models"
@@ -58,7 +57,7 @@ func Test_WebhookPostHandler(t *testing.T) {
 					},
 					AppVersionEventService: &testAppVersionEventService{},
 					WorkerService: &testWorkerService{
-						enqueueStoreLogChunkToRedisFn: func(string, models.LogChunk, time.Duration) error {
+						enqueueStoreLogChunkToRedisFn: func(string, models.LogChunk, int64) error {
 							return nil
 						},
 					},
@@ -82,7 +81,7 @@ func Test_WebhookPostHandler(t *testing.T) {
 					},
 					AppVersionEventService: &testAppVersionEventService{},
 					WorkerService: &testWorkerService{
-						enqueueStoreLogChunkToRedisFn: func(taskID string, chunk models.LogChunk, secondsToStartFromNow time.Duration) error {
+						enqueueStoreLogChunkToRedisFn: func(taskID string, chunk models.LogChunk, secondsToStartFromNow int64) error {
 							require.Equal(t, "96e72f92-6e4c-40d5-b829-48a1ea6440a1", taskID)
 							require.Equal(t, models.LogChunk{
 								TaskID:  uuid.FromStringOrNil("96e72f92-6e4c-40d5-b829-48a1ea6440a1"),
@@ -113,7 +112,7 @@ func Test_WebhookPostHandler(t *testing.T) {
 					},
 					AppVersionEventService: &testAppVersionEventService{},
 					WorkerService: &testWorkerService{
-						enqueueStoreLogChunkToRedisFn: func(string, models.LogChunk, time.Duration) error {
+						enqueueStoreLogChunkToRedisFn: func(string, models.LogChunk, int64) error {
 							return nil
 						},
 					},
@@ -137,7 +136,7 @@ func Test_WebhookPostHandler(t *testing.T) {
 					},
 					AppVersionEventService: &testAppVersionEventService{},
 					WorkerService: &testWorkerService{
-						enqueueStoreLogChunkToRedisFn: func(string, models.LogChunk, time.Duration) error {
+						enqueueStoreLogChunkToRedisFn: func(string, models.LogChunk, int64) error {
 							return errors.New("SOME-WORKER-ERROR")
 						},
 					},
@@ -351,7 +350,7 @@ func Test_WebhookPostHandler(t *testing.T) {
 							},
 						},
 						WorkerService: &testWorkerService{
-							enqueueStoreLogToAWSFn: func(uuid.UUID, int64, string, time.Duration) error {
+							enqueueStoreLogToAWSFn: func(uuid.UUID, int64, string, int64) error {
 								return nil
 							},
 						},
@@ -386,7 +385,7 @@ func Test_WebhookPostHandler(t *testing.T) {
 							},
 						},
 						WorkerService: &testWorkerService{
-							enqueueStoreLogToAWSFn: func(taskID uuid.UUID, logChunkCount int64, awsPath string, secondsToStartFromNow time.Duration) error {
+							enqueueStoreLogToAWSFn: func(taskID uuid.UUID, logChunkCount int64, awsPath string, secondsToStartFromNow int64) error {
 								require.Equal(t, "96e72f92-6e4c-40d5-b829-48a1ea6440a1", taskID.String())
 								require.Equal(t, 2, logChunkCount)
 								require.Equal(t, "logs/test-app-slug/e2915475-381d-4252-b5ec-c0fe511b12e8/507db32c-9f92-43b6-9a53-d8d7594736c7.log", awsPath)
@@ -425,7 +424,7 @@ func Test_WebhookPostHandler(t *testing.T) {
 							},
 						},
 						WorkerService: &testWorkerService{
-							enqueueStoreLogToAWSFn: func(taskID uuid.UUID, logChunkCount int64, awsPath string, secondsToStartFromNow time.Duration) error {
+							enqueueStoreLogToAWSFn: func(taskID uuid.UUID, logChunkCount int64, awsPath string, secondsToStartFromNow int64) error {
 								require.Equal(t, "96e72f92-6e4c-40d5-b829-48a1ea6440a1", taskID.String())
 								require.Equal(t, 2, logChunkCount)
 								require.Equal(t, "logs/test-app-slug/e2915475-381d-4252-b5ec-c0fe511b12e8/507db32c-9f92-43b6-9a53-d8d7594736c7.log", awsPath)
@@ -481,7 +480,7 @@ func Test_WebhookPostHandler(t *testing.T) {
 							},
 						},
 						WorkerService: &testWorkerService{
-							enqueueStoreLogToAWSFn: func(uuid.UUID, int64, string, time.Duration) error {
+							enqueueStoreLogToAWSFn: func(uuid.UUID, int64, string, int64) error {
 								return nil
 							},
 						},
@@ -509,7 +508,7 @@ func Test_WebhookPostHandler(t *testing.T) {
 							},
 						},
 						WorkerService: &testWorkerService{
-							enqueueStoreLogToAWSFn: func(uuid.UUID, int64, string, time.Duration) error {
+							enqueueStoreLogToAWSFn: func(uuid.UUID, int64, string, int64) error {
 								return errors.New("SOME-WORKER-ERROR")
 							},
 						},
@@ -534,7 +533,7 @@ func Test_WebhookPostHandler(t *testing.T) {
 				},
 				AppVersionEventService: &testAppVersionEventService{},
 				WorkerService: &testWorkerService{
-					enqueueStoreLogChunkToRedisFn: func(string, models.LogChunk, time.Duration) error {
+					enqueueStoreLogChunkToRedisFn: func(string, models.LogChunk, int64) error {
 						return nil
 					},
 				},
@@ -558,7 +557,7 @@ func Test_WebhookPostHandler(t *testing.T) {
 				},
 				AppVersionEventService: &testAppVersionEventService{},
 				WorkerService: &testWorkerService{
-					enqueueStoreLogChunkToRedisFn: func(string, models.LogChunk, time.Duration) error {
+					enqueueStoreLogChunkToRedisFn: func(string, models.LogChunk, int64) error {
 						return nil
 					},
 				},
@@ -581,7 +580,7 @@ func Test_WebhookPostHandler(t *testing.T) {
 				},
 				AppVersionEventService: &testAppVersionEventService{},
 				WorkerService: &testWorkerService{
-					enqueueStoreLogChunkToRedisFn: func(string, models.LogChunk, time.Duration) error {
+					enqueueStoreLogChunkToRedisFn: func(string, models.LogChunk, int64) error {
 						return nil
 					},
 				},

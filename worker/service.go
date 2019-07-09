@@ -1,8 +1,6 @@
 package worker
 
 import (
-	"time"
-
 	"github.com/bitrise-io/addons-ship-backend/models"
 	"github.com/gocraft/work"
 	"github.com/pkg/errors"
@@ -13,7 +11,7 @@ import (
 type Service struct{}
 
 // EnqueueStoreLogToAWS ...
-func (*Service) EnqueueStoreLogToAWS(publishTaskExternalID uuid.UUID, numberOfLogChunks int64, awsPath string, secondsFromNow time.Duration) error {
+func (*Service) EnqueueStoreLogToAWS(publishTaskExternalID uuid.UUID, numberOfLogChunks int64, awsPath string, secondsFromNow int64) error {
 	enqueuer := work.NewEnqueuer(namespace, redisPool)
 	var err error
 	jobParams := work.Q{
@@ -24,7 +22,7 @@ func (*Service) EnqueueStoreLogToAWS(publishTaskExternalID uuid.UUID, numberOfLo
 	if secondsFromNow == 0 {
 		_, err = enqueuer.EnqueueUnique(storeLogToAWS, jobParams)
 	} else {
-		_, err = enqueuer.EnqueueUniqueIn(storeLogToAWS, int64(secondsFromNow), jobParams)
+		_, err = enqueuer.EnqueueUniqueIn(storeLogToAWS, secondsFromNow, jobParams)
 	}
 	if err != nil {
 		return errors.WithStack(err)
@@ -33,7 +31,7 @@ func (*Service) EnqueueStoreLogToAWS(publishTaskExternalID uuid.UUID, numberOfLo
 }
 
 // EnqueueStoreLogChunkToRedis ...
-func (*Service) EnqueueStoreLogChunkToRedis(publishTaskExternalID string, logChunk models.LogChunk, secondsFromNow time.Duration) error {
+func (*Service) EnqueueStoreLogChunkToRedis(publishTaskExternalID string, logChunk models.LogChunk, secondsFromNow int64) error {
 	enqueuer := work.NewEnqueuer(namespace, redisPool)
 	var err error
 	jobParams := work.Q{
@@ -43,7 +41,7 @@ func (*Service) EnqueueStoreLogChunkToRedis(publishTaskExternalID string, logChu
 	if secondsFromNow == 0 {
 		_, err = enqueuer.EnqueueUnique(storeLogChunkToRedis, jobParams)
 	} else {
-		_, err = enqueuer.EnqueueUniqueIn(storeLogChunkToRedis, int64(secondsFromNow), jobParams)
+		_, err = enqueuer.EnqueueUniqueIn(storeLogChunkToRedis, secondsFromNow, jobParams)
 	}
 	if err != nil {
 		return errors.WithStack(err)
