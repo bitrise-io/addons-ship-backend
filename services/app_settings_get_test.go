@@ -75,9 +75,6 @@ func Test_AppSettingsGetHandler(t *testing.T) {
 					},
 				},
 				BitriseAPI: &testBitriseAPI{
-					getAppDetailsFn: func(string, string) (*bitrise.AppDetails, error) {
-						return &bitrise.AppDetails{}, nil
-					},
 					getProvisioningProfilesFn: func(apiToken, appSlug string) ([]bitrise.ProvisioningProfile, error) {
 						require.Equal(t, testAppSlug, appSlug)
 						require.Equal(t, testAppApiToken, apiToken)
@@ -98,6 +95,14 @@ func Test_AppSettingsGetHandler(t *testing.T) {
 						require.Equal(t, testAppApiToken, apiToken)
 						return nil, nil
 					},
+					getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
+						require.Equal(t, testAppSlug, appSlug)
+						require.Equal(t, testAppApiToken, apiToken)
+						return &bitrise.AppDetails{
+							Title:       "Two Brothers",
+							ProjectType: "other",
+						}, nil
+					},
 				},
 			},
 			expectedStatusCode: http.StatusOK,
@@ -108,6 +113,7 @@ func Test_AppSettingsGetHandler(t *testing.T) {
 					},
 					IosSettings:     &services.IosSettingsData{},
 					AndroidSettings: &services.AndroidSettingsData{},
+					ProjectType:     "other",
 				},
 			},
 		})
@@ -137,9 +143,6 @@ func Test_AppSettingsGetHandler(t *testing.T) {
 					},
 				},
 				BitriseAPI: &testBitriseAPI{
-					getAppDetailsFn: func(string, string) (*bitrise.AppDetails, error) {
-						return &bitrise.AppDetails{}, nil
-					},
 					getProvisioningProfilesFn: func(apiToken, appSlug string) ([]bitrise.ProvisioningProfile, error) {
 						require.Equal(t, testAppSlug, appSlug)
 						require.Equal(t, testAppApiToken, apiToken)
@@ -168,6 +171,14 @@ func Test_AppSettingsGetHandler(t *testing.T) {
 							bitrise.GenericProjectFile{Filename: "service-account.json", Slug: "service-account-slug"},
 						}, nil
 					},
+					getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
+						require.Equal(t, testAppSlug, appSlug)
+						require.Equal(t, testAppApiToken, apiToken)
+						return &bitrise.AppDetails{
+							Title:       "Two Brothers",
+							ProjectType: "other",
+						}, nil
+					},
 				},
 			},
 			expectedStatusCode: http.StatusOK,
@@ -176,6 +187,7 @@ func Test_AppSettingsGetHandler(t *testing.T) {
 					AppSettings: &models.AppSettings{
 						AppID: testAppID,
 					},
+					ProjectType: "other",
 					IosSettings: &services.IosSettingsData{
 						IosSettings: expectedIosSettingsModel,
 						AvailableProvisioningProfiles: []bitrise.ProvisioningProfile{
@@ -262,6 +274,7 @@ func Test_AppSettingsGetHandler(t *testing.T) {
 					AppSettings: &models.AppSettings{
 						AppID: testAppID,
 					},
+					ProjectType: "android",
 					IosSettings: nil,
 					AndroidSettings: &services.AndroidSettingsData{
 						AndroidSettings: expectedAndroidSettingsModel,
@@ -340,6 +353,7 @@ func Test_AppSettingsGetHandler(t *testing.T) {
 					AppSettings: &models.AppSettings{
 						AppID: testAppID,
 					},
+					ProjectType: "ios",
 					IosSettings: &services.IosSettingsData{
 						IosSettings: expectedIosSettingsModel,
 						AvailableProvisioningProfiles: []bitrise.ProvisioningProfile{
@@ -367,9 +381,6 @@ func Test_AppSettingsGetHandler(t *testing.T) {
 					},
 				},
 				BitriseAPI: &testBitriseAPI{
-					getAppDetailsFn: func(string, string) (*bitrise.AppDetails, error) {
-						return &bitrise.AppDetails{}, nil
-					},
 					getProvisioningProfilesFn: func(apiToken, appSlug string) ([]bitrise.ProvisioningProfile, error) {
 						require.Equal(t, testAppSlug, appSlug)
 						require.Equal(t, testAppApiToken, apiToken)
@@ -389,6 +400,11 @@ func Test_AppSettingsGetHandler(t *testing.T) {
 						require.Equal(t, testAppSlug, appSlug)
 						require.Equal(t, testAppApiToken, apiToken)
 						return nil, nil
+					},
+					getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
+						require.Equal(t, testAppSlug, appSlug)
+						require.Equal(t, testAppApiToken, apiToken)
+						return &bitrise.AppDetails{}, nil
 					},
 				},
 			},
@@ -409,9 +425,6 @@ func Test_AppSettingsGetHandler(t *testing.T) {
 					},
 				},
 				BitriseAPI: &testBitriseAPI{
-					getAppDetailsFn: func(string, string) (*bitrise.AppDetails, error) {
-						return &bitrise.AppDetails{}, nil
-					},
 					getProvisioningProfilesFn: func(apiToken, appSlug string) ([]bitrise.ProvisioningProfile, error) {
 						require.Equal(t, testAppSlug, appSlug)
 						require.Equal(t, testAppApiToken, apiToken)
@@ -431,6 +444,11 @@ func Test_AppSettingsGetHandler(t *testing.T) {
 						require.Equal(t, testAppSlug, appSlug)
 						require.Equal(t, testAppApiToken, apiToken)
 						return nil, nil
+					},
+					getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
+						require.Equal(t, testAppSlug, appSlug)
+						require.Equal(t, testAppApiToken, apiToken)
+						return &bitrise.AppDetails{}, nil
 					},
 				},
 			},
@@ -493,9 +511,6 @@ func Test_AppSettingsGetHandler(t *testing.T) {
 					},
 				},
 				BitriseAPI: &testBitriseAPI{
-					getAppDetailsFn: func(string, string) (*bitrise.AppDetails, error) {
-						return &bitrise.AppDetails{}, nil
-					},
 					getProvisioningProfilesFn: func(apiToken, appSlug string) ([]bitrise.ProvisioningProfile, error) {
 						return nil, errors.New("BITRISE-API-ERROR")
 					},
@@ -507,6 +522,9 @@ func Test_AppSettingsGetHandler(t *testing.T) {
 					},
 					getServiceAccountFilesFn: func(apiToken, appSlug string) ([]bitrise.GenericProjectFile, error) {
 						return nil, nil
+					},
+					getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
+						return &bitrise.AppDetails{}, nil
 					},
 				},
 			},
@@ -531,9 +549,6 @@ func Test_AppSettingsGetHandler(t *testing.T) {
 					},
 				},
 				BitriseAPI: &testBitriseAPI{
-					getAppDetailsFn: func(string, string) (*bitrise.AppDetails, error) {
-						return &bitrise.AppDetails{}, nil
-					},
 					getProvisioningProfilesFn: func(apiToken, appSlug string) ([]bitrise.ProvisioningProfile, error) {
 						return nil, nil
 					},
@@ -545,6 +560,9 @@ func Test_AppSettingsGetHandler(t *testing.T) {
 					},
 					getServiceAccountFilesFn: func(apiToken, appSlug string) ([]bitrise.GenericProjectFile, error) {
 						return nil, nil
+					},
+					getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
+						return &bitrise.AppDetails{}, nil
 					},
 				},
 			},
@@ -569,9 +587,6 @@ func Test_AppSettingsGetHandler(t *testing.T) {
 					},
 				},
 				BitriseAPI: &testBitriseAPI{
-					getAppDetailsFn: func(string, string) (*bitrise.AppDetails, error) {
-						return &bitrise.AppDetails{}, nil
-					},
 					getProvisioningProfilesFn: func(apiToken, appSlug string) ([]bitrise.ProvisioningProfile, error) {
 						return nil, nil
 					},
@@ -583,6 +598,9 @@ func Test_AppSettingsGetHandler(t *testing.T) {
 					},
 					getServiceAccountFilesFn: func(apiToken, appSlug string) ([]bitrise.GenericProjectFile, error) {
 						return nil, nil
+					},
+					getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
+						return &bitrise.AppDetails{}, nil
 					},
 				},
 			},
@@ -607,9 +625,6 @@ func Test_AppSettingsGetHandler(t *testing.T) {
 					},
 				},
 				BitriseAPI: &testBitriseAPI{
-					getAppDetailsFn: func(string, string) (*bitrise.AppDetails, error) {
-						return &bitrise.AppDetails{}, nil
-					},
 					getProvisioningProfilesFn: func(apiToken, appSlug string) ([]bitrise.ProvisioningProfile, error) {
 						return nil, nil
 					},
@@ -622,9 +637,50 @@ func Test_AppSettingsGetHandler(t *testing.T) {
 					getServiceAccountFilesFn: func(apiToken, appSlug string) ([]bitrise.GenericProjectFile, error) {
 						return nil, errors.New("BITRISE-API-ERROR")
 					},
+					getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
+						return &bitrise.AppDetails{}, nil
+					},
 				},
 			},
 			expectedInternalErr: "Failed to fetch service account files: BITRISE-API-ERROR",
+		})
+	})
+
+	t.Run("when failed to fetch app details", func(t *testing.T) {
+		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppID: testAppID,
+			},
+			env: &env.AppEnv{
+				AppSettingsService: &testAppSettingsService{
+					findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
+						require.Equal(t, appSettings.AppID, testAppID)
+						return &models.AppSettings{
+							App:                 &models.App{AppSlug: testAppSlug, BitriseAPIToken: testAppApiToken},
+							IosSettingsData:     json.RawMessage(`{}`),
+							AndroidSettingsData: json.RawMessage(`{}`),
+						}, nil
+					},
+				},
+				BitriseAPI: &testBitriseAPI{
+					getProvisioningProfilesFn: func(apiToken, appSlug string) ([]bitrise.ProvisioningProfile, error) {
+						return nil, nil
+					},
+					getCodeSigningIdentitiesFn: func(apiToken, appSlug string) ([]bitrise.CodeSigningIdentity, error) {
+						return nil, nil
+					},
+					getAndroidKeystoreFilesFn: func(apiToken, appSlug string) ([]bitrise.AndroidKeystoreFile, error) {
+						return nil, nil
+					},
+					getServiceAccountFilesFn: func(apiToken, appSlug string) ([]bitrise.GenericProjectFile, error) {
+						return nil, nil
+					},
+					getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
+						return nil, errors.New("BITRISE-API-ERROR")
+					},
+				},
+			},
+			expectedInternalErr: "Failed to fetch app details: BITRISE-API-ERROR",
 		})
 	})
 
@@ -645,9 +701,6 @@ func Test_AppSettingsGetHandler(t *testing.T) {
 					},
 				},
 				BitriseAPI: &testBitriseAPI{
-					getAppDetailsFn: func(string, string) (*bitrise.AppDetails, error) {
-						return &bitrise.AppDetails{}, nil
-					},
 					getProvisioningProfilesFn: func(apiToken, appSlug string) ([]bitrise.ProvisioningProfile, error) {
 						return nil, nil
 					},
@@ -659,6 +712,9 @@ func Test_AppSettingsGetHandler(t *testing.T) {
 					},
 					getServiceAccountFilesFn: func(apiToken, appSlug string) ([]bitrise.GenericProjectFile, error) {
 						return nil, nil
+					},
+					getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
+						return &bitrise.AppDetails{}, nil
 					},
 				},
 			},
@@ -683,9 +739,6 @@ func Test_AppSettingsGetHandler(t *testing.T) {
 					},
 				},
 				BitriseAPI: &testBitriseAPI{
-					getAppDetailsFn: func(string, string) (*bitrise.AppDetails, error) {
-						return &bitrise.AppDetails{}, nil
-					},
 					getProvisioningProfilesFn: func(apiToken, appSlug string) ([]bitrise.ProvisioningProfile, error) {
 						return nil, nil
 					},
@@ -697,6 +750,9 @@ func Test_AppSettingsGetHandler(t *testing.T) {
 					},
 					getServiceAccountFilesFn: func(apiToken, appSlug string) ([]bitrise.GenericProjectFile, error) {
 						return nil, nil
+					},
+					getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
+						return &bitrise.AppDetails{}, nil
 					},
 				},
 			},

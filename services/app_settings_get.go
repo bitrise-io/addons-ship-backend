@@ -28,6 +28,7 @@ type AndroidSettingsData struct {
 // AppSettingsGetResponseData ...
 type AppSettingsGetResponseData struct {
 	*models.AppSettings
+	ProjectType     string               `json:"project_type"`
 	IosSettings     *IosSettingsData     `json:"ios_settings,omitempty"`
 	AndroidSettings *AndroidSettingsData `json:"android_settings,omitempty"`
 }
@@ -83,6 +84,7 @@ func AppSettingsGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Reque
 	return httpresponse.RespondWithSuccess(w, AppSettingsGetResponse{
 		Data: AppSettingsGetResponseData{
 			AppSettings:     appSettings,
+			ProjectType:     appDetails.ProjectType,
 			IosSettings:     iosSettingsData,
 			AndroidSettings: androidSettingsData,
 		},

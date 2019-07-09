@@ -111,8 +111,9 @@ func Test_AppVersionGetHandler(t *testing.T) {
 					},
 					getAppDetailsFn: func(string, string) (*bitrise.AppDetails, error) {
 						return &bitrise.AppDetails{
-							Title:     "The Adventures of Stealy",
-							AvatarURL: pointers.NewStringPtr("https://bit.ly/1LixVJu"),
+							Title:       "The Adventures of Stealy",
+							AvatarURL:   pointers.NewStringPtr("https://bit.ly/1LixVJu"),
+							ProjectType: "ios",
 						}, nil
 					},
 				},
@@ -127,8 +128,9 @@ func Test_AppVersionGetHandler(t *testing.T) {
 					MinimumOS:            "11.1",
 					PublicInstallPageURL: "http://don.t.go.there",
 					AppInfo: services.AppData{
-						Title:      "The Adventures of Stealy",
-						AppIconURL: pointers.NewStringPtr("https://bit.ly/1LixVJu"),
+						Title:       "The Adventures of Stealy",
+						AppIconURL:  pointers.NewStringPtr("https://bit.ly/1LixVJu"),
+						ProjectType: "ios",
 					},
 					AppStoreInfo: models.AppStoreInfo{
 						ShortDescription: "Some shorter description",
@@ -172,8 +174,9 @@ func Test_AppVersionGetHandler(t *testing.T) {
 					},
 					getAppDetailsFn: func(string, string) (*bitrise.AppDetails, error) {
 						return &bitrise.AppDetails{
-							Title:     "The Adventures of Stealy",
-							AvatarURL: pointers.NewStringPtr("https://bit.ly/1LixVJu"),
+							Title:       "The Adventures of Stealy",
+							AvatarURL:   pointers.NewStringPtr("https://bit.ly/1LixVJu"),
+							ProjectType: "ios",
 						}, nil
 					},
 				},
@@ -189,8 +192,9 @@ func Test_AppVersionGetHandler(t *testing.T) {
 					SupportedDeviceTypes: []string{"iPhone", "iPod Touch", "iPad"},
 					PublicInstallPageURL: "http://don.t.go.there",
 					AppInfo: services.AppData{
-						Title:      "The Adventures of Stealy",
-						AppIconURL: pointers.NewStringPtr("https://bit.ly/1LixVJu"),
+						Title:       "The Adventures of Stealy",
+						AppIconURL:  pointers.NewStringPtr("https://bit.ly/1LixVJu"),
+						ProjectType: "ios",
 					},
 				},
 			},
@@ -231,8 +235,9 @@ func Test_AppVersionGetHandler(t *testing.T) {
 					},
 					getAppDetailsFn: func(string, string) (*bitrise.AppDetails, error) {
 						return &bitrise.AppDetails{
-							Title:     "The Adventures of Stealy",
-							AvatarURL: pointers.NewStringPtr("https://bit.ly/1LixVJu"),
+							Title:       "The Adventures of Stealy",
+							AvatarURL:   pointers.NewStringPtr("https://bit.ly/1LixVJu"),
+							ProjectType: "ios",
 						}, nil
 					},
 				},
@@ -248,8 +253,9 @@ func Test_AppVersionGetHandler(t *testing.T) {
 					SupportedDeviceTypes: []string{"Unknown"},
 					PublicInstallPageURL: "http://don.t.go.there",
 					AppInfo: services.AppData{
-						Title:      "The Adventures of Stealy",
-						AppIconURL: pointers.NewStringPtr("https://bit.ly/1LixVJu"),
+						Title:       "The Adventures of Stealy",
+						AppIconURL:  pointers.NewStringPtr("https://bit.ly/1LixVJu"),
+						ProjectType: "ios",
 					},
 				},
 			},
