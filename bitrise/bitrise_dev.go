@@ -39,8 +39,9 @@ func (a *APIDev) GetArtifactPublicInstallPageURL(authToken, appSlug, buildSlug, 
 // GetAppDetails ...
 func (a *APIDev) GetAppDetails(authToken, appSlug string) (*AppDetails, error) {
 	return &AppDetails{
-		Title:     "The Adventures of Stealy",
-		AvatarURL: pointers.NewStringPtr("https://bit.ly/1LixVJu"),
+		Title:       "The Adventures of Stealy",
+		AvatarURL:   pointers.NewStringPtr("https://bit.ly/1LixVJu"),
+		ProjectType: "other",
 	}, nil
 }
 
