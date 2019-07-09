@@ -7,10 +7,10 @@ import (
 )
 
 func init() {
-	goose.AddMigration(Up20190709130304, Down20190709130304)
+	goose.AddMigration(up20190709130304, down20190709130304)
 }
 
-func Up20190709130304(tx *sql.Tx) error {
+func up20190709130304(tx *sql.Tx) error {
 	_, err := tx.Exec(`CREATE TABLE app_contacts (
 		id uuid primary key NOT NULL,
 		app_id uuid NOT NULL REFERENCES apps (id),
@@ -25,7 +25,7 @@ func Up20190709130304(tx *sql.Tx) error {
 	return err
 }
 
-func Down20190709130304(tx *sql.Tx) error {
+func down20190709130304(tx *sql.Tx) error {
 	_, err := tx.Exec(`DROP TABLE app_contacts;`)
 	return err
 }
