@@ -93,6 +93,9 @@ func behavesAsServiceCravingHandler(t *testing.T, method, url string, handler fu
 			} else if sn == "AppVersionEventService" {
 				controllerTestCase.env.AppVersionEventService = nil
 				controllerTestCase.expectedInternalErr = "No App Version Event Service defined for handler"
+			} else if sn == "PublishTaskService" {
+				controllerTestCase.env.PublishTaskService = nil
+				controllerTestCase.expectedInternalErr = "No Publish Task Service defined for handler"
 			} else if sn == "RequestParams" {
 				controllerTestCase.env.RequestParams = nil
 				controllerTestCase.expectedInternalErr = "No RequestParams defined for handler"
@@ -102,6 +105,9 @@ func behavesAsServiceCravingHandler(t *testing.T, method, url string, handler fu
 			} else if sn == "BitriseAPI" {
 				controllerTestCase.env.BitriseAPI = nil
 				controllerTestCase.expectedInternalErr = "No Bitrise API Service defined for handler"
+			} else if sn == "WorkerService" {
+				controllerTestCase.env.WorkerService = nil
+				controllerTestCase.expectedInternalErr = "No Worker Service defined for handler"
 			} else {
 				t.Fatalf("Invalid service element name defined: %s", sn)
 			}
@@ -180,6 +186,7 @@ func performAuthenticationTest(t *testing.T,
 // AuthorizationTestCase ...
 type AuthorizationTestCase struct {
 	requestHeaders     map[string]string
+	requestPayload     interface{}
 	expectedStatusCode int
 	expectedResponse   interface{}
 
@@ -193,7 +200,10 @@ func performAuthorizationTest(t *testing.T,
 ) {
 	t.Helper()
 
-	r, err := http.NewRequest(httpMethod, url, nil)
+	requestPayloadBytes, err := json.Marshal(tc.requestPayload)
+	require.NoError(t, err)
+
+	r, err := http.NewRequest(httpMethod, url, bytes.NewBuffer(requestPayloadBytes))
 	require.NoError(t, err)
 
 	for headerKey, headerValue := range tc.requestHeaders {

@@ -9,6 +9,9 @@ import (
 	"github.com/bitrise-io/addons-ship-backend/services"
 	"github.com/bitrise-io/api-utils/middleware"
 	"github.com/bitrise-io/api-utils/providers"
+	"github.com/bitrise-io/go-utils/envutil"
+	"github.com/c2fo/testify/require"
+	"github.com/satori/go.uuid"
 )
 
 func Test_AuthenticateForProvisioning(t *testing.T) {
@@ -139,4 +142,31 @@ func Test_AuthorizedAppVersionScreenshotMiddleware(t *testing.T) {
 			},
 		}),
 	})
+}
+
+func Test_AuthorizeForWebhookHandling(t *testing.T) {
+	revokeFn, err := envutil.RevokableSetenv("BITRISE_DEN_WEBHOOK_SECRET", "secret-token")
+	require.NoError(t, err)
+
+	middleware.PerformTest(t, "GET", "/...", middleware.TestCase{
+		RequestHeaders: map[string]string{
+			"Bitrise-Den-Webhook-Secret": "secret-token",
+		},
+		RequestBody: services.WebhookPayload{
+			TaskID: uuid.FromStringOrNil("cb8ddaf5-e6f9-470f-b84e-8bc9a0cbf78a"),
+		},
+		ExpectedStatus: http.StatusOK,
+		ExpectedResponse: map[string]interface{}{
+			"message": "Success",
+		},
+		Middleware: services.AuthorizeForWebhookHandling(&env.AppEnv{
+			PublishTaskService: &testPublishTaskService{
+				findFn: func(publishTask *models.PublishTask) (*models.PublishTask, error) {
+					require.Equal(t, uuid.FromStringOrNil("cb8ddaf5-e6f9-470f-b84e-8bc9a0cbf78a"), publishTask.TaskID)
+					return publishTask, nil
+				},
+			},
+		}),
+	})
+	require.NoError(t, revokeFn())
 }

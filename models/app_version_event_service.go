@@ -9,7 +9,12 @@ type AppVersionEventService struct {
 
 // Create ...
 func (a *AppVersionEventService) Create(appVersionEvent *AppVersionEvent) (*AppVersionEvent, error) {
-	return appVersionEvent, a.DB.Create(&appVersionEvent).Error
+	result := a.DB.Create(appVersionEvent)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return appVersionEvent, a.DB.Where(appVersionEvent).Preload("AppVersion").Preload("AppVersion.App").First(appVersionEvent).Error
 }
 
 // Find ...

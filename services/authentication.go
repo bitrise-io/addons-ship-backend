@@ -2,6 +2,7 @@ package services
 
 import (
 	"net/http"
+	"os"
 
 	"github.com/bitrise-io/addons-ship-backend/env"
 	"github.com/bitrise-io/api-utils/httpresponse"
@@ -23,6 +24,29 @@ func AuthenticateWithAddonAccessTokenHandlerFunc(env *env.AppEnv, h http.Handler
 		}
 
 		if authToken != env.AddonAccessToken {
+			httpresponse.RespondWithUnauthorizedNoErr(w)
+			return
+		}
+
+		h.ServeHTTP(w, r)
+	})
+}
+
+// AuthenticateWithDENSecretHandlerFunc ...
+func AuthenticateWithDENSecretHandlerFunc(env *env.AppEnv, h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		authToken := r.Header.Get("Bitrise-Den-Webhook-Secret")
+		if authToken == "" {
+			httpresponse.RespondWithUnauthorizedNoErr(w)
+			return
+		}
+		denAdminSecret, ok := os.LookupEnv("BITRISE_DEN_WEBHOOK_SECRET")
+		if !ok || denAdminSecret == "" {
+			httpresponse.RespondWithInternalServerError(w, errors.New("No value set for BITRISE_DEN_WEBHOOK_SECRET env"))
+			return
+		}
+
+		if authToken != denAdminSecret {
 			httpresponse.RespondWithUnauthorizedNoErr(w)
 			return
 		}

@@ -23,8 +23,9 @@ func Test_AppVersionPublishPostHandler(t *testing.T) {
 	handler := services.AppVersionPublishPostHandler
 
 	testAppVersionID := uuid.FromStringOrNil("de438ddc-98e5-4226-a5f4-fd2d53474879")
+	testTaskIdentifier := uuid.FromStringOrNil("13a94c5d-4609-404e-ae69-c625e93b8b71")
 
-	behavesAsServiceCravingHandler(t, httpMethod, url, handler, []string{"AppVersionService", "BitriseAPI"}, ControllerTestCase{
+	behavesAsServiceCravingHandler(t, httpMethod, url, handler, []string{"AppVersionService", "PublishTaskService", "BitriseAPI"}, ControllerTestCase{
 		contextElements: map[ctxpkg.RequestContextKey]interface{}{
 			services.ContextKeyAuthorizedAppVersionID: uuid.NewV4(),
 		},
@@ -34,7 +35,12 @@ func Test_AppVersionPublishPostHandler(t *testing.T) {
 					return &models.AppVersion{}, nil
 				},
 			},
-			BitriseAPI: &testBitriseAPI{},
+			PublishTaskService: &testPublishTaskService{},
+			BitriseAPI: &testBitriseAPI{
+				getArtifactDataFn: func(string, string, string) (*bitrise.ArtifactData, error) {
+					return &bitrise.ArtifactData{}, nil
+				},
+			},
 		},
 	})
 
@@ -43,8 +49,13 @@ func Test_AppVersionPublishPostHandler(t *testing.T) {
 			services.ContextKeyAuthorizedAppVersionID: uuid.NewV4(),
 		},
 		env: &env.AppEnv{
-			AppVersionService: &testAppVersionService{},
-			BitriseAPI:        &testBitriseAPI{},
+			AppVersionService:  &testAppVersionService{},
+			PublishTaskService: &testPublishTaskService{},
+			BitriseAPI: &testBitriseAPI{
+				getArtifactDataFn: func(string, string, string) (*bitrise.ArtifactData, error) {
+					return &bitrise.ArtifactData{}, nil
+				},
+			},
 		},
 	})
 
@@ -65,12 +76,19 @@ func Test_AppVersionPublishPostHandler(t *testing.T) {
 						return &bitrise.ArtifactData{}, nil
 					},
 					triggerDENTaskFn: func(bitrise.TaskParams) (*bitrise.TriggerResponse, error) {
+						return &bitrise.TriggerResponse{}, nil
+					},
+				},
+				PublishTaskService: &testPublishTaskService{
+					createFn: func(*models.PublishTask) (*models.PublishTask, error) {
 						return nil, nil
 					},
 				},
 			},
 			expectedStatusCode: http.StatusOK,
-			expectedResponse:   services.AppVersionPublishResponse{},
+			expectedResponse: services.AppVersionPublishResponse{
+				Data: &bitrise.TriggerResponse{},
+			},
 		})
 	})
 
@@ -107,13 +125,19 @@ func Test_AppVersionPublishPostHandler(t *testing.T) {
 						require.Equal(t, `{"BITRISE_ACCESS_TOKEN":"bitrise-api-addon-token"}`, params.Secrets)
 						require.Equal(t, "http://ship.addon.url/webhook", params.WebhookURL)
 						require.Equal(t, "resign_archive_app_store", params.Workflow)
-						return &bitrise.TriggerResponse{TimedOut: true}, nil
+						return &bitrise.TriggerResponse{TaskIdentifier: testTaskIdentifier}, nil
+					},
+				},
+				PublishTaskService: &testPublishTaskService{
+					createFn: func(publishTask *models.PublishTask) (*models.PublishTask, error) {
+						require.Equal(t, testTaskIdentifier, publishTask.TaskID)
+						return publishTask, nil
 					},
 				},
 			},
 			expectedStatusCode: http.StatusOK,
 			expectedResponse: services.AppVersionPublishResponse{
-				Data: &bitrise.TriggerResponse{TimedOut: true},
+				Data: &bitrise.TriggerResponse{TaskIdentifier: testTaskIdentifier},
 			},
 		})
 	})
@@ -138,6 +162,7 @@ func Test_AppVersionPublishPostHandler(t *testing.T) {
 						return nil, nil
 					},
 				},
+				PublishTaskService: &testPublishTaskService{},
 			},
 			expectedStatusCode: http.StatusNotFound,
 			expectedResponse:   httpresponse.StandardErrorRespModel{Message: "Not Found"},
@@ -164,6 +189,7 @@ func Test_AppVersionPublishPostHandler(t *testing.T) {
 						return nil, nil
 					},
 				},
+				PublishTaskService: &testPublishTaskService{},
 			},
 			expectedInternalErr: "SQL Error: SOME-SQL-ERROR",
 		})
@@ -189,6 +215,7 @@ func Test_AppVersionPublishPostHandler(t *testing.T) {
 						return nil, nil
 					},
 				},
+				PublishTaskService: &testPublishTaskService{},
 			},
 			expectedInternalErr: "SOME-BITRISE-API-ERROR",
 		})
@@ -214,8 +241,39 @@ func Test_AppVersionPublishPostHandler(t *testing.T) {
 						return nil, errors.New("SOME-BITRISE-API-ERROR")
 					},
 				},
+				PublishTaskService: &testPublishTaskService{},
 			},
 			expectedInternalErr: "SOME-BITRISE-API-ERROR",
+		})
+	})
+
+	t.Run("when error happens creating publish task object", func(t *testing.T) {
+		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppVersionID: testAppVersionID,
+			},
+			env: &env.AppEnv{
+				AppVersionService: &testAppVersionService{
+					findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
+						require.Equal(t, appVersion.ID, testAppVersionID)
+						return &models.AppVersion{App: models.App{}, AppStoreInfoData: json.RawMessage(`{}`)}, nil
+					},
+				},
+				BitriseAPI: &testBitriseAPI{
+					getArtifactDataFn: func(string, string, string) (*bitrise.ArtifactData, error) {
+						return &bitrise.ArtifactData{}, nil
+					},
+					triggerDENTaskFn: func(bitrise.TaskParams) (*bitrise.TriggerResponse, error) {
+						return &bitrise.TriggerResponse{}, nil
+					},
+				},
+				PublishTaskService: &testPublishTaskService{
+					createFn: func(*models.PublishTask) (*models.PublishTask, error) {
+						return nil, errors.New("SOME-SQL-ERROR")
+					},
+				},
+			},
+			expectedInternalErr: "SQL Error: SOME-SQL-ERROR",
 		})
 	})
 }

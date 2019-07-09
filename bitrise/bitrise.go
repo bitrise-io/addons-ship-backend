@@ -13,7 +13,8 @@ import (
 )
 
 var (
-	apiBaseURL         = "https://api.bitrise.io/v0.1"
+	apiVersion         = "v0.1"
+	apiBaseURL         = "https://api.bitrise.io"
 	validArtifactTypes = [...]string{"android-apk", "ios-ipa"}
 )
 
@@ -41,6 +42,7 @@ func New() *API {
 	if !ok {
 		url = apiBaseURL
 	}
+	url = fmt.Sprintf("%s/%s", url, apiVersion)
 	return &API{
 		Client: &http.Client{},
 		url:    url,
