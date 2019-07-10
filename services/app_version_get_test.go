@@ -163,7 +163,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 			})
 		})
 
-		t.Run("ok - more complex - when there's an artifact which is XcodeArchive.zip", func(t *testing.T) {
+		t.Run("ok - more complex - when there's an artifact which is XCodeArchive.zip", func(t *testing.T) {
 			performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
 				contextElements: map[ctxpkg.RequestContextKey]interface{}{
 					services.ContextKeyAuthorizedAppVersionID: uuid.NewV4(),
@@ -185,11 +185,8 @@ func Test_AppVersionGetHandler(t *testing.T) {
 						getArtifactsFn: func(string, string, string) ([]bitrise.ArtifactListElementResponseModel, error) {
 							return []bitrise.ArtifactListElementResponseModel{
 								bitrise.ArtifactListElementResponseModel{
-									Title: "my-awesome-app.ipa",
+									Title: "XCodeArchive.zip",
 									ArtifactMeta: &bitrise.ArtifactMeta{
-										ProvisioningInfo: bitrise.ProvisioningInfo{
-											DistributionType: "app-store",
-										},
 										AppInfo: bitrise.AppInfo{MinimumOS: "11.1"},
 									},
 								},
@@ -220,7 +217,6 @@ func Test_AppVersionGetHandler(t *testing.T) {
 							AppIconURL:  pointers.NewStringPtr("https://bit.ly/1LixVJu"),
 							ProjectType: "ios",
 						},
-						DistributionType: "app-store",
 						AppStoreInfo: models.AppStoreInfo{
 							ShortDescription: "Some shorter description",
 						},
