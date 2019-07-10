@@ -43,7 +43,7 @@ func Test_AppContactService_Find(t *testing.T) {
 		compareAppContacts(t, *testAppContact, *foundAppContact)
 	})
 
-	t.Run("error - when feature graphic is not found", func(t *testing.T) {
+	t.Run("error - when app contact is not found", func(t *testing.T) {
 		otherTestApp := createTestApp(t, &models.App{AppSlug: "test-app-slug-2"})
 
 		foundAppContact, err := appContactService.Find(&models.AppContact{Record: models.Record{ID: testAppContact.ID}, AppID: otherTestApp.ID})
