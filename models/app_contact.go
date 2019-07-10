@@ -18,12 +18,12 @@ type NotificationPreferences struct {
 type AppContact struct {
 	Record
 	Email                       string          `json:"email"`
-	NotificationPreferencesData json.RawMessage `json:"notification_preferences"`
+	NotificationPreferencesData json.RawMessage `gorm:"column:notification_preferences;type:json" json:"notification_preferences"`
 	ConfirmedAt                 *time.Time      `json:"confirmed_at"`
 	ConfirmationToken           string          `json:"-"`
 
 	AppID uuid.UUID `db:"app_id" json:"-"`
-	App   App       `gorm:"foreignkey:AppID" json:"-"`
+	App   *App      `gorm:"foreignkey:AppID" json:"-"`
 }
 
 // BeforeCreate ...
@@ -37,4 +37,13 @@ func (a *AppContact) BeforeCreate() error {
 	}
 
 	return nil
+}
+
+func (a *AppContact) NotificationPreferences() (NotificationPreferences, error) {
+	var notificationPreferences NotificationPreferences
+	err := json.Unmarshal(a.NotificationPreferencesData, &notificationPreferences)
+	if err != nil {
+		return NotificationPreferences{}, err
+	}
+	return notificationPreferences, nil
 }

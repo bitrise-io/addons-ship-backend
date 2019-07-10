@@ -31,6 +31,7 @@ type AppEnv struct {
 	AddonHostURL           string
 	Logger                 *zap.Logger
 	AppService             dataservices.AppService
+	AppContactService      dataservices.AppContactService
 	AppVersionService      dataservices.AppVersionService
 	ScreenshotService      dataservices.ScreenshotService
 	FeatureGraphicService  dataservices.FeatureGraphicService
@@ -68,6 +69,7 @@ func New(db *gorm.DB) (*AppEnv, error) {
 	}
 	env.Logger = logging.WithContext(nil)
 	env.AppService = &models.AppService{DB: db}
+	env.AppContactService = &models.AppContactService{DB: db}
 	env.AppVersionService = &models.AppVersionService{DB: db}
 	env.ScreenshotService = &models.ScreenshotService{DB: db}
 	env.FeatureGraphicService = &models.FeatureGraphicService{DB: db}
