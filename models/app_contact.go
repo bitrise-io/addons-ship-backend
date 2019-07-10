@@ -39,6 +39,7 @@ func (a *AppContact) BeforeCreate() error {
 	return nil
 }
 
+// NotificationPreferences ...
 func (a *AppContact) NotificationPreferences() (NotificationPreferences, error) {
 	var notificationPreferences NotificationPreferences
 	err := json.Unmarshal(a.NotificationPreferencesData, &notificationPreferences)
