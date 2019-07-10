@@ -143,6 +143,15 @@ func runTestMigrations(t *testing.T, db *gorm.DB) {
 				return nil
 			},
 		},
+		{
+			message: "create app_contacts table",
+			fn: func() error {
+				if !db.HasTable(&models.AppContact{}) {
+					return db.CreateTable(&models.AppContact{}).Error
+				}
+				return nil
+			},
+		},
 	} {
 		t.Log(migration.message)
 		panicIfErr(migration.fn())
