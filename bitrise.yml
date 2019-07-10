@@ -30,7 +30,7 @@ workflows:
             - content: |
                 #!/bin/bash
                 set -ex
-                mkdir ./_coverage
+                mkdir -p ./_coverage
                 touch ./_coverage/coverage.txt
                 go test -race -coverprofile="${CODE_COV_TXT_REPORT_FILE}" -covermode=atomic -tags=database ./...
                 cp "${CODE_COV_TXT_REPORT_FILE}" "${BITRISE_DEPLOY_DIR}/"
