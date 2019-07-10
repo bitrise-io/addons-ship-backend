@@ -26,7 +26,7 @@ func Test_AppSettingsGetHandler(t *testing.T) {
 	testAppSlug := "test-app-slug"
 	testAppApiToken := "test-addon-api-token"
 
-	behavesAsServiceCravingHandler(t, httpMethod, url, handler, []string{"AppSettingsService"}, ControllerTestCase{
+	behavesAsServiceCravingHandler(t, httpMethod, url, handler, []string{"AppSettingsService", "BitriseAPI"}, ControllerTestCase{
 		contextElements: map[ctxpkg.RequestContextKey]interface{}{
 			services.ContextKeyAuthorizedAppID: uuid.NewV4(),
 		},
@@ -34,6 +34,11 @@ func Test_AppSettingsGetHandler(t *testing.T) {
 			AppSettingsService: &testAppSettingsService{
 				findFn: func(*models.AppSettings) (*models.AppSettings, error) {
 					return nil, nil
+				},
+			},
+			BitriseAPI: &testBitriseAPI{
+				getAppDetailsFn: func(string, string) (*bitrise.AppDetails, error) {
+					return &bitrise.AppDetails{}, nil
 				},
 			},
 		},
@@ -45,6 +50,11 @@ func Test_AppSettingsGetHandler(t *testing.T) {
 		},
 		env: &env.AppEnv{
 			AppSettingsService: &testAppSettingsService{},
+			BitriseAPI: &testBitriseAPI{
+				getAppDetailsFn: func(string, string) (*bitrise.AppDetails, error) {
+					return &bitrise.AppDetails{}, nil
+				},
+			},
 		},
 	})
 
@@ -90,7 +100,7 @@ func Test_AppSettingsGetHandler(t *testing.T) {
 						require.Equal(t, testAppApiToken, apiToken)
 						return &bitrise.AppDetails{
 							Title:       "Two Brothers",
-							ProjectType: "ios",
+							ProjectType: "other",
 						}, nil
 					},
 				},
@@ -101,7 +111,9 @@ func Test_AppSettingsGetHandler(t *testing.T) {
 					AppSettings: &models.AppSettings{
 						App: &models.App{AppSlug: testAppSlug, BitriseAPIToken: testAppApiToken},
 					},
-					ProjectType: "ios",
+					IosSettings:     &services.IosSettingsData{},
+					AndroidSettings: &services.AndroidSettingsData{},
+					ProjectType:     "other",
 				},
 			},
 		})
@@ -164,7 +176,173 @@ func Test_AppSettingsGetHandler(t *testing.T) {
 						require.Equal(t, testAppApiToken, apiToken)
 						return &bitrise.AppDetails{
 							Title:       "Two Brothers",
-							ProjectType: "ios",
+							ProjectType: "other",
+						}, nil
+					},
+				},
+			},
+			expectedStatusCode: http.StatusOK,
+			expectedResponse: services.AppSettingsGetResponse{
+				Data: services.AppSettingsGetResponseData{
+					AppSettings: &models.AppSettings{
+						AppID: testAppID,
+					},
+					ProjectType: "other",
+					IosSettings: &services.IosSettingsData{
+						IosSettings: expectedIosSettingsModel,
+						AvailableProvisioningProfiles: []bitrise.ProvisioningProfile{
+							bitrise.ProvisioningProfile{Filename: "provision-profile.provisionprofile", Slug: "prov-profile-slug"},
+						},
+						AvailableCodeSigningIdentities: []bitrise.CodeSigningIdentity{
+							bitrise.CodeSigningIdentity{Filename: "code-signing-id.cert", Slug: "code-signing-slug"},
+						},
+					},
+					AndroidSettings: &services.AndroidSettingsData{
+						AndroidSettings: expectedAndroidSettingsModel,
+						AvailableKeystoreFiles: []bitrise.AndroidKeystoreFile{
+							bitrise.AndroidKeystoreFile{Filename: "android.keystore", Slug: "android-keystore-slug"},
+						},
+						AvailableServiceAccountFiles: []bitrise.GenericProjectFile{
+							bitrise.GenericProjectFile{Filename: "service-account.json", Slug: "service-account-slug"},
+						},
+					},
+				},
+			},
+		})
+	})
+
+	t.Run("ok - more complex - when project type is android", func(t *testing.T) {
+		expectedIosSettingsModel := models.IosSettings{AppSKU: "2019061"}
+		expectedIosSettings, err := json.Marshal(expectedIosSettingsModel)
+		require.NoError(t, err)
+		expectedAndroidSettingsModel := models.AndroidSettings{Track: "2019062"}
+		expectedAndroidSettings, err := json.Marshal(expectedAndroidSettingsModel)
+		require.NoError(t, err)
+
+		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppID: testAppID,
+			},
+			env: &env.AppEnv{
+				AppSettingsService: &testAppSettingsService{
+					findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
+						require.Equal(t, appSettings.AppID, testAppID)
+						return &models.AppSettings{
+							App:                 &models.App{AppSlug: testAppSlug, BitriseAPIToken: testAppApiToken},
+							IosSettingsData:     expectedIosSettings,
+							AndroidSettingsData: expectedAndroidSettings,
+						}, nil
+					},
+				},
+				BitriseAPI: &testBitriseAPI{
+					getAppDetailsFn: func(string, string) (*bitrise.AppDetails, error) {
+						return &bitrise.AppDetails{ProjectType: "android"}, nil
+					},
+					getProvisioningProfilesFn: func(apiToken, appSlug string) ([]bitrise.ProvisioningProfile, error) {
+						require.Equal(t, testAppSlug, appSlug)
+						require.Equal(t, testAppApiToken, apiToken)
+						return []bitrise.ProvisioningProfile{
+							bitrise.ProvisioningProfile{Filename: "provision-profile.provisionprofile", Slug: "prov-profile-slug"},
+						}, nil
+					},
+					getCodeSigningIdentitiesFn: func(apiToken, appSlug string) ([]bitrise.CodeSigningIdentity, error) {
+						require.Equal(t, testAppSlug, appSlug)
+						require.Equal(t, testAppApiToken, apiToken)
+						return []bitrise.CodeSigningIdentity{
+							bitrise.CodeSigningIdentity{Filename: "code-signing-id.cert", Slug: "code-signing-slug"},
+						}, nil
+					},
+					getAndroidKeystoreFilesFn: func(apiToken, appSlug string) ([]bitrise.AndroidKeystoreFile, error) {
+						require.Equal(t, testAppSlug, appSlug)
+						require.Equal(t, testAppApiToken, apiToken)
+						return []bitrise.AndroidKeystoreFile{
+							bitrise.AndroidKeystoreFile{Filename: "android.keystore", Slug: "android-keystore-slug"},
+						}, nil
+					},
+					getServiceAccountFilesFn: func(apiToken, appSlug string) ([]bitrise.GenericProjectFile, error) {
+						require.Equal(t, testAppSlug, appSlug)
+						require.Equal(t, testAppApiToken, apiToken)
+						return []bitrise.GenericProjectFile{
+							bitrise.GenericProjectFile{Filename: "service-account.json", Slug: "service-account-slug"},
+						}, nil
+					},
+				},
+			},
+			expectedStatusCode: http.StatusOK,
+			expectedResponse: services.AppSettingsGetResponse{
+				Data: services.AppSettingsGetResponseData{
+					AppSettings: &models.AppSettings{
+						AppID: testAppID,
+					},
+					ProjectType: "android",
+					IosSettings: nil,
+					AndroidSettings: &services.AndroidSettingsData{
+						AndroidSettings: expectedAndroidSettingsModel,
+						AvailableKeystoreFiles: []bitrise.AndroidKeystoreFile{
+							bitrise.AndroidKeystoreFile{Filename: "android.keystore", Slug: "android-keystore-slug"},
+						},
+						AvailableServiceAccountFiles: []bitrise.GenericProjectFile{
+							bitrise.GenericProjectFile{Filename: "service-account.json", Slug: "service-account-slug"},
+						},
+					},
+				},
+			},
+		})
+	})
+
+	t.Run("ok - more complex - when project type is ios", func(t *testing.T) {
+		expectedIosSettingsModel := models.IosSettings{AppSKU: "2019061"}
+		expectedIosSettings, err := json.Marshal(expectedIosSettingsModel)
+		require.NoError(t, err)
+		expectedAndroidSettingsModel := models.AndroidSettings{Track: "2019062"}
+		expectedAndroidSettings, err := json.Marshal(expectedAndroidSettingsModel)
+		require.NoError(t, err)
+
+		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppID: testAppID,
+			},
+			env: &env.AppEnv{
+				AppSettingsService: &testAppSettingsService{
+					findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
+						require.Equal(t, appSettings.AppID, testAppID)
+						return &models.AppSettings{
+							App:                 &models.App{AppSlug: testAppSlug, BitriseAPIToken: testAppApiToken},
+							IosSettingsData:     expectedIosSettings,
+							AndroidSettingsData: expectedAndroidSettings,
+						}, nil
+					},
+				},
+				BitriseAPI: &testBitriseAPI{
+					getAppDetailsFn: func(string, string) (*bitrise.AppDetails, error) {
+						return &bitrise.AppDetails{ProjectType: "ios"}, nil
+					},
+					getProvisioningProfilesFn: func(apiToken, appSlug string) ([]bitrise.ProvisioningProfile, error) {
+						require.Equal(t, testAppSlug, appSlug)
+						require.Equal(t, testAppApiToken, apiToken)
+						return []bitrise.ProvisioningProfile{
+							bitrise.ProvisioningProfile{Filename: "provision-profile.provisionprofile", Slug: "prov-profile-slug"},
+						}, nil
+					},
+					getCodeSigningIdentitiesFn: func(apiToken, appSlug string) ([]bitrise.CodeSigningIdentity, error) {
+						require.Equal(t, testAppSlug, appSlug)
+						require.Equal(t, testAppApiToken, apiToken)
+						return []bitrise.CodeSigningIdentity{
+							bitrise.CodeSigningIdentity{Filename: "code-signing-id.cert", Slug: "code-signing-slug"},
+						}, nil
+					},
+					getAndroidKeystoreFilesFn: func(apiToken, appSlug string) ([]bitrise.AndroidKeystoreFile, error) {
+						require.Equal(t, testAppSlug, appSlug)
+						require.Equal(t, testAppApiToken, apiToken)
+						return []bitrise.AndroidKeystoreFile{
+							bitrise.AndroidKeystoreFile{Filename: "android.keystore", Slug: "android-keystore-slug"},
+						}, nil
+					},
+					getServiceAccountFilesFn: func(apiToken, appSlug string) ([]bitrise.GenericProjectFile, error) {
+						require.Equal(t, testAppSlug, appSlug)
+						require.Equal(t, testAppApiToken, apiToken)
+						return []bitrise.GenericProjectFile{
+							bitrise.GenericProjectFile{Filename: "service-account.json", Slug: "service-account-slug"},
 						}, nil
 					},
 				},
@@ -176,7 +354,7 @@ func Test_AppSettingsGetHandler(t *testing.T) {
 						AppID: testAppID,
 					},
 					ProjectType: "ios",
-					IosSettings: services.IosSettingsData{
+					IosSettings: &services.IosSettingsData{
 						IosSettings: expectedIosSettingsModel,
 						AvailableProvisioningProfiles: []bitrise.ProvisioningProfile{
 							bitrise.ProvisioningProfile{Filename: "provision-profile.provisionprofile", Slug: "prov-profile-slug"},
@@ -185,15 +363,7 @@ func Test_AppSettingsGetHandler(t *testing.T) {
 							bitrise.CodeSigningIdentity{Filename: "code-signing-id.cert", Slug: "code-signing-slug"},
 						},
 					},
-					AndroidSettings: services.AndroidSettingsData{
-						AndroidSettings: expectedAndroidSettingsModel,
-						AvailableKeystoreFiles: []bitrise.AndroidKeystoreFile{
-							bitrise.AndroidKeystoreFile{Filename: "android.keystore", Slug: "android-keystore-slug"},
-						},
-						AvailableServiceAccountFiles: []bitrise.GenericProjectFile{
-							bitrise.GenericProjectFile{Filename: "service-account.json", Slug: "service-account-slug"},
-						},
-					},
+					AndroidSettings: nil,
 				},
 			},
 		})
@@ -234,7 +404,7 @@ func Test_AppSettingsGetHandler(t *testing.T) {
 					getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
 						require.Equal(t, testAppSlug, appSlug)
 						require.Equal(t, testAppApiToken, apiToken)
-						return nil, nil
+						return &bitrise.AppDetails{}, nil
 					},
 				},
 			},
@@ -278,7 +448,7 @@ func Test_AppSettingsGetHandler(t *testing.T) {
 					getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
 						require.Equal(t, testAppSlug, appSlug)
 						require.Equal(t, testAppApiToken, apiToken)
-						return nil, nil
+						return &bitrise.AppDetails{}, nil
 					},
 				},
 			},
@@ -316,7 +486,7 @@ func Test_AppSettingsGetHandler(t *testing.T) {
 						return nil, nil
 					},
 					getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
-						return nil, nil
+						return &bitrise.AppDetails{}, nil
 					},
 				},
 			},
@@ -354,7 +524,7 @@ func Test_AppSettingsGetHandler(t *testing.T) {
 						return nil, nil
 					},
 					getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
-						return nil, nil
+						return &bitrise.AppDetails{}, nil
 					},
 				},
 			},
@@ -392,7 +562,7 @@ func Test_AppSettingsGetHandler(t *testing.T) {
 						return nil, nil
 					},
 					getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
-						return nil, nil
+						return &bitrise.AppDetails{}, nil
 					},
 				},
 			},
@@ -430,7 +600,7 @@ func Test_AppSettingsGetHandler(t *testing.T) {
 						return nil, errors.New("BITRISE-API-ERROR")
 					},
 					getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
-						return nil, nil
+						return &bitrise.AppDetails{}, nil
 					},
 				},
 			},
@@ -506,7 +676,7 @@ func Test_AppSettingsGetHandler(t *testing.T) {
 						return nil, nil
 					},
 					getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
-						return nil, nil
+						return &bitrise.AppDetails{}, nil
 					},
 				},
 			},
@@ -544,7 +714,7 @@ func Test_AppSettingsGetHandler(t *testing.T) {
 						return nil, nil
 					},
 					getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
-						return nil, nil
+						return &bitrise.AppDetails{}, nil
 					},
 				},
 			},
