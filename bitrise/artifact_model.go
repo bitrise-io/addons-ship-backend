@@ -2,8 +2,12 @@ package bitrise
 
 import (
 	"encoding/json"
+	"path/filepath"
+	"strings"
 	"time"
 )
+
+var debugDistributionTypes = [...]string{"development", "ad-hoc"}
 
 // AppInfo ...
 type AppInfo struct {
@@ -33,17 +37,18 @@ type ArtifactData struct {
 	Slug string
 }
 
-type artifactListElementResponseModel struct {
-	Title               *string         `json:"title"`
-	ArtifactType        *string         `json:"artifact_type"`
-	ArtifactMeta        json.RawMessage `json:"artifact_meta"`
-	IsPublicPageEnabled bool            `json:"is_public_page_enabled"`
-	Slug                string          `json:"slug"`
-	FileSizeBytes       *int64          `json:"file_size_bytes"`
+// ArtifactListElementResponseModel ....
+type ArtifactListElementResponseModel struct {
+	Title               string        `json:"title"`
+	ArtifactType        *string       `json:"artifact_type"`
+	ArtifactMeta        *ArtifactMeta `json:"artifact_meta"`
+	IsPublicPageEnabled bool          `json:"is_public_page_enabled"`
+	Slug                string        `json:"slug"`
+	FileSizeBytes       *int64        `json:"file_size_bytes"`
 }
 
 type artifactListResponseModel struct {
-	Data   []artifactListElementResponseModel `json:"data"`
+	Data   []ArtifactListElementResponseModel `json:"data"`
 	Paging pagingResponseModel                `json:"paging"`
 }
 
@@ -60,4 +65,42 @@ type artifactShowResponseItemModel struct {
 
 type artifactShowResponseModel struct {
 	Data artifactShowResponseItemModel `json:"data"`
+}
+
+// HasDebugDistributionType ...
+func (a ArtifactListElementResponseModel) HasDebugDistributionType() bool {
+	if a.ArtifactMeta.ProvisioningInfo.DistributionType == "" {
+		return false
+	}
+	for _, artifactType := range debugDistributionTypes {
+		if a.ArtifactMeta.ProvisioningInfo.DistributionType == artifactType {
+			return true
+		}
+	}
+	return false
+}
+
+// HasAppStoreDistributionType ...
+func (a ArtifactListElementResponseModel) HasAppStoreDistributionType() bool {
+	return a.ArtifactMeta.ProvisioningInfo.DistributionType == "app-store"
+}
+
+// IsIPA ...
+func (a ArtifactListElementResponseModel) IsIPA() bool {
+	return filepath.Ext(a.Title) == ".ipa"
+}
+
+// IsXCodeArchive ...
+func (a ArtifactListElementResponseModel) IsXCodeArchive() bool {
+	return strings.Contains(strings.ToLower(a.Title), "xcodearchive") && filepath.Ext(a.Title) == ".zip"
+}
+
+// IsAAB ...
+func (a ArtifactListElementResponseModel) IsAAB() bool {
+	return filepath.Ext(a.Title) == ".aab"
+}
+
+// IsUniversalAPK ...
+func (a ArtifactListElementResponseModel) IsUniversalAPK() bool {
+	return strings.Contains(strings.ToLower(a.Title), "universal") && filepath.Ext(a.Title) == ".apk"
 }
