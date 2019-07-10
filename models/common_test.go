@@ -134,6 +134,15 @@ func runTestMigrations(t *testing.T, db *gorm.DB) {
 				return nil
 			},
 		},
+		{
+			message: "create publish_tasks table",
+			fn: func() error {
+				if !db.HasTable(&models.PublishTask{}) {
+					return db.CreateTable(&models.PublishTask{}).Error
+				}
+				return nil
+			},
+		},
 	} {
 		t.Log(migration.message)
 		panicIfErr(migration.fn())

@@ -13,8 +13,8 @@ func init() {
 func up20190702111710(tx *sql.Tx) error {
 	_, err := tx.Exec(`CREATE TABLE publish_tasks (
         id uuid primary key NOT NULL,
-        app_version_id uuid NOT NULL REFERENCES apps (id),
-        task_id text NOT NULL,
+        app_version_id uuid NOT NULL REFERENCES app_versions (id),
+        task_id uuid NOT NULL,
         created_at timestamp with time zone NOT NULL,
         updated_at timestamp with time zone NOT NULL,
         deleted_at timestamp with time zone

@@ -35,6 +35,7 @@ func Start(appEnv *env.AppEnv) error {
 	pool := work.NewWorkerPool(context, 10, namespace, redisPool)
 
 	pool.Job(storeLogToAWS, (&context).StoreLogToAWS)
+	pool.Job(storeLogChunkToRedis, (&context).StoreLogChunkToRedis)
 
 	pool.Start()
 	defer pool.Stop()

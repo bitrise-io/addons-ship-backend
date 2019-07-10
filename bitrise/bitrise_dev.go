@@ -107,5 +107,6 @@ func (a *APIDev) GetServiceAccountFiles(authToken, appSlug string) ([]GenericPro
 
 // TriggerDENTask ...
 func (a *APIDev) TriggerDENTask(params TaskParams) (*TriggerResponse, error) {
-	return &TriggerResponse{}, nil
+	realClient := New()
+	return realClient.TriggerDENTask(params)
 }

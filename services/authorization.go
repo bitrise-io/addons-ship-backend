@@ -1,6 +1,9 @@
 package services
 
 import (
+	"bytes"
+	"encoding/json"
+	"io/ioutil"
 	"net/http"
 
 	"github.com/bitrise-io/addons-ship-backend/env"
@@ -160,6 +163,44 @@ func AuthorizeForAppVersionScreenshotAccessHandlerFunc(env *env.AppEnv, h http.H
 
 		// Access granted
 		ctx := ContextWithAuthorizedScreenshotID(r.Context(), screenshot.ID)
+		h.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
+// AuthorizeForWebhookHandlerFunc ...
+func AuthorizeForWebhookHandlerFunc(env *env.AppEnv, h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var payload WebhookPayload
+		defer httprequest.BodyCloseWithErrorLog(r)
+		payloadBytes, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			httpresponse.RespondWithInternalServerError(w, errors.Wrap(err, "Failed to read request body"))
+			return
+		}
+		r.Body = ioutil.NopCloser(bytes.NewReader(payloadBytes))
+		err = json.Unmarshal(payloadBytes, &payload)
+		if err != nil {
+			httpresponse.RespondWithBadRequestErrorNoErr(w, "Invalid request body, JSON decode failed")
+			return
+		}
+
+		if env.PublishTaskService == nil {
+			httpresponse.RespondWithInternalServerError(w, errors.New("No Publish Task Service provided"))
+			return
+		}
+
+		publishTask, err := env.PublishTaskService.Find(&models.PublishTask{TaskID: payload.TaskID})
+		switch {
+		case errors.Cause(err) == gorm.ErrRecordNotFound:
+			httpresponse.RespondWithNotFoundErrorNoErr(w)
+			return
+		case err != nil:
+			httpresponse.RespondWithInternalServerError(w, errors.WithStack(err))
+			return
+		}
+
+		// Access granted
+		ctx := ContextWithAuthorizedAppVersionID(r.Context(), publishTask.AppVersionID)
 		h.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

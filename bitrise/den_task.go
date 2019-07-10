@@ -1,6 +1,10 @@
 package bitrise
 
-import "time"
+import (
+	"time"
+
+	"github.com/satori/go.uuid"
+)
 
 // TaskParams ...
 type TaskParams struct {
@@ -21,7 +25,7 @@ type TriggerResponse struct {
 	ExitCode               *int       `json:"exit_code"`
 	FinishedAt             *time.Time `json:"finished_at"`
 	GeneratedLogChunkCount *int       `json:"generated_log_chunk_count"`
-	TaskIdentifier         string     `json:"id"`
+	TaskIdentifier         uuid.UUID  `json:"id"`
 	StartedAt              *time.Time `json:"started_at"`
 	Tags                   string     `json:"tags"`
 	TimedOut               bool       `json:"timed_out"`
