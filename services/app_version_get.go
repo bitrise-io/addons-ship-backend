@@ -74,17 +74,21 @@ func AppVersionGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Reques
 		return errors.WithStack(err)
 	}
 
-	if appVersion.Platform == "ios" {
+	switch appVersion.Platform {
+	case "ios":
 		return appVersionGetIosHelper(env, w, r, appVersion, artifacts)
-	} else if appVersion.Platform == "android" {
+	case "android":
 		return appVersionGetAndroidHelper(env, w, r, appVersion, artifacts)
+	default:
+		return errors.Errorf("Invalid platform type of app version: %s", appVersion.Platform)
 	}
-	return errors.Errorf("Invalid platform type of app version: %s", appVersion.Platform)
 }
 
-func newArtifactVersionGetResponse(appVersion *models.AppVersion, artifact *bitrise.ArtifactMeta, publicInstallPageURL string, appDetails *bitrise.AppDetails) (AppVersionGetResponseData, error) {
+func newArtifactVersionGetResponse(appVersion *models.AppVersion, artifact bitrise.ArtifactListElementResponseModel,
+	publicInstallPageURL string, appDetails *bitrise.AppDetails, publishEnabled bool) (AppVersionGetResponseData, error) {
 	var supportedDeviceTypes []string
-	for _, familyID := range artifact.AppInfo.DeviceFamilyList {
+	artifactMeta := artifact.ArtifactMeta
+	for _, familyID := range artifactMeta.AppInfo.DeviceFamilyList {
 		switch familyID {
 		case 1:
 			supportedDeviceTypes = append(supportedDeviceTypes, "iPhone", "iPod Touch")
@@ -103,17 +107,23 @@ func newArtifactVersionGetResponse(appVersion *models.AppVersion, artifact *bitr
 	if err != nil {
 		return AppVersionGetResponseData{}, err
 	}
+	var size int64
+	if artifact.FileSizeBytes != nil {
+		size = *artifact.FileSizeBytes
+	}
 	return AppVersionGetResponseData{
 		AppVersion:           appVersion,
-		MinimumOS:            artifact.AppInfo.MinimumOS,
-		MinimumSDK:           artifact.AppInfo.MinimumSDKVersion,
-		PackageName:          artifact.AppInfo.PackageName,
-		CertificateExpires:   artifact.ProvisioningInfo.ExpireDate,
-		BundleID:             artifact.AppInfo.BundleID,
+		MinimumOS:            artifactMeta.AppInfo.MinimumOS,
+		MinimumSDK:           artifactMeta.AppInfo.MinimumSDKVersion,
+		PackageName:          artifactMeta.AppInfo.PackageName,
+		CertificateExpires:   artifactMeta.ProvisioningInfo.ExpireDate,
+		BundleID:             artifactMeta.AppInfo.BundleID,
 		SupportedDeviceTypes: supportedDeviceTypes,
-		DistributionType:     artifact.ProvisioningInfo.DistributionType,
+		DistributionType:     artifactMeta.ProvisioningInfo.DistributionType,
 		PublicInstallPageURL: publicInstallPageURL,
 		AppInfo:              appData,
 		AppStoreInfo:         appStoreInfo,
+		Size:                 size,
+		PublishEnabled:       publishEnabled,
 	}, nil
 }

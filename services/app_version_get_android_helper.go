@@ -49,11 +49,10 @@ func appVersionGetAndroidHelper(env *env.AppEnv, w http.ResponseWriter,
 		return errors.WithStack(err)
 	}
 
-	responseData, err := newArtifactVersionGetResponse(appVersion, selectedArtifact.ArtifactMeta, artifactPublicInstallPageURL, appDetails)
+	responseData, err := newArtifactVersionGetResponse(appVersion, selectedArtifact, artifactPublicInstallPageURL, appDetails, publishEnabled)
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	responseData.PublishEnabled = publishEnabled
 
 	return httpresponse.RespondWithSuccess(w, AppVersionGetResponse{
 		Data: responseData,
