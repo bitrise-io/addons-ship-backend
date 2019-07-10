@@ -20,14 +20,16 @@ func appVersionGetIosHelper(env *env.AppEnv, w http.ResponseWriter,
 
 	for _, artifact := range artifacts {
 		if artifact.IsIPA() {
-			if artifact.HasDebugDistributionType() {
-				publicInstallPageEnabled = true
-				publicInstallPageArtifactSlug = artifact.Slug
-				selectedArtifact = artifact
-			}
 			if artifact.HasAppStoreDistributionType() {
 				publishEnabled = true
 				selectedArtifact = artifact
+			}
+			if artifact.HasDebugDistributionType() {
+				publicInstallPageEnabled = true
+				publicInstallPageArtifactSlug = artifact.Slug
+				if selectedArtifact == (bitrise.ArtifactListElementResponseModel{}) {
+					selectedArtifact = artifact
+				}
 			}
 		}
 		if artifact.IsXCodeArchive() {
@@ -59,6 +61,9 @@ func appVersionGetIosHelper(env *env.AppEnv, w http.ResponseWriter,
 	responseData, err := newArtifactVersionGetResponse(appVersion, selectedArtifact.ArtifactMeta, artifactPublicInstallPageURL, appDetails)
 	if err != nil {
 		return errors.WithStack(err)
+	}
+	if selectedArtifact.FileSizeBytes != nil {
+		responseData.Size = *selectedArtifact.FileSizeBytes
 	}
 	responseData.PublishEnabled = publishEnabled
 

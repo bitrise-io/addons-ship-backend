@@ -2,7 +2,6 @@ package services
 
 import (
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/bitrise-io/addons-ship-backend/bitrise"
@@ -95,15 +94,6 @@ func newArtifactVersionGetResponse(appVersion *models.AppVersion, artifact *bitr
 			supportedDeviceTypes = append(supportedDeviceTypes, "Unknown")
 		}
 	}
-	var size int64
-	if artifact.Size != "" {
-		var err error
-		floatSize, err := strconv.ParseFloat(artifact.Size, 64)
-		if err != nil {
-			return AppVersionGetResponseData{}, err
-		}
-		size = int64(floatSize)
-	}
 	appData := AppData{
 		Title:       appDetails.Title,
 		AppIconURL:  appDetails.AvatarURL,
@@ -120,7 +110,6 @@ func newArtifactVersionGetResponse(appVersion *models.AppVersion, artifact *bitr
 		PackageName:          artifact.AppInfo.PackageName,
 		CertificateExpires:   artifact.ProvisioningInfo.ExpireDate,
 		BundleID:             artifact.AppInfo.BundleID,
-		Size:                 size,
 		SupportedDeviceTypes: supportedDeviceTypes,
 		DistributionType:     artifact.ProvisioningInfo.DistributionType,
 		PublicInstallPageURL: publicInstallPageURL,
