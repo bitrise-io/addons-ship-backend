@@ -16,7 +16,7 @@ func (s *AppContactService) Create(appContact *AppContact) (*AppContact, error) 
 	if result.Error != nil {
 		return nil, result.Error
 	}
-	return appContact, nil
+	return appContact, s.DB.Where("id = ?", appContact.ID).Preload("App").First(appContact).Error
 }
 
 // Find ...

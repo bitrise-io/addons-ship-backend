@@ -3,12 +3,14 @@ package mailer
 import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ses"
+	"github.com/bitrise-io/addons-ship-backend/models"
 	"github.com/bitrise-io/addons-ship-backend/templates"
 )
 
-// Mailer ...
-type Mailer interface {
-	SendMail(r *Request) (bool, error)
+// Interface ...
+type Interface interface {
+	SendMail(r *Request, template string, data map[string]interface{}) error
+	SendEmailConfirmation(appTitle, addonBaseURL string, contact *models.AppContact) error
 }
 
 // Request ...
