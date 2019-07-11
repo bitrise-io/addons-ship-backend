@@ -9,7 +9,6 @@ import (
 
 // Interface ...
 type Interface interface {
-	SendMail(r *Request, template string, data map[string]interface{}) error
 	SendEmailConfirmation(appTitle, addonBaseURL string, contact *models.AppContact) error
 }
 

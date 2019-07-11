@@ -19,8 +19,7 @@ type SES struct {
 	Config    providers.AWSConfig
 }
 
-// SendMail ...
-func (m *SES) SendMail(r *Request, template string, data map[string]interface{}) error {
+func (m *SES) sendMail(r *Request, template string, data map[string]interface{}) error {
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String(m.Config.Region),
 		Credentials: credentials.NewStaticCredentials(
@@ -53,7 +52,7 @@ func (m *SES) SendEmailConfirmation(appTitle, addonBaseURL string, contact *mode
 	}
 	nameForHey := strings.Split(contact.Email, "@")[0]
 
-	return m.SendMail(&Request{
+	return m.sendMail(&Request{
 		To:      []string{contact.Email},
 		From:    m.FromEmail,
 		Subject: "Ship wants to send you notifications about the activity of this app. 🔔",

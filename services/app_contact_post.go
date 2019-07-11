@@ -36,7 +36,7 @@ func AppContactPost(env *env.AppEnv, w http.ResponseWriter, r *http.Request) err
 		return errors.New("No Bitrise API Service defined for handler")
 	}
 	if env.Mailer == nil {
-		return errors.New("No Mailer Service defined for handler")
+		return errors.New("No Mailer defined for handler")
 	}
 
 	var params appContactPostParams
