@@ -10,8 +10,10 @@ import (
 	"github.com/bitrise-io/addons-ship-backend/models"
 	"github.com/bitrise-io/addons-ship-backend/services"
 	ctxpkg "github.com/bitrise-io/api-utils/context"
+	"github.com/bitrise-io/api-utils/httpresponse"
 	"github.com/c2fo/testify/require"
 	"github.com/jinzhu/gorm"
+	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -119,6 +121,106 @@ func Test_AppContactPost(t *testing.T) {
 					},
 				},
 			},
+		})
+	})
+
+	t.Run("when request body is invalid", func(t *testing.T) {
+		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppID: uuid.NewV4(),
+			},
+			env: &env.AppEnv{
+				AppContactService: &testAppContactService{
+					findFn: func(*models.AppContact) (*models.AppContact, error) {
+						return nil, nil
+					},
+				},
+				BitriseAPI: &testBitriseAPI{},
+				Mailer:     &testMailer{},
+			},
+			requestBody:        `invalid JSON`,
+			expectedStatusCode: http.StatusBadRequest,
+			expectedResponse:   httpresponse.StandardErrorRespModel{Message: "Invalid request body, JSON decode failed"},
+		})
+	})
+
+	t.Run("when error happens at creating new app contact", func(t *testing.T) {
+		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppID: uuid.NewV4(),
+			},
+			env: &env.AppEnv{
+				AppContactService: &testAppContactService{
+					findFn: func(*models.AppContact) (*models.AppContact, error) {
+						return nil, gorm.ErrRecordNotFound
+					},
+					createFn: func(contact *models.AppContact) (*models.AppContact, error) {
+						return nil, errors.New("SOME-SQL-ERROR")
+					},
+				},
+				BitriseAPI: &testBitriseAPI{},
+				Mailer:     &testMailer{},
+			},
+			requestBody:         `{}`,
+			expectedInternalErr: "SQL Error: SOME-SQL-ERROR",
+		})
+	})
+
+	t.Run("when error happens at fetchin app details", func(t *testing.T) {
+		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppID: uuid.NewV4(),
+			},
+			env: &env.AppEnv{
+				AppContactService: &testAppContactService{
+					findFn: func(*models.AppContact) (*models.AppContact, error) {
+						return nil, gorm.ErrRecordNotFound
+					},
+					createFn: func(contact *models.AppContact) (*models.AppContact, error) {
+						contact.App = &models.App{APIToken: "test-api-token", AppSlug: "test-app-slug"}
+						return contact, nil
+					},
+				},
+				BitriseAPI: &testBitriseAPI{
+					getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
+						return nil, errors.New("SOME-BITRISE-API-ERROR")
+					},
+				},
+				Mailer: &testMailer{},
+			},
+			requestBody:         `{}`,
+			expectedInternalErr: "SOME-BITRISE-API-ERROR",
+		})
+	})
+
+	t.Run("when it's failed to send email notification", func(t *testing.T) {
+		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppID: uuid.NewV4(),
+			},
+			env: &env.AppEnv{
+				AppContactService: &testAppContactService{
+					findFn: func(*models.AppContact) (*models.AppContact, error) {
+						return nil, gorm.ErrRecordNotFound
+					},
+					createFn: func(contact *models.AppContact) (*models.AppContact, error) {
+						contact.App = &models.App{APIToken: "test-api-token", AppSlug: "test-app-slug"}
+						return contact, nil
+					},
+				},
+				BitriseAPI: &testBitriseAPI{
+					getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
+						return &bitrise.AppDetails{Title: "My awesome app"}, nil
+					},
+				},
+				Mailer: &testMailer{
+					sendEmailConfirmationFn: func(appTitle, addonBaseURL string, contact *models.AppContact) error {
+						return errors.New("SOME-MAILER-ERROR")
+					},
+				},
+			},
+			requestBody:         `{}`,
+			expectedInternalErr: "SOME-MAILER-ERROR",
 		})
 	})
 }

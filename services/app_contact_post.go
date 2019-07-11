@@ -44,16 +44,16 @@ func AppContactPost(env *env.AppEnv, w http.ResponseWriter, r *http.Request) err
 	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
 		return httpresponse.RespondWithBadRequestError(w, "Invalid request body, JSON decode failed")
 	}
-	notificationPreferences, err := json.Marshal(params.Preferences)
-	if err != nil {
-		return errors.WithStack(err)
-	}
 	appContact, err := env.AppContactService.Find(&models.AppContact{
 		AppID: authorizedAppID,
 		Email: params.Email,
 	})
 	if err == nil {
 		return httpresponse.RespondWithSuccess(w, AppContactPostResponse{Data: appContact})
+	}
+	notificationPreferences, err := json.Marshal(params.Preferences)
+	if err != nil {
+		return errors.WithStack(err)
 	}
 	confirmationToken := crypto.SecureRandomHash(24)
 	appContact, err = env.AppContactService.Create(&models.AppContact{
