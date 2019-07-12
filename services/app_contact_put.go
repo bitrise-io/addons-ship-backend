@@ -11,6 +11,11 @@ import (
 	"github.com/pkg/errors"
 )
 
+// AppContactPutResponse ...
+type AppContactPutResponse struct {
+	Data *models.AppContact `json:"data"`
+}
+
 // AppContactPutHandler ...
 func AppContactPutHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request) error {
 	authorizedAppContactID, err := GetAuthorizedAppContactIDFromContext(r.Context())
@@ -40,5 +45,5 @@ func AppContactPutHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Reques
 		return errors.Wrap(err, "SQL Error")
 	}
 
-	return nil
+	return httpresponse.RespondWithSuccess(w, AppContactPutResponse{Data: appContact})
 }
