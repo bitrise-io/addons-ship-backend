@@ -238,6 +238,47 @@ func AuthorizeForAppContactEmailConfirmationHandlerFunc(env *env.AppEnv, h http.
 	})
 }
 
+// AuthorizeForAppContactAccessHandlerFunc ...
+func AuthorizeForAppContactAccessHandlerFunc(env *env.AppEnv, h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if env.RequestParams == nil {
+			httpresponse.RespondWithInternalServerError(w, errors.New("No Request Params provided"))
+			return
+		}
+
+		appID, err := GetAuthorizedAppIDFromContext(r.Context())
+		if err != nil {
+			httpresponse.RespondWithInternalServerError(w, err)
+			return
+		}
+
+		appContactID, err := getUUIDFromRequest(env, r, "contact-id")
+		if err != nil {
+			httpresponse.RespondWithBadRequestErrorNoErr(w, err.Error())
+			return
+		}
+
+		if env.AppContactService == nil {
+			httpresponse.RespondWithInternalServerError(w, errors.New("No App Contact Service provided"))
+			return
+		}
+
+		appContact, err := env.AppContactService.Find(&models.AppContact{Record: models.Record{ID: appContactID}, AppID: appID})
+		switch {
+		case errors.Cause(err) == gorm.ErrRecordNotFound:
+			httpresponse.RespondWithNotFoundErrorNoErr(w)
+			return
+		case err != nil:
+			httpresponse.RespondWithInternalServerError(w, errors.WithStack(err))
+			return
+		}
+
+		// Access granted
+		ctx := ContextWithAuthorizedAppContactID(r.Context(), appContact.ID)
+		h.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
 func getUUIDFromRequest(env *env.AppEnv, r *http.Request, paramName string) (uuid.UUID, error) {
 	urlVars := env.RequestParams.Get(r)
 	param := urlVars[paramName]
