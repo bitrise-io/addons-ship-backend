@@ -7,6 +7,7 @@ import (
 
 	"github.com/bitrise-io/addons-ship-backend/bitrise"
 	"github.com/bitrise-io/addons-ship-backend/dataservices"
+	"github.com/bitrise-io/addons-ship-backend/mailer"
 	"github.com/bitrise-io/addons-ship-backend/models"
 	"github.com/bitrise-io/addons-ship-backend/redis"
 	"github.com/bitrise-io/api-utils/logging"
@@ -45,6 +46,8 @@ type AppEnv struct {
 	RedisExpirationTime    int
 	LogStoreService        dataservices.LogStore
 	WorkerService          dataservices.WorkerService
+	Mailer                 mailer.Interface
+	EmailConfirmLandingURL string
 }
 
 // New ...
@@ -101,6 +104,20 @@ func New(db *gorm.DB) (*AppEnv, error) {
 	env.RedisExpirationTime = int(redisExpiration)
 	env.Redis = redis.New()
 	env.LogStoreService = &models.LogStoreService{Redis: redis.New(), Expiration: env.RedisExpirationTime}
+
+	awsMailRegion, ok := os.LookupEnv("AWS_MAIL_REGION")
+	if !ok {
+		return nil, errors.New("No AWS_MAIL_REGION env var defined")
+	}
+	env.Mailer = &mailer.SES{FromEmail: "ship@bitrise.io", Config: providers.AWSConfig{
+		Region:          awsMailRegion,
+		AccessKeyID:     awsConfig.AccessKeyID,
+		SecretAccessKey: awsConfig.SecretAccessKey,
+	}}
+	env.EmailConfirmLandingURL, ok = os.LookupEnv("EMAIL_CONFIRM_LANDING_URL")
+	if !ok {
+		return nil, errors.New("No value set for env EMAIL_CONFIRM_LANDING_URL")
+	}
 
 	return env, nil
 }

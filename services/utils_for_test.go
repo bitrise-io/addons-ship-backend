@@ -96,6 +96,9 @@ func behavesAsServiceCravingHandler(t *testing.T, method, url string, handler fu
 			} else if sn == "PublishTaskService" {
 				controllerTestCase.env.PublishTaskService = nil
 				controllerTestCase.expectedInternalErr = "No Publish Task Service defined for handler"
+			} else if sn == "AppContactService" {
+				controllerTestCase.env.AppContactService = nil
+				controllerTestCase.expectedInternalErr = "No App Contact Service defined for handler"
 			} else if sn == "RequestParams" {
 				controllerTestCase.env.RequestParams = nil
 				controllerTestCase.expectedInternalErr = "No RequestParams defined for handler"
@@ -108,6 +111,9 @@ func behavesAsServiceCravingHandler(t *testing.T, method, url string, handler fu
 			} else if sn == "WorkerService" {
 				controllerTestCase.env.WorkerService = nil
 				controllerTestCase.expectedInternalErr = "No Worker Service defined for handler"
+			} else if sn == "Mailer" {
+				controllerTestCase.env.Mailer = nil
+				controllerTestCase.expectedInternalErr = "No Mailer defined for handler"
 			} else {
 				t.Fatalf("Invalid service element name defined: %s", sn)
 			}
