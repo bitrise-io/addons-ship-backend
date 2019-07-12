@@ -205,6 +205,39 @@ func AuthorizeForWebhookHandlerFunc(env *env.AppEnv, h http.Handler) http.Handle
 	})
 }
 
+// AuthorizeForAppContactEmailConfirmationHandlerFunc ...
+func AuthorizeForAppContactEmailConfirmationHandlerFunc(env *env.AppEnv, h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requestBody := struct {
+			ConfirmationToken string `json:"confirmation_token"`
+		}{}
+		defer httprequest.BodyCloseWithErrorLog(r)
+		if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
+			httpresponse.RespondWithBadRequestErrorNoErr(w, "Invalid request body, JSON decode failed")
+			return
+		}
+
+		if env.AppContactService == nil {
+			httpresponse.RespondWithInternalServerError(w, errors.New("No App Contact Service provided"))
+			return
+		}
+
+		appContact, err := env.AppContactService.Find(&models.AppContact{ConfirmationToken: &requestBody.ConfirmationToken})
+		switch {
+		case errors.Cause(err) == gorm.ErrRecordNotFound:
+			httpresponse.RespondWithNotFoundErrorNoErr(w)
+			return
+		case err != nil:
+			httpresponse.RespondWithInternalServerError(w, errors.WithStack(err))
+			return
+		}
+
+		// Access granted
+		ctx := ContextWithAuthorizedAppContactID(r.Context(), appContact.ID)
+		h.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
 func getUUIDFromRequest(env *env.AppEnv, r *http.Request, paramName string) (uuid.UUID, error) {
 	urlVars := env.RequestParams.Get(r)
 	param := urlVars[paramName]
