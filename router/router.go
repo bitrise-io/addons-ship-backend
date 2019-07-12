@@ -98,7 +98,7 @@ func New(appEnv *env.AppEnv) *mux.Router {
 			handler: services.AppVersionEventsGetHandler, allowedMethods: []string{"GET", "OPTIONS"},
 		},
 		{
-			path: "/confirm_email", middleware: services.AuthorizeForAppContactEmailConfirmationHandling(),
+			path: "/confirm_email", middleware: services.AuthorizeForAppContactEmailConfirmationHandling(appEnv),
 			handler: services.AppContactConfirmPatchHandler, allowedMethods: []string{"PATCH", "OPTIONS"},
 		},
 		{
