@@ -1023,6 +1023,23 @@ func Test_AuthorizeForAppContactAccessHandlerFunc(t *testing.T) {
 		})
 	})
 
+	t.Run("when no App ID found in context", func(t *testing.T) {
+		handler := services.AuthorizeForAppContactAccessHandlerFunc(&env.AppEnv{
+			RequestParams: &providers.RequestParamsMock{
+				Params: map[string]string{},
+			},
+			AppContactService: successfulTestAppContact,
+		}, authHandler)
+		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
+			contextElements:    map[ctxpkg.RequestContextKey]interface{}{},
+			requestHeaders:     testRequestHeaders,
+			expectedStatusCode: http.StatusInternalServerError,
+			expectedResponse: map[string]interface{}{
+				"message": "Internal Server Error",
+			},
+		})
+	})
+
 	t.Run("when no Request Params object is provided", func(t *testing.T) {
 		handler := services.AuthorizeForAppContactAccessHandlerFunc(&env.AppEnv{
 			AppContactService: successfulTestAppContact,
