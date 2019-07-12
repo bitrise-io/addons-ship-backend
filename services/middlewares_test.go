@@ -170,3 +170,23 @@ func Test_AuthorizeForWebhookHandling(t *testing.T) {
 	})
 	require.NoError(t, revokeFn())
 }
+
+func Test_AuthorizeForAppContactEmailConfirmationHandling(t *testing.T) {
+	middleware.PerformTest(t, "PATCH", "/...", middleware.TestCase{
+		RequestBody:    map[string]string{"confirmation_token": "5om3-r4nd0m-5tr1ng"},
+		ExpectedStatus: http.StatusOK,
+		ExpectedResponse: map[string]interface{}{
+			"message": "Success",
+		},
+		Middleware: services.AuthorizeForAppContactEmailConfirmationHandling(&env.AppEnv{
+			AppContactService: &testAppContactService{
+				findFn: func(appContact *models.AppContact) (*models.AppContact, error) {
+					require.NotNil(t, appContact.ConfirmationToken)
+					require.Equal(t, "5om3-r4nd0m-5tr1ng", *appContact.ConfirmationToken)
+					appContact.ID = uuid.FromStringOrNil("8a230385-0113-4cf3-a9c6-469a313e587a")
+					return appContact, nil
+				},
+			},
+		}),
+	})
+}
