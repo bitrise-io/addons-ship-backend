@@ -27,7 +27,7 @@ func AppContactsGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Reque
 
 	appContacts, err := env.AppContactService.FindAll(&models.App{Record: models.Record{ID: authorizedAppID}})
 	if err != nil {
-		return errors.WithStack(err)
+		return errors.Wrap(err, "SQL Error")
 	}
 
 	return httpresponse.RespondWithSuccess(w, AppContactsGetResponse{Data: appContacts})
