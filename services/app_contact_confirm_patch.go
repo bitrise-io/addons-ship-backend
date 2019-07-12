@@ -22,7 +22,7 @@ func AppContactConfirmPatchHandler(env *env.AppEnv, w http.ResponseWriter, r *ht
 		return errors.WithStack(err)
 	}
 	if env.AppContactService == nil {
-		return errors.New("No App Contact Service provided")
+		return errors.New("No App Contact Service defined for handler")
 	}
 	appContact, err := env.AppContactService.Find(&models.AppContact{Record: models.Record{ID: authorizedAppContactID}})
 	if err != nil {
