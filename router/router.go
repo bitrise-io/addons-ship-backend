@@ -6,7 +6,6 @@ import (
 	"github.com/bitrise-io/addons-ship-backend/env"
 	"github.com/bitrise-io/addons-ship-backend/services"
 	"github.com/bitrise-io/api-utils/handlers"
-	"github.com/bitrise-io/api-utils/middleware"
 	"github.com/justinas/alice"
 	"gopkg.in/DataDog/dd-trace-go.v1/contrib/gorilla/mux"
 )
@@ -23,7 +22,7 @@ func New(appEnv *env.AppEnv) *mux.Router {
 		allowedMethods []string
 	}{
 		{
-			path: "/", middleware: middleware.CommonMiddleware(),
+			path: "/", middleware: services.CommonMiddleware(appEnv),
 			handler: services.RootHandler, allowedMethods: []string{"GET", "OPTIONS"},
 		},
 		{
@@ -99,6 +98,10 @@ func New(appEnv *env.AppEnv) *mux.Router {
 			handler: services.AppVersionEventsGetHandler, allowedMethods: []string{"GET", "OPTIONS"},
 		},
 		{
+			path: "/confirm_email", middleware: services.AuthorizeForAppContactEmailConfirmationHandling(),
+			handler: services.AppContactConfirmPatchHandler, allowedMethods: []string{"PATCH", "OPTIONS"},
+		},
+		{
 			path: "/apps/{app-slug}/contacts", middleware: services.AuthorizedAppMiddleware(appEnv),
 			handler: services.AppContactPostHandler, allowedMethods: []string{"POST", "OPTIONS"},
 		},
@@ -111,6 +114,6 @@ func New(appEnv *env.AppEnv) *mux.Router {
 			Methods(route.allowedMethods...)
 	}
 
-	r.NotFoundHandler = middleware.CommonMiddleware().Then(&handlers.NotFoundHandler{})
+	r.NotFoundHandler = services.CommonMiddleware(appEnv).Then(&handlers.NotFoundHandler{})
 	return r
 }
