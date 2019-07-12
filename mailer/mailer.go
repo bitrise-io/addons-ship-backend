@@ -9,7 +9,7 @@ import (
 
 // Interface ...
 type Interface interface {
-	SendEmailConfirmation(appTitle, addonBaseURL string, contact *models.AppContact) error
+	SendEmailConfirmation(appTitle, confirmURL string, contact *models.AppContact) error
 }
 
 // Request ...

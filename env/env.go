@@ -47,6 +47,7 @@ type AppEnv struct {
 	LogStoreService        dataservices.LogStore
 	WorkerService          dataservices.WorkerService
 	Mailer                 mailer.Interface
+	EmailConfirmLandingURL string
 }
 
 // New ...
@@ -113,6 +114,10 @@ func New(db *gorm.DB) (*AppEnv, error) {
 		AccessKeyID:     awsConfig.AccessKeyID,
 		SecretAccessKey: awsConfig.SecretAccessKey,
 	}}
+	env.EmailConfirmLandingURL, ok = os.LookupEnv("EMAIL_CONFIRM_LANDING_URL")
+	if !ok {
+		return nil, errors.New("No value set for env EMAIL_CONFIRM_LANDING_URL")
+	}
 
 	return env, nil
 }

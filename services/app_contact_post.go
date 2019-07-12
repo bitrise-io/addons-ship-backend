@@ -22,8 +22,8 @@ type AppContactPostResponse struct {
 	Data *models.AppContact `json:"data"`
 }
 
-// AppContactPost ...
-func AppContactPost(env *env.AppEnv, w http.ResponseWriter, r *http.Request) error {
+// AppContactPostHandler ...
+func AppContactPostHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request) error {
 	authorizedAppID, err := GetAuthorizedAppIDFromContext(r.Context())
 	if err != nil {
 		return errors.WithStack(err)
@@ -70,7 +70,7 @@ func AppContactPost(env *env.AppEnv, w http.ResponseWriter, r *http.Request) err
 		return errors.WithStack(err)
 	}
 
-	err = env.Mailer.SendEmailConfirmation(appDetails.Title, env.AddonHostURL, appContact)
+	err = env.Mailer.SendEmailConfirmation(appDetails.Title, env.EmailConfirmLandingURL, appContact)
 	if err != nil {
 		return errors.WithStack(err)
 	}

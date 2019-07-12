@@ -17,10 +17,10 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-func Test_AppContactPost(t *testing.T) {
+func Test_AppContactPostHandler(t *testing.T) {
 	httpMethod := "POST"
 	url := "/apps/{app-slug}/contacts"
-	handler := services.AppContactPost
+	handler := services.AppContactPostHandler
 
 	behavesAsServiceCravingHandler(t, httpMethod, url, handler, []string{"AppContactService", "BitriseAPI", "Mailer"}, ControllerTestCase{
 		contextElements: map[ctxpkg.RequestContextKey]interface{}{
@@ -72,7 +72,7 @@ func Test_AppContactPost(t *testing.T) {
 				services.ContextKeyAuthorizedAppID: uuid.FromStringOrNil("548bde58-2707-4c28-9474-4f35ba0176cb"),
 			},
 			env: &env.AppEnv{
-				AddonHostURL: "http://ship.bitrise.io",
+				EmailConfirmLandingURL: "http://ship.bitrise.io/confirm_email",
 				AppContactService: &testAppContactService{
 					createFn: func(contact *models.AppContact) (*models.AppContact, error) {
 						contact.App = &models.App{APIToken: "test-api-token", AppSlug: "test-app-slug"}
@@ -90,9 +90,9 @@ func Test_AppContactPost(t *testing.T) {
 					},
 				},
 				Mailer: &testMailer{
-					sendEmailConfirmationFn: func(appTitle, addonBaseURL string, contact *models.AppContact) error {
+					sendEmailConfirmationFn: func(appTitle, emailConfirmURL string, contact *models.AppContact) error {
 						require.Equal(t, "My awesome app", appTitle)
-						require.Equal(t, "http://ship.bitrise.io", addonBaseURL)
+						require.Equal(t, "http://ship.bitrise.io/confirm_email", emailConfirmURL)
 						require.NotEmpty(t, contact.ConfirmationToken)
 						contact.ConfirmationToken = ""
 						require.Equal(t, &models.AppContact{
@@ -214,7 +214,7 @@ func Test_AppContactPost(t *testing.T) {
 					},
 				},
 				Mailer: &testMailer{
-					sendEmailConfirmationFn: func(appTitle, addonBaseURL string, contact *models.AppContact) error {
+					sendEmailConfirmationFn: func(appTitle, emailConfirmURL string, contact *models.AppContact) error {
 						return errors.New("SOME-MAILER-ERROR")
 					},
 				},

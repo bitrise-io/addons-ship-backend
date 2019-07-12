@@ -45,7 +45,7 @@ func (m *SES) sendMail(r *Request, template string, data map[string]interface{})
 }
 
 // SendEmailConfirmation ...
-func (m *SES) SendEmailConfirmation(appTitle, addonBaseURL string, contact *models.AppContact) error {
+func (m *SES) SendEmailConfirmation(appTitle, confirmURL string, contact *models.AppContact) error {
 	notificationPreferences, err := contact.NotificationPreferences()
 	if err != nil {
 		return errors.WithStack(err)
@@ -65,7 +65,7 @@ func (m *SES) SendEmailConfirmation(appTitle, addonBaseURL string, contact *mode
 			"SuccessfulPublish": func() bool { return notificationPreferences.SuccessfulPublish },
 			"FailedPublish":     func() bool { return notificationPreferences.FailedPublish },
 			"URL": func() string {
-				return fmt.Sprintf("%s/apps/%s/contacts/%s/confirm?token=%s", addonBaseURL, contact.App.AppSlug, contact.ID, contact.ConfirmationToken)
+				return fmt.Sprintf("%s?token=%s", confirmURL, contact.ConfirmationToken)
 			},
 		})
 }
