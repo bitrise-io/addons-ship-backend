@@ -57,7 +57,7 @@ func Test_AppContactPutHandler(t *testing.T) {
 			},
 			requestBody:        `{}`,
 			expectedStatusCode: http.StatusOK,
-			expectedResponse: services.AppContactPatchResponse{
+			expectedResponse: services.AppContactPutResponse{
 				Data: &models.AppContact{
 					NotificationPreferencesData: json.RawMessage(`{"new_version":false,"successful_publish":false,"failed_publish":false}`),
 				},
@@ -85,7 +85,7 @@ func Test_AppContactPutHandler(t *testing.T) {
 			},
 			requestBody:        `{"new_version":true}`,
 			expectedStatusCode: http.StatusOK,
-			expectedResponse: services.AppContactPatchResponse{
+			expectedResponse: services.AppContactPutResponse{
 				Data: &models.AppContact{
 					NotificationPreferencesData: json.RawMessage(`{"new_version":true,"successful_publish":false,"failed_publish":false}`),
 				},
