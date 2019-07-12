@@ -15,6 +15,8 @@ const (
 	ContextKeyAuthorizedAppVersionID ctxpkg.RequestContextKey = "ctx-authorized-app-version-id"
 	// ContextKeyAuthorizedScreenshotID ...
 	ContextKeyAuthorizedScreenshotID ctxpkg.RequestContextKey = "ctx-authorized-screenshot-id"
+	// ContextKeyAuthorizedAppContactID ...
+	ContextKeyAuthorizedAppContactID ctxpkg.RequestContextKey = "ctx-authorized-app-contact-id"
 )
 
 // GetAuthorizedAppIDFromContext ...
@@ -57,4 +59,18 @@ func GetAuthorizedScreenshotIDFromContext(ctx context.Context) (uuid.UUID, error
 // ContextWithAuthorizedScreenshotID ...
 func ContextWithAuthorizedScreenshotID(ctx context.Context, screenshotID uuid.UUID) context.Context {
 	return context.WithValue(ctx, ContextKeyAuthorizedScreenshotID, screenshotID)
+}
+
+// GetAuthorizedAppContactIDFromContext ...
+func GetAuthorizedAppContactIDFromContext(ctx context.Context) (uuid.UUID, error) {
+	id, ok := ctx.Value(ContextKeyAuthorizedAppContactID).(uuid.UUID)
+	if !ok {
+		return uuid.UUID{}, errors.New("Authorized App Contact ID not found in Context")
+	}
+	return id, nil
+}
+
+// ContextWithAuthorizedAppContactID ...
+func ContextWithAuthorizedAppContactID(ctx context.Context, appContactID uuid.UUID) context.Context {
+	return context.WithValue(ctx, ContextKeyAuthorizedAppContactID, appContactID)
 }
