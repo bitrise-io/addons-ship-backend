@@ -88,6 +88,12 @@ func newArtifactVersionGetResponse(appVersion *models.AppVersion, artifact bitri
 	publicInstallPageURL string, appDetails *bitrise.AppDetails, publishEnabled bool) (AppVersionGetResponseData, error) {
 	var supportedDeviceTypes []string
 	artifactMeta := artifact.ArtifactMeta
+	if artifactMeta == nil {
+		return AppVersionGetResponseData{}, errors.New("No artifact meta data found for artifact")
+	}
+	// if reflect.DeepEqual(artifactMeta.AppInfo, bitrise.AppInfo{}) {
+	// 	return AppVersionGetResponseData{}, errors.New("No app info found for artifact")
+	// }
 	for _, familyID := range artifactMeta.AppInfo.DeviceFamilyList {
 		switch familyID {
 		case 1:

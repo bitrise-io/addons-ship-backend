@@ -33,7 +33,29 @@ func (a *APIDev) GetArtifactData(authToken, appSlug, buildSlug string) (*Artifac
 
 // GetArtifacts ...
 func (a *APIDev) GetArtifacts(authToken, appSlug, buildSlug string) ([]ArtifactListElementResponseModel, error) {
-	return []ArtifactListElementResponseModel{}, nil
+	var artifacts []ArtifactListElementResponseModel
+	if appSlug == "test-app-slug-1" {
+		switch buildSlug {
+		case "test-build-slug-1":
+			artifacts = append(artifacts, ArtifactListElementResponseModel{
+				Title: "my-awesome-ios-dev-app.ipa",
+				ArtifactMeta: &ArtifactMeta{
+					ProvisioningInfo: ProvisioningInfo{
+						DistributionType: "development",
+					},
+					AppInfo: AppInfo{},
+				},
+			})
+		case "test-build-slug-2":
+			artifacts = append(artifacts, ArtifactListElementResponseModel{
+				Title: "my-awesome-android-dev-app.aab",
+				ArtifactMeta: &ArtifactMeta{
+					AppInfo: AppInfo{},
+				},
+			})
+		}
+	}
+	return artifacts, nil
 }
 
 // GetArtifactPublicInstallPageURL ...
