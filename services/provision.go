@@ -2,6 +2,7 @@ package services
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/bitrise-io/addons-ship-backend/env"
@@ -42,6 +43,10 @@ func ProvisionHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request) e
 		return httpresponse.RespondWithBadRequestError(w, "Invalid request body, JSON decode failed")
 	}
 
+	if env.BitriseAPI == nil {
+		return errors.New("No Bitrise API Service defined for handler")
+	}
+
 	app, err := env.AppService.Find(&models.App{AppSlug: params.AppSlug})
 	switch {
 	case errors.Cause(err) == gorm.ErrRecordNotFound:
@@ -53,6 +58,14 @@ func ProvisionHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request) e
 		})
 		if err != nil {
 			return errors.Wrap(err, "SQL Error")
+		}
+		secret, err := app.Secret()
+		if err != nil {
+			return errors.WithStack(err)
+		}
+		err = env.BitriseAPI.RegisterWebhook(app.APIToken, app.AppSlug, secret, fmt.Sprintf("%s/webhook", env.AddonHostURL))
+		if err != nil {
+			return errors.WithStack(err)
 		}
 	case err != nil:
 		return errors.Wrap(err, "SQL Error")
