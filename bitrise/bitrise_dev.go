@@ -137,3 +137,8 @@ func (a *APIDev) TriggerDENTask(params TaskParams) (*TriggerResponse, error) {
 	realClient := New()
 	return realClient.TriggerDENTask(params)
 }
+
+// RegisterWebhook ...
+func (a *APIDev) RegisterWebhook(authToken, appSlug, secret, callbackURL string) error {
+	return nil
+}
