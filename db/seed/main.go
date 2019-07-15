@@ -68,6 +68,7 @@ func main() {
 			AppID:            appVersionData.AppID,
 			Platform:         appVersionData.Platform,
 			Version:          appVersionData.Version,
+			BuildSlug:        appVersionData.BuildSlug,
 			BuildNumber:      appVersionData.BuildNumber,
 			LastUpdate:       appVersionData.LastUpdate,
 			Scheme:           appVersionData.Scheme,
