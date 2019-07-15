@@ -785,7 +785,7 @@ func Test_AuthorizeForWebhookHandlerFunc(t *testing.T) {
 		},
 	}
 	httpMethod := "POST"
-	url := "/webhook"
+	url := "/task-webhook"
 
 	t.Run("ok", func(t *testing.T) {
 		handler := services.AuthorizeForWebhookHandlerFunc(&env.AppEnv{

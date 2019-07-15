@@ -123,7 +123,7 @@ func Test_AppVersionPublishPostHandler(t *testing.T) {
 					triggerDENTaskFn: func(params bitrise.TaskParams) (*bitrise.TriggerResponse, error) {
 						require.Equal(t, `{"BITRISE_APP_SLUG":"test-app-slug","BITRISE_ARTIFACT_SLUG":"test-artifact-slug","BITRISE_BUILD_SLUG":"test-build-slug"}`, params.InlineEnvs)
 						require.Equal(t, `{"BITRISE_ACCESS_TOKEN":"bitrise-api-addon-token"}`, params.Secrets)
-						require.Equal(t, "http://ship.addon.url/webhook", params.WebhookURL)
+						require.Equal(t, "http://ship.addon.url/task-webhook", params.WebhookURL)
 						require.Equal(t, "resign_archive_app_store", params.Workflow)
 						return &bitrise.TriggerResponse{TaskIdentifier: testTaskIdentifier}, nil
 					},
