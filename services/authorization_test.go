@@ -874,3 +874,283 @@ func Test_AuthorizeForWebhookHandlerFunc(t *testing.T) {
 		})
 	})
 }
+
+func Test_AuthorizeForAppContactEmailConfirmationHandlerFunc(t *testing.T) {
+	authHandler := &handlers.TestAuthHandler{
+		ContextElementList: map[string]ctxpkg.RequestContextKey{
+			"authorizedAppContactID": services.ContextKeyAuthorizedAppContactID,
+		},
+	}
+	httpMethod := "PATCH"
+	url := "/confirm_email"
+
+	t.Run("ok", func(t *testing.T) {
+		handler := services.AuthorizeForAppContactEmailConfirmationHandlerFunc(&env.AppEnv{
+			AppContactService: &testAppContactService{
+				findFn: func(appContact *models.AppContact) (*models.AppContact, error) {
+					require.NotNil(t, appContact.ConfirmationToken)
+					require.Equal(t, "5om3-r4nd0m-5tr1ng", *appContact.ConfirmationToken)
+					appContact.ID = uuid.FromStringOrNil("8a230385-0113-4cf3-a9c6-469a313e587a")
+					return appContact, nil
+				},
+			},
+		}, authHandler)
+		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
+			requestPayload:     map[string]string{"confirmation_token": "5om3-r4nd0m-5tr1ng"},
+			expectedStatusCode: http.StatusOK,
+			expectedResponse: map[string]interface{}{
+				"authorizedAppContactID": "8a230385-0113-4cf3-a9c6-469a313e587a",
+			},
+		})
+	})
+
+	t.Run("when request payload is invalid", func(t *testing.T) {
+		handler := services.AuthorizeForAppContactEmailConfirmationHandlerFunc(&env.AppEnv{
+			AppContactService: &testAppContactService{
+				findFn: func(appContact *models.AppContact) (*models.AppContact, error) {
+					require.NotNil(t, appContact.ConfirmationToken)
+					require.Equal(t, "5om3-r4nd0m-5tr1ng", *appContact.ConfirmationToken)
+					appContact.ID = uuid.FromStringOrNil("8a230385-0113-4cf3-a9c6-469a313e587a")
+					return appContact, nil
+				},
+			},
+		}, authHandler)
+		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
+			requestPayload:     "invalid-json",
+			expectedStatusCode: http.StatusBadRequest,
+			expectedResponse: map[string]interface{}{
+				"message": "Invalid request body, JSON decode failed",
+			},
+		})
+	})
+
+	t.Run("when no app contact service is defined", func(t *testing.T) {
+		handler := services.AuthorizeForAppContactEmailConfirmationHandlerFunc(&env.AppEnv{
+			AppContactService: nil,
+		}, authHandler)
+		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
+			requestPayload:     map[string]string{"confirmation_token": "5om3-r4nd0m-5tr1ng"},
+			expectedStatusCode: http.StatusInternalServerError,
+			expectedResponse: map[string]interface{}{
+				"message": "Internal Server Error",
+			},
+		})
+	})
+
+	t.Run("when no app contact found by task id", func(t *testing.T) {
+		handler := services.AuthorizeForAppContactEmailConfirmationHandlerFunc(&env.AppEnv{
+			AppContactService: &testAppContactService{
+				findFn: func(appContact *models.AppContact) (*models.AppContact, error) {
+					return nil, gorm.ErrRecordNotFound
+				},
+			},
+		}, authHandler)
+		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
+			requestPayload:     map[string]string{"confirmation_token": "5om3-r4nd0m-5tr1ng"},
+			expectedStatusCode: http.StatusNotFound,
+			expectedResponse: map[string]interface{}{
+				"message": "Not Found",
+			},
+		})
+	})
+
+	t.Run("when error happens at finding publish task", func(t *testing.T) {
+		handler := services.AuthorizeForAppContactEmailConfirmationHandlerFunc(&env.AppEnv{
+			AppContactService: &testAppContactService{
+				findFn: func(appContact *models.AppContact) (*models.AppContact, error) {
+					return nil, errors.New("SOME-SQL-ERROR")
+				},
+			},
+		}, authHandler)
+		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
+			requestPayload:     map[string]string{"confirmation_token": "5om3-r4nd0m-5tr1ng"},
+			expectedStatusCode: http.StatusInternalServerError,
+			expectedResponse: map[string]interface{}{
+				"message": "Internal Server Error",
+			},
+		})
+	})
+}
+
+func Test_AuthorizeForAppContactAccessHandlerFunc(t *testing.T) {
+	authHandler := &handlers.TestAuthHandler{
+		ContextElementList: map[string]ctxpkg.RequestContextKey{
+			"authorizedAppID":        services.ContextKeyAuthorizedAppID,
+			"authorizedAppContactID": services.ContextKeyAuthorizedAppContactID,
+		},
+	}
+	httpMethod := "GET"
+	url := "/apps/test_app_slug/contacts/contact_uuid"
+
+	testAppID := "211afc15-127a-40f9-8cbe-1dadc1f86cdf"
+	testContactID := "123afc15-127a-40f9-8cbe-1dadc1f86cdf"
+	validRequestParams := &providers.RequestParamsMock{
+		Params: map[string]string{
+			"contact-id": testContactID,
+		},
+	}
+
+	successfulTestAppContact := &testAppContactService{
+		findFn: func(appContact *models.AppContact) (*models.AppContact, error) {
+			require.Equal(t, testAppID, appContact.AppID.String())
+			require.Equal(t, testContactID, appContact.ID.String())
+
+			return &models.AppContact{
+				Record: models.Record{ID: uuid.FromStringOrNil(testContactID)},
+			}, nil
+		},
+	}
+
+	testRequestHeaders := map[string]string{
+		"Authorization": "token test-auth-token",
+	}
+
+	t.Run("ok", func(t *testing.T) {
+		handler := services.AuthorizeForAppContactAccessHandlerFunc(&env.AppEnv{
+			RequestParams:     validRequestParams,
+			AppContactService: successfulTestAppContact,
+		}, authHandler)
+		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppID: uuid.FromStringOrNil(testAppID),
+			},
+			requestHeaders:     testRequestHeaders,
+			expectedStatusCode: http.StatusOK,
+			expectedResponse: map[string]interface{}{
+				"authorizedAppID":        testAppID,
+				"authorizedAppContactID": testContactID,
+			},
+		})
+	})
+
+	t.Run("when no App ID found in context", func(t *testing.T) {
+		handler := services.AuthorizeForAppContactAccessHandlerFunc(&env.AppEnv{
+			RequestParams: &providers.RequestParamsMock{
+				Params: map[string]string{},
+			},
+			AppContactService: successfulTestAppContact,
+		}, authHandler)
+		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
+			contextElements:    map[ctxpkg.RequestContextKey]interface{}{},
+			requestHeaders:     testRequestHeaders,
+			expectedStatusCode: http.StatusInternalServerError,
+			expectedResponse: map[string]interface{}{
+				"message": "Internal Server Error",
+			},
+		})
+	})
+
+	t.Run("when no Request Params object is provided", func(t *testing.T) {
+		handler := services.AuthorizeForAppContactAccessHandlerFunc(&env.AppEnv{
+			AppContactService: successfulTestAppContact,
+		}, authHandler)
+		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppID: uuid.FromStringOrNil(testAppID),
+			},
+			requestHeaders:     testRequestHeaders,
+			expectedStatusCode: http.StatusInternalServerError,
+			expectedResponse: map[string]interface{}{
+				"message": "Internal Server Error",
+			},
+		})
+	})
+
+	t.Run("when no contact id found in url params", func(t *testing.T) {
+		handler := services.AuthorizeForAppContactAccessHandlerFunc(&env.AppEnv{
+			RequestParams: &providers.RequestParamsMock{
+				Params: map[string]string{},
+			},
+			AppContactService: successfulTestAppContact,
+		}, authHandler)
+		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppID: uuid.FromStringOrNil(testAppID),
+			},
+			requestHeaders:     testRequestHeaders,
+			expectedStatusCode: http.StatusBadRequest,
+			expectedResponse: map[string]interface{}{
+				"message": "Failed to fetch URL param contact-id",
+			},
+		})
+	})
+
+	t.Run("when no valid app contact id found in url params", func(t *testing.T) {
+		handler := services.AuthorizeForAppContactAccessHandlerFunc(&env.AppEnv{
+			RequestParams: &providers.RequestParamsMock{
+				Params: map[string]string{
+					"contact-id": "invalid-uuid",
+				},
+			},
+			AppContactService: successfulTestAppContact,
+		}, authHandler)
+		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppID: uuid.FromStringOrNil(testAppID),
+			},
+			requestHeaders:     testRequestHeaders,
+			expectedStatusCode: http.StatusBadRequest,
+			expectedResponse: map[string]interface{}{
+				"message": "Invalid UUID format for contact-id",
+			},
+		})
+	})
+
+	t.Run("when no app contact service is provided in app env", func(t *testing.T) {
+		handler := services.AuthorizeForAppContactAccessHandlerFunc(&env.AppEnv{
+			RequestParams: validRequestParams,
+		}, authHandler)
+		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppID: uuid.FromStringOrNil(testAppID),
+			},
+			requestHeaders:     testRequestHeaders,
+			expectedStatusCode: http.StatusInternalServerError,
+			expectedResponse: map[string]interface{}{
+				"message": "Internal Server Error",
+			},
+		})
+	})
+
+	t.Run("when app contact not found in database", func(t *testing.T) {
+		handler := services.AuthorizeForAppContactAccessHandlerFunc(&env.AppEnv{
+			RequestParams: validRequestParams,
+			AppContactService: &testAppContactService{
+				findFn: func(appContact *models.AppContact) (*models.AppContact, error) {
+					return nil, gorm.ErrRecordNotFound
+				},
+			},
+		}, authHandler)
+		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppID: uuid.FromStringOrNil(testAppID),
+			},
+			requestHeaders:     testRequestHeaders,
+			expectedStatusCode: http.StatusNotFound,
+			expectedResponse: map[string]interface{}{
+				"message": "Not Found",
+			},
+		})
+	})
+
+	t.Run("when unexpected error happens at database query", func(t *testing.T) {
+		handler := services.AuthorizeForAppContactAccessHandlerFunc(&env.AppEnv{
+			RequestParams: validRequestParams,
+			AppContactService: &testAppContactService{
+				findFn: func(appContact *models.AppContact) (*models.AppContact, error) {
+					return nil, errors.New("SOME-SQL-ERROR")
+				},
+			},
+		}, authHandler)
+		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppID: uuid.FromStringOrNil(testAppID),
+			},
+			requestHeaders:     testRequestHeaders,
+			expectedStatusCode: http.StatusInternalServerError,
+			expectedResponse: map[string]interface{}{
+				"message": "Internal Server Error",
+			},
+		})
+	})
+}

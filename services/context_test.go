@@ -123,3 +123,41 @@ func Test_ContextWithAuthorizedScreenshotID(t *testing.T) {
 		require.Equal(t, anotherTestUUID, contextWithValue.Value(services.ContextKeyAuthorizedScreenshotID))
 	})
 }
+
+func Test_GetAuthorizedAppContactIDFromContext(t *testing.T) {
+	testUUID := uuid.NewV4()
+
+	t.Run("ok", func(t *testing.T) {
+		appContactID, err := services.GetAuthorizedAppContactIDFromContext(context.WithValue(context.Background(), services.ContextKeyAuthorizedAppContactID, testUUID))
+		require.NoError(t, err)
+		require.Equal(t, testUUID, appContactID)
+	})
+
+	t.Run("error - value is not an UUID", func(t *testing.T) {
+		appContactID, err := services.GetAuthorizedAppContactIDFromContext(context.WithValue(context.Background(), services.ContextKeyAuthorizedAppContactID, "17"))
+		require.Equal(t, "Authorized App Contact ID not found in Context", err.Error())
+		require.Equal(t, uuid.UUID{}, appContactID)
+	})
+
+	t.Run("error - wrong key", func(t *testing.T) {
+		appContactID, err := services.GetAuthorizedAppContactIDFromContext(context.WithValue(context.Background(), ctxpkg.RequestContextKey("WrongKey"), testUUID))
+		require.Equal(t, "Authorized App Contact ID not found in Context", err.Error())
+		require.Equal(t, uuid.UUID{}, appContactID)
+	})
+}
+
+func Test_ContextWithAuthorizedAppContactID(t *testing.T) {
+	testUUID := uuid.NewV4()
+	t.Run("ok", func(t *testing.T) {
+		contextWithValue := services.ContextWithAuthorizedAppContactID(context.Background(), testUUID)
+		expectedContext := context.WithValue(context.Background(), services.ContextKeyAuthorizedAppContactID, testUUID)
+		require.Equal(t, expectedContext, contextWithValue)
+	})
+
+	t.Run("ok - the last set value is the valid", func(t *testing.T) {
+		anotherTestUUID := uuid.NewV4()
+		previousContext := context.WithValue(context.Background(), services.ContextKeyAuthorizedAppContactID, testUUID)
+		contextWithValue := services.ContextWithAuthorizedAppContactID(previousContext, anotherTestUUID)
+		require.Equal(t, anotherTestUUID, contextWithValue.Value(services.ContextKeyAuthorizedAppContactID))
+	})
+}
