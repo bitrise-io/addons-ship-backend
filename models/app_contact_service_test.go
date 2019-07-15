@@ -4,6 +4,7 @@ package models_test
 
 import (
 	"encoding/json"
+	"reflect"
 	"testing"
 
 	"github.com/bitrise-io/addons-ship-backend/dataservices"
@@ -49,6 +50,33 @@ func Test_AppContactService_Find(t *testing.T) {
 		foundAppContact, err := appContactService.Find(&models.AppContact{Record: models.Record{ID: testAppContact.ID}, AppID: otherTestApp.ID})
 		require.Equal(t, errors.Cause(err), gorm.ErrRecordNotFound)
 		require.Nil(t, foundAppContact)
+	})
+}
+
+func Test_AppContactService_FindAll(t *testing.T) {
+	dbCloseCallbackMethod := prepareDB(t)
+	defer dbCloseCallbackMethod()
+
+	appContactService := models.AppContactService{DB: dataservices.GetDB()}
+	testApp := createTestApp(t, &models.App{AppSlug: "test-app-slug"})
+	anotherTestApp := createTestApp(t, &models.App{AppSlug: "test-app-slug-2"})
+	testAppContact1 := createTestAppContact(t, &models.AppContact{
+		App:   testApp,
+		Email: "someones@email.addr",
+	})
+	testAppContact2 := createTestAppContact(t, &models.AppContact{
+		App:   testApp,
+		Email: "someoneelses@email.addr",
+	})
+	createTestAppContact(t, &models.AppContact{
+		App:   anotherTestApp,
+		Email: "andanother@email.addr",
+	})
+
+	t.Run("when query all app contacts of test app", func(t *testing.T) {
+		foundAppContacts, err := appContactService.FindAll(testApp)
+		require.NoError(t, err)
+		reflect.DeepEqual([]models.AppContact{*testAppContact2, *testAppContact1}, foundAppContacts)
 	})
 }
 
