@@ -132,6 +132,9 @@ func behavesAsContextCravingHandler(t *testing.T, method, url string, handler fu
 			} else if ck == services.ContextKeyAuthorizedAppVersionID {
 				controllerTestCase.contextElements[ck] = nil
 				controllerTestCase.expectedInternalErr = "Authorized App Version ID not found in Context"
+			} else if ck == services.ContextKeyAuthorizedAppContactID {
+				controllerTestCase.contextElements[ck] = nil
+				controllerTestCase.expectedInternalErr = "Authorized App Contact ID not found in Context"
 			} else if ck == services.ContextKeyAuthorizedScreenshotID {
 				controllerTestCase.contextElements[ck] = nil
 				controllerTestCase.expectedInternalErr = "Authorized App Version Screenshot ID not found in Context"

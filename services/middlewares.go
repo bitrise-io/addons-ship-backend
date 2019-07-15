@@ -50,6 +50,18 @@ func createAuthenticateForWebhookHandlingMiddleware(env *env.AppEnv) func(http.H
 	}
 }
 
+func createAuthorizeForAppContactEmailConfirmationMiddleware(env *env.AppEnv) func(http.Handler) http.Handler {
+	return func(h http.Handler) http.Handler {
+		return AuthorizeForAppContactEmailConfirmationHandlerFunc(env, h)
+	}
+}
+
+func createAuthorizeForAppContactAccessMiddleware(env *env.AppEnv) func(http.Handler) http.Handler {
+	return func(h http.Handler) http.Handler {
+		return AuthorizeForAppContactAccessHandlerFunc(env, h)
+	}
+}
+
 // CommonMiddleware ...
 func CommonMiddleware(appEnv *env.AppEnv) alice.Chain {
 	baseMiddleware := middleware.CommonMiddleware()
@@ -100,5 +112,19 @@ func AuthorizeForWebhookHandling(appEnv *env.AppEnv) alice.Chain {
 	return CommonMiddleware(appEnv).Append(
 		createAuthenticateForWebhookHandlingMiddleware(appEnv),
 		createAuthorizeForWebhookHandlingMiddleware(appEnv),
+	)
+}
+
+// AuthorizeForAppContactEmailConfirmationHandling ...
+func AuthorizeForAppContactEmailConfirmationHandling(appEnv *env.AppEnv) alice.Chain {
+	return CommonMiddleware(appEnv).Append(
+		createAuthorizeForAppContactEmailConfirmationMiddleware(appEnv),
+	)
+}
+
+// AuthorizedAppContactMiddleware ...
+func AuthorizedAppContactMiddleware(appEnv *env.AppEnv) alice.Chain {
+	return AuthorizedAppMiddleware(appEnv).Append(
+		createAuthorizeForAppContactAccessMiddleware(appEnv),
 	)
 }

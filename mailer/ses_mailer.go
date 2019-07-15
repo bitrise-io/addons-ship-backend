@@ -51,6 +51,12 @@ func (m *SES) SendEmailConfirmation(appTitle, confirmURL string, contact *models
 		return errors.WithStack(err)
 	}
 	nameForHey := strings.Split(contact.Email, "@")[0]
+	var confirmationToken string
+	if contact.ConfirmationToken != nil {
+		confirmationToken = *contact.ConfirmationToken
+	} else {
+		return errors.New("Confirmation token is empty")
+	}
 
 	return m.sendMail(&Request{
 		To:      []string{contact.Email},
@@ -65,7 +71,7 @@ func (m *SES) SendEmailConfirmation(appTitle, confirmURL string, contact *models
 			"SuccessfulPublish": func() bool { return notificationPreferences.SuccessfulPublish },
 			"FailedPublish":     func() bool { return notificationPreferences.FailedPublish },
 			"URL": func() string {
-				return fmt.Sprintf("%s?token=%s", confirmURL, contact.ConfirmationToken)
+				return fmt.Sprintf("%s?token=%s", confirmURL, confirmationToken)
 			},
 		})
 }

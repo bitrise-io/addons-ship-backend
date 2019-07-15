@@ -60,7 +60,7 @@ func AppContactPostHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Reque
 		AppID: authorizedAppID,
 		Email: params.Email,
 		NotificationPreferencesData: notificationPreferences,
-		ConfirmationToken:           confirmationToken,
+		ConfirmationToken:           &confirmationToken,
 	})
 	if err != nil {
 		return errors.Wrap(err, "SQL Error")
