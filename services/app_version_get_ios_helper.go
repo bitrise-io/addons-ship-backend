@@ -53,13 +53,13 @@ func appVersionGetIosHelper(env *env.AppEnv, w http.ResponseWriter,
 		}
 	}
 
+	if selectedArtifact == nil {
+		return httpresponse.RespondWithNotFoundError(w)
+	}
+
 	appDetails, err := env.BitriseAPI.GetAppDetails(appVersion.App.BitriseAPIToken, appVersion.App.AppSlug)
 	if err != nil {
 		return errors.WithStack(err)
-	}
-
-	if selectedArtifact == nil {
-		return httpresponse.RespondWithNotFoundError(w)
 	}
 
 	responseData, err := newArtifactVersionGetResponse(appVersion, *selectedArtifact, artifactPublicInstallPageURL, appDetails, publishEnabled)
