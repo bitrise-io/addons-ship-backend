@@ -69,7 +69,9 @@ type artifactShowResponseModel struct {
 
 // HasDebugDistributionType ...
 func (a ArtifactListElementResponseModel) HasDebugDistributionType() bool {
-	if a.ArtifactMeta.ProvisioningInfo.DistributionType == "" {
+	if a.ArtifactMeta == nil ||
+		a.ArtifactMeta.ProvisioningInfo == (ProvisioningInfo{}) ||
+		a.ArtifactMeta.ProvisioningInfo.DistributionType == "" {
 		return false
 	}
 	for _, artifactType := range debugDistributionTypes {
@@ -82,6 +84,9 @@ func (a ArtifactListElementResponseModel) HasDebugDistributionType() bool {
 
 // HasAppStoreDistributionType ...
 func (a ArtifactListElementResponseModel) HasAppStoreDistributionType() bool {
+	if a.ArtifactMeta == nil || a.ArtifactMeta.ProvisioningInfo == (ProvisioningInfo{}) {
+		return false
+	}
 	return a.ArtifactMeta.ProvisioningInfo.DistributionType == "app-store"
 }
 

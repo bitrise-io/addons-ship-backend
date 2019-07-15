@@ -463,6 +463,39 @@ func Test_AppVersionGetHandler(t *testing.T) {
 			})
 		})
 
+		t.Run("when no artifact selected from list", func(t *testing.T) {
+			performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+				contextElements: map[ctxpkg.RequestContextKey]interface{}{
+					services.ContextKeyAuthorizedAppVersionID: uuid.FromStringOrNil("de438ddc-98e5-4226-a5f4-fd2d53474879"),
+				},
+				env: &env.AppEnv{
+					AppVersionService: &testAppVersionService{
+						findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
+							require.Equal(t, appVersion.ID.String(), "de438ddc-98e5-4226-a5f4-fd2d53474879")
+							return &models.AppVersion{App: models.App{}, Platform: "ios"}, nil
+						},
+					},
+					BitriseAPI: &testBitriseAPI{
+						getArtifactsFn: func(string, string, string) ([]bitrise.ArtifactListElementResponseModel, error) {
+							return []bitrise.ArtifactListElementResponseModel{
+								bitrise.ArtifactListElementResponseModel{
+									Title: "my-awesome-dev-app.ipa",
+								},
+							}, nil
+						},
+						getArtifactPublicPageURLFn: func(string, string, string, string) (string, error) {
+							return "", nil
+						},
+						getAppDetailsFn: func(string, string) (*bitrise.AppDetails, error) {
+							return nil, errors.New("SOME-BITRISE-API-ERROR")
+						},
+					},
+				},
+				expectedStatusCode: http.StatusNotFound,
+				expectedResponse:   httpresponse.StandardErrorRespModel{Message: "Not Found"},
+			})
+		})
+
 		t.Run("when error happens at fetching app data from Bitrise API", func(t *testing.T) {
 			performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
 				contextElements: map[ctxpkg.RequestContextKey]interface{}{
@@ -629,7 +662,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 			})
 		})
 
-		t.Run("when error happens at fetching app data from Bitrise API", func(t *testing.T) {
+		t.Run("when no artifact selected from list", func(t *testing.T) {
 			performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
 				contextElements: map[ctxpkg.RequestContextKey]interface{}{
 					services.ContextKeyAuthorizedAppVersionID: uuid.FromStringOrNil("de438ddc-98e5-4226-a5f4-fd2d53474879"),
@@ -646,6 +679,39 @@ func Test_AppVersionGetHandler(t *testing.T) {
 							return []bitrise.ArtifactListElementResponseModel{
 								bitrise.ArtifactListElementResponseModel{
 									Title: "my-awesome-dev-app.apk",
+								},
+							}, nil
+						},
+						getArtifactPublicPageURLFn: func(string, string, string, string) (string, error) {
+							return "", nil
+						},
+						getAppDetailsFn: func(string, string) (*bitrise.AppDetails, error) {
+							return nil, errors.New("SOME-BITRISE-API-ERROR")
+						},
+					},
+				},
+				expectedStatusCode: http.StatusNotFound,
+				expectedResponse:   httpresponse.StandardErrorRespModel{Message: "Not Found"},
+			})
+		})
+
+		t.Run("when error happens at fetching app data from Bitrise API", func(t *testing.T) {
+			performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+				contextElements: map[ctxpkg.RequestContextKey]interface{}{
+					services.ContextKeyAuthorizedAppVersionID: uuid.FromStringOrNil("de438ddc-98e5-4226-a5f4-fd2d53474879"),
+				},
+				env: &env.AppEnv{
+					AppVersionService: &testAppVersionService{
+						findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
+							require.Equal(t, appVersion.ID.String(), "de438ddc-98e5-4226-a5f4-fd2d53474879")
+							return &models.AppVersion{App: models.App{}, Platform: "android"}, nil
+						},
+					},
+					BitriseAPI: &testBitriseAPI{
+						getArtifactsFn: func(string, string, string) ([]bitrise.ArtifactListElementResponseModel, error) {
+							return []bitrise.ArtifactListElementResponseModel{
+								bitrise.ArtifactListElementResponseModel{
+									Title: "my-awesome-dev-app.aab",
 									ArtifactMeta: &bitrise.ArtifactMeta{
 										AppInfo: bitrise.AppInfo{MinimumOS: "10.1"},
 									},

@@ -16,26 +16,26 @@ func appVersionGetIosHelper(env *env.AppEnv, w http.ResponseWriter,
 	publishEnabled := false
 	publicInstallPageEnabled := false
 	publicInstallPageArtifactSlug := ""
-	var selectedArtifact bitrise.ArtifactListElementResponseModel
+	var selectedArtifact *bitrise.ArtifactListElementResponseModel
 
 	for _, artifact := range artifacts {
 		if artifact.IsIPA() {
 			if artifact.HasAppStoreDistributionType() {
 				publishEnabled = true
-				selectedArtifact = artifact
+				selectedArtifact = &artifact
 			}
 			if artifact.HasDebugDistributionType() {
 				publicInstallPageEnabled = true
 				publicInstallPageArtifactSlug = artifact.Slug
-				if selectedArtifact == (bitrise.ArtifactListElementResponseModel{}) {
-					selectedArtifact = artifact
+				if selectedArtifact == nil {
+					selectedArtifact = &artifact
 				}
 			}
 		}
 		if artifact.IsXCodeArchive() {
 			publishEnabled = true
-			if selectedArtifact == (bitrise.ArtifactListElementResponseModel{}) {
-				selectedArtifact = artifact
+			if selectedArtifact == nil {
+				selectedArtifact = &artifact
 			}
 		}
 	}
@@ -53,12 +53,16 @@ func appVersionGetIosHelper(env *env.AppEnv, w http.ResponseWriter,
 		}
 	}
 
+	if selectedArtifact == nil {
+		return httpresponse.RespondWithNotFoundError(w)
+	}
+
 	appDetails, err := env.BitriseAPI.GetAppDetails(appVersion.App.BitriseAPIToken, appVersion.App.AppSlug)
 	if err != nil {
 		return errors.WithStack(err)
 	}
 
-	responseData, err := newArtifactVersionGetResponse(appVersion, selectedArtifact, artifactPublicInstallPageURL, appDetails, publishEnabled)
+	responseData, err := newArtifactVersionGetResponse(appVersion, *selectedArtifact, artifactPublicInstallPageURL, appDetails, publishEnabled)
 	if err != nil {
 		return errors.WithStack(err)
 	}
