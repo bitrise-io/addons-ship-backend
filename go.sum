@@ -22,6 +22,8 @@ github.com/bitrise-io/api-utils v0.0.0-20190705083405-8c3ec4e142bc h1:Oo293Q+YpN
 github.com/bitrise-io/api-utils v0.0.0-20190705083405-8c3ec4e142bc/go.mod h1:FwXTOBcd4twhPfBS61C83oz3QkrUjIawlZc4T/EBqEc=
 github.com/bitrise-io/go-crypto v0.0.0-20190621130134-8c226ef6074e h1:Xt59QWp2gGHWaXHTpvzkIITa9j7zIbZDuAsHg9QkamA=
 github.com/bitrise-io/go-crypto v0.0.0-20190621130134-8c226ef6074e/go.mod h1:NuU9NwkIiHHcV3nXuGa2vxxadPUDujRRJjhf+OPZ5Mk=
+github.com/bitrise-io/go-crypto v0.0.0-20190716130036-2cb4b060f33a h1:X2UcVlp0ntttaUy45VqW6WWTfLxtvGvqFIzHz4IztIU=
+github.com/bitrise-io/go-crypto v0.0.0-20190716130036-2cb4b060f33a/go.mod h1:NuU9NwkIiHHcV3nXuGa2vxxadPUDujRRJjhf+OPZ5Mk=
 github.com/bitrise-io/go-utils v0.0.0-20190507082533-8898129615c9 h1:/VXAK6LQD11bNkHiz/w0MPeO7y4wPCrsoyPnYJ+0qbA=
 github.com/bitrise-io/go-utils v0.0.0-20190507082533-8898129615c9/go.mod h1:Pp48eQd8BSNEzWWTBxdFUd/ufS5b5Bgkmt9D5NedjWg=
 github.com/c2fo/testify v0.0.0-20150827203832-fba96363964a h1:lXGVReN5qeiyu6AZpIgYJN1PoXSy1koT3nUP3ZRMWm0=
