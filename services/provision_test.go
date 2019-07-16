@@ -9,6 +9,7 @@ import (
 	"github.com/bitrise-io/addons-ship-backend/services"
 	"github.com/bitrise-io/api-utils/httpresponse"
 	"github.com/bitrise-io/go-crypto/crypto"
+	"github.com/bitrise-io/go-utils/envutil"
 	"github.com/c2fo/testify/require"
 	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
@@ -71,6 +72,9 @@ func Test_ProvisionHandler(t *testing.T) {
 	})
 
 	t.Run("ok when app not exists", func(t *testing.T) {
+		revokeFn, err := envutil.RevokableSetenv("APP_WEBHOOK_SECRET_ENCRYPT_KEY", "06042e86a7bd421c642c8c3e4ab13840")
+		require.NoError(t, err)
+
 		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
 			env: &env.AppEnv{
 				AddonHostURL: "http://ship.addon.url",
@@ -114,6 +118,8 @@ func Test_ProvisionHandler(t *testing.T) {
 				},
 			},
 		})
+
+		require.NoError(t, revokeFn())
 	})
 
 	t.Run("when request body is invalid", func(t *testing.T) {
@@ -166,6 +172,9 @@ func Test_ProvisionHandler(t *testing.T) {
 	})
 
 	t.Run("when failed to register webhook", func(t *testing.T) {
+		revokeFn, err := envutil.RevokableSetenv("APP_WEBHOOK_SECRET_ENCRYPT_KEY", "06042e86a7bd421c642c8c3e4ab13840")
+		require.NoError(t, err)
+
 		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
 			env: &env.AppEnv{
 				AddonHostURL: "http://ship.addon.url",
@@ -194,5 +203,7 @@ func Test_ProvisionHandler(t *testing.T) {
 			requestBody:         `{"app_slug":"test-app-slug","bitrise_api_token":"test-bitrise-api-token","plan":"free"}`,
 			expectedInternalErr: "SOME-BITRISE-API-ERROR",
 		})
+
+		require.NoError(t, revokeFn())
 	})
 }
