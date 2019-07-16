@@ -7,6 +7,8 @@ import (
 
 	"github.com/bitrise-io/addons-ship-backend/dataservices"
 	"github.com/bitrise-io/addons-ship-backend/models"
+	"github.com/bitrise-io/go-utils/envutil"
+	"github.com/c2fo/testify/require"
 	"github.com/jinzhu/gorm"
 )
 
@@ -60,9 +62,15 @@ func closeTestDB() {
 	dataservices.Close()
 }
 
+func exportEnvVarsForTests(t *testing.T) {
+	_, err := envutil.RevokableSetenv("APP_WEBHOOK_SECRET_ENCRYPT_KEY", "06042e86a7bd421c642c8c3e4ab13840")
+	require.NoError(t, err)
+}
+
 func prepareDB(t *testing.T) func() {
 	t.Log("prepare DB")
 	recreateAndInitTestDB(t)
+	exportEnvVarsForTests(t)
 	return closeTestDB
 }
 

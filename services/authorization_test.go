@@ -12,7 +12,6 @@ import (
 	"github.com/bitrise-io/api-utils/httpresponse"
 	"github.com/bitrise-io/api-utils/providers"
 	"github.com/bitrise-io/go-crypto/crypto"
-	"github.com/bitrise-io/go-utils/envutil"
 	"github.com/c2fo/testify/require"
 	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
@@ -1173,8 +1172,6 @@ func Test_AuthorizeBuildWebhookForAppAccessFunc(t *testing.T) {
 		"Bitrise-App-Id":         "test-app-slug",
 		"Bitrise-Hook-Signature": "sha256=0d86929661b1c7b216ca6a7ef4abe740ee6dc07d4afc2f21d78c888235d88713",
 	}
-	revokeFn, err := envutil.RevokableSetenv("APP_WEBHOOK_SECRET_ENCRYPT_KEY", "06042e86a7bd421c642c8c3e4ab13840")
-	require.NoError(t, err)
 
 	t.Run("ok", func(t *testing.T) {
 		handler := services.AuthorizeBuildWebhookForAppAccessFunc(&env.AppEnv{
@@ -1321,6 +1318,4 @@ func Test_AuthorizeBuildWebhookForAppAccessFunc(t *testing.T) {
 			expectedResponse:   httpresponse.StandardErrorRespModel{Message: "Unauthorized"},
 		})
 	})
-
-	require.NoError(t, revokeFn())
 }
