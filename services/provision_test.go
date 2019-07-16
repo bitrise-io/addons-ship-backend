@@ -171,6 +171,41 @@ func Test_ProvisionHandler(t *testing.T) {
 		})
 	})
 
+	t.Run("when it's failed to get secret from app", func(t *testing.T) {
+		revokeFn, err := envutil.RevokableSetenv("APP_WEBHOOK_SECRET_ENCRYPT_KEY", "06042e86a7bd421c642c8c3e4ab13840")
+		require.NoError(t, err)
+
+		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+			env: &env.AppEnv{
+				AddonHostURL: "http://ship.addon.url",
+				AppService: &testAppService{
+					findFn: func(app *models.App) (*models.App, error) {
+						require.Equal(t, "test-app-slug", app.AppSlug)
+						return nil, gorm.ErrRecordNotFound
+					},
+					createFn: func(app *models.App) (*models.App, error) {
+						app.APIToken = "test-api-token"
+
+						iv, err := crypto.GenerateIV()
+						require.NoError(t, err)
+
+						app.EncryptedSecretIV = iv
+						return app, nil
+					},
+				},
+				BitriseAPI: &testBitriseAPI{
+					registerWebhookFn: func(authToken, appSlug, secret, callbackURL string) error {
+						return nil
+					},
+				},
+			},
+			requestBody:         `{"app_slug":"test-app-slug","bitrise_api_token":"test-bitrise-api-token","plan":"free"}`,
+			expectedInternalErr: "cipher: message authentication failed",
+		})
+
+		require.NoError(t, revokeFn())
+	})
+
 	t.Run("when failed to register webhook", func(t *testing.T) {
 		revokeFn, err := envutil.RevokableSetenv("APP_WEBHOOK_SECRET_ENCRYPT_KEY", "06042e86a7bd421c642c8c3e4ab13840")
 		require.NoError(t, err)

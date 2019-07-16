@@ -1243,6 +1243,38 @@ func Test_AuthorizeBuildWebhookForAppAccessFunc(t *testing.T) {
 		})
 	})
 
+	t.Run("when no app found", func(t *testing.T) {
+		handler := services.AuthorizeBuildWebhookForAppAccessFunc(&env.AppEnv{
+			AppService: &testAppService{
+				findFn: func(app *models.App) (*models.App, error) {
+					return nil, gorm.ErrRecordNotFound
+				},
+			},
+		}, authHandler)
+		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
+			requestHeaders:     testRequestHeaders,
+			requestPayload:     map[string]string{"app_slug": "test-app-slug"},
+			expectedStatusCode: http.StatusNotFound,
+			expectedResponse:   httpresponse.StandardErrorRespModel{Message: "Not Found"},
+		})
+	})
+
+	t.Run("when error happens at app finding", func(t *testing.T) {
+		handler := services.AuthorizeBuildWebhookForAppAccessFunc(&env.AppEnv{
+			AppService: &testAppService{
+				findFn: func(app *models.App) (*models.App, error) {
+					return nil, errors.New("SOME-SQL-ERROR")
+				},
+			},
+		}, authHandler)
+		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
+			requestHeaders:     testRequestHeaders,
+			requestPayload:     map[string]string{"app_slug": "test-app-slug"},
+			expectedStatusCode: http.StatusInternalServerError,
+			expectedResponse:   httpresponse.StandardErrorRespModel{Message: "Internal Server Error"},
+		})
+	})
+
 	t.Run("when encrypted secret IV is empty", func(t *testing.T) {
 		handler := services.AuthorizeBuildWebhookForAppAccessFunc(&env.AppEnv{
 			AppService: &testAppService{
@@ -1260,6 +1292,28 @@ func Test_AuthorizeBuildWebhookForAppAccessFunc(t *testing.T) {
 			expectedResponse: map[string]interface{}{
 				"authorizedAppID": testAppID,
 			},
+		})
+	})
+
+	t.Run("when secret cannot be get from app", func(t *testing.T) {
+		handler := services.AuthorizeBuildWebhookForAppAccessFunc(&env.AppEnv{
+			AppService: &testAppService{
+				findFn: func(app *models.App) (*models.App, error) {
+					require.Equal(t, "test-app-slug", app.AppSlug)
+					app.ID = testAppID
+					iv, err := crypto.GenerateIV()
+					require.NoError(t, err)
+
+					app.EncryptedSecretIV = iv
+					return app, nil
+				},
+			},
+		}, authHandler)
+		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
+			requestHeaders:     testRequestHeaders,
+			requestPayload:     map[string]string{"app_slug": "test-app-slug"},
+			expectedStatusCode: http.StatusInternalServerError,
+			expectedResponse:   httpresponse.StandardErrorRespModel{Message: "Internal Server Error"},
 		})
 	})
 

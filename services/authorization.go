@@ -295,8 +295,12 @@ func AuthorizeBuildWebhookForAppAccessFunc(env *env.AppEnv, h http.Handler) http
 		}
 
 		app, err := env.AppService.Find(&models.App{AppSlug: appSlug})
-		if err != nil {
-			httpresponse.RespondWithUnauthorizedNoErr(w)
+		switch {
+		case errors.Cause(err) == gorm.ErrRecordNotFound:
+			httpresponse.RespondWithNotFoundErrorNoErr(w)
+			return
+		case err != nil:
+			httpresponse.RespondWithInternalServerError(w, err)
 			return
 		}
 
