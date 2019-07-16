@@ -106,8 +106,16 @@ func New(appEnv *env.AppEnv) *mux.Router {
 			handler: services.AppContactPostHandler, allowedMethods: []string{"POST", "OPTIONS"},
 		},
 		{
+			path: "/apps/{app-slug}/contacts", middleware: services.AuthorizedAppMiddleware(appEnv),
+			handler: services.AppContactsGetHandler, allowedMethods: []string{"GET", "OPTIONS"},
+		},
+		{
 			path: "/apps/{app-slug}/contacts/{contact-id}", middleware: services.AuthorizedAppContactMiddleware(appEnv),
 			handler: services.AppContactPutHandler, allowedMethods: []string{"PUT", "OPTIONS"},
+		},
+		{
+			path: "/apps/{app-slug}/contacts/{contact-id}", middleware: services.AuthorizedAppContactMiddleware(appEnv),
+			handler: services.AppContactDeleteHandler, allowedMethods: []string{"DELETE", "OPTIONS"},
 		},
 		{
 			path: "/task-webhook", middleware: services.AuthorizeForWebhookHandling(appEnv),

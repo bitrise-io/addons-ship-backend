@@ -29,6 +29,17 @@ func (s *AppContactService) Find(appContact *AppContact) (*AppContact, error) {
 	return appContact, nil
 }
 
+// FindAll ...
+func (s *AppContactService) FindAll(app *App) ([]AppContact, error) {
+	var appContacts []AppContact
+	err := s.DB.Where(map[string]interface{}{"app_id": app.ID}).
+		Find(&appContacts).Error
+	if err != nil {
+		return nil, err
+	}
+	return appContacts, nil
+}
+
 // Update ...
 func (s *AppContactService) Update(appContact *AppContact, whitelist []string) error {
 	updateData, err := s.UpdateData(*appContact, whitelist)

@@ -3,10 +3,11 @@ package services_test
 import "github.com/bitrise-io/addons-ship-backend/models"
 
 type testAppContactService struct {
-	createFn func(*models.AppContact) (*models.AppContact, error)
-	findFn   func(*models.AppContact) (*models.AppContact, error)
-	updateFn func(*models.AppContact, []string) error
-	deleteFn func(*models.AppContact) error
+	createFn  func(*models.AppContact) (*models.AppContact, error)
+	findFn    func(*models.AppContact) (*models.AppContact, error)
+	findAllFn func(app *models.App) ([]models.AppContact, error)
+	updateFn  func(*models.AppContact, []string) error
+	deleteFn  func(*models.AppContact) error
 }
 
 func (a *testAppContactService) Create(appContact *models.AppContact) (*models.AppContact, error) {
@@ -21,6 +22,13 @@ func (a *testAppContactService) Find(appContact *models.AppContact) (*models.App
 		return a.findFn(appContact)
 	}
 	panic("You have to override AppContactService.Find function in tests")
+}
+
+func (a *testAppContactService) FindAll(app *models.App) ([]models.AppContact, error) {
+	if a.findAllFn != nil {
+		return a.findAllFn(app)
+	}
+	panic("You have to override AppContactService.FindAll function in tests")
 }
 
 func (a *testAppContactService) Update(appContact *models.AppContact, whitelist []string) error {
