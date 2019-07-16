@@ -9,7 +9,10 @@ import (
 	"github.com/bitrise-io/addons-ship-backend/services"
 	ctxpkg "github.com/bitrise-io/api-utils/context"
 	"github.com/bitrise-io/api-utils/handlers"
+	"github.com/bitrise-io/api-utils/httpresponse"
 	"github.com/bitrise-io/api-utils/providers"
+	"github.com/bitrise-io/go-crypto/crypto"
+	"github.com/bitrise-io/go-utils/envutil"
 	"github.com/c2fo/testify/require"
 	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
@@ -1153,4 +1156,171 @@ func Test_AuthorizeForAppContactAccessHandlerFunc(t *testing.T) {
 			},
 		})
 	})
+}
+
+func Test_AuthorizeBuildWebhookForAppAccessFunc(t *testing.T) {
+	authHandler := &handlers.TestAuthHandler{
+		ContextElementList: map[string]ctxpkg.RequestContextKey{
+			"authorizedAppID": services.ContextKeyAuthorizedAppID,
+		},
+	}
+	httpMethod := "POST"
+	url := "/webhook"
+
+	testAppID := uuid.FromStringOrNil("211afc15-127a-40f9-8cbe-1dadc1f86cdf")
+
+	testRequestHeaders := map[string]string{
+		"Bitrise-App-Id":         "test-app-slug",
+		"Bitrise-Hook-Signature": "sha256=0d86929661b1c7b216ca6a7ef4abe740ee6dc07d4afc2f21d78c888235d88713",
+	}
+	revokeFn, err := envutil.RevokableSetenv("APP_WEBHOOK_SECRET_ENCRYPT_KEY", "06042e86a7bd421c642c8c3e4ab13840")
+	require.NoError(t, err)
+
+	t.Run("ok", func(t *testing.T) {
+		handler := services.AuthorizeBuildWebhookForAppAccessFunc(&env.AppEnv{
+			AppService: &testAppService{
+				findFn: func(app *models.App) (*models.App, error) {
+					require.Equal(t, "test-app-slug", app.AppSlug)
+					app.ID = testAppID
+					iv, err := crypto.GenerateIV()
+					require.NoError(t, err)
+					encryptedSecret, err := crypto.AES256GCMCipher("my-super-secret", iv, "06042e86a7bd421c642c8c3e4ab13840")
+					require.NoError(t, err)
+
+					app.EncryptedSecret = encryptedSecret
+					app.EncryptedSecretIV = iv
+					return app, nil
+				},
+			},
+		}, authHandler)
+		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
+			requestHeaders:     testRequestHeaders,
+			requestPayload:     map[string]string{"app_slug": "test-app-slug"},
+			expectedStatusCode: http.StatusOK,
+			expectedResponse: map[string]interface{}{
+				"authorizedAppID": testAppID,
+			},
+		})
+	})
+
+	t.Run("when no app slug provided in header, it retrieves unauthorized", func(t *testing.T) {
+		testRequestHeaders := map[string]string{
+			"Bitrise-Hook-Signature": "sha256=0d86929661b1c7b216ca6a7ef4abe740ee6dc07d4afc2f21d78c888235d88713",
+		}
+		handler := services.AuthorizeBuildWebhookForAppAccessFunc(&env.AppEnv{
+			AppService: &testAppService{
+				findFn: func(app *models.App) (*models.App, error) {
+					require.Equal(t, "test-app-slug", app.AppSlug)
+					app.ID = testAppID
+					iv, err := crypto.GenerateIV()
+					require.NoError(t, err)
+					encryptedSecret, err := crypto.AES256GCMCipher("my-super-secret", iv, "06042e86a7bd421c642c8c3e4ab13840")
+					require.NoError(t, err)
+
+					app.EncryptedSecret = encryptedSecret
+					app.EncryptedSecretIV = iv
+					return app, nil
+				},
+			},
+		}, authHandler)
+		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
+			requestHeaders:     testRequestHeaders,
+			requestPayload:     map[string]string{"app_slug": "test-app-slug"},
+			expectedStatusCode: http.StatusUnauthorized,
+			expectedResponse:   httpresponse.StandardErrorRespModel{Message: "Unauthorized"},
+		})
+	})
+
+	t.Run("when there is no app service defined", func(t *testing.T) {
+		handler := services.AuthorizeBuildWebhookForAppAccessFunc(&env.AppEnv{
+			AppService: nil,
+		}, authHandler)
+		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
+			requestHeaders:     testRequestHeaders,
+			requestPayload:     map[string]string{"app_slug": "test-app-slug"},
+			expectedStatusCode: http.StatusInternalServerError,
+			expectedResponse:   httpresponse.StandardErrorRespModel{Message: "Internal Server Error"},
+		})
+	})
+
+	t.Run("when encrypted secret IV is empty", func(t *testing.T) {
+		handler := services.AuthorizeBuildWebhookForAppAccessFunc(&env.AppEnv{
+			AppService: &testAppService{
+				findFn: func(app *models.App) (*models.App, error) {
+					require.Equal(t, "test-app-slug", app.AppSlug)
+					app.ID = testAppID
+					return app, nil
+				},
+			},
+		}, authHandler)
+		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
+			requestHeaders:     testRequestHeaders,
+			requestPayload:     map[string]string{"app_slug": "test-app-slug"},
+			expectedStatusCode: http.StatusOK,
+			expectedResponse: map[string]interface{}{
+				"authorizedAppID": testAppID,
+			},
+		})
+	})
+
+	t.Run("when secret is empty", func(t *testing.T) {
+		testRequestHeaders := map[string]string{
+			"Bitrise-App-Id": "test-app-slug",
+		}
+		handler := services.AuthorizeBuildWebhookForAppAccessFunc(&env.AppEnv{
+			AppService: &testAppService{
+				findFn: func(app *models.App) (*models.App, error) {
+					require.Equal(t, "test-app-slug", app.AppSlug)
+					app.ID = testAppID
+					iv, err := crypto.GenerateIV()
+					require.NoError(t, err)
+					encryptedSecret, err := crypto.AES256GCMCipher("", iv, "06042e86a7bd421c642c8c3e4ab13840")
+					require.NoError(t, err)
+
+					app.EncryptedSecret = encryptedSecret
+					app.EncryptedSecretIV = iv
+					return app, nil
+				},
+			},
+		}, authHandler)
+		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
+			requestHeaders:     testRequestHeaders,
+			requestPayload:     map[string]string{"app_slug": "test-app-slug"},
+			expectedStatusCode: http.StatusOK,
+			expectedResponse: map[string]interface{}{
+				"authorizedAppID": testAppID,
+			},
+		})
+	})
+
+	t.Run("when calculated signature doesn't match with the one in the header", func(t *testing.T) {
+		testRequestHeaders := map[string]string{
+			"Bitrise-App-Id":         "test-app-slug",
+			"Bitrise-Hook-Signature": "sha256=0d86929661b1c7b216ca6a7ef4abe740ee6dc07d4afc2f21d78c888235d88713",
+		}
+		handler := services.AuthorizeBuildWebhookForAppAccessFunc(&env.AppEnv{
+			AppService: &testAppService{
+				findFn: func(app *models.App) (*models.App, error) {
+					require.Equal(t, "test-app-slug", app.AppSlug)
+					app.ID = testAppID
+					iv, err := crypto.GenerateIV()
+					require.NoError(t, err)
+					encryptedSecret, err := crypto.AES256GCMCipher("my-super-secret", iv, "06042e86a7bd421c642c8c3e4ab13840")
+					require.NoError(t, err)
+
+					app.EncryptedSecret = encryptedSecret
+					app.EncryptedSecretIV = iv
+					return app, nil
+				},
+			},
+		}, authHandler)
+		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
+			requestHeaders:     testRequestHeaders,
+			requestPayload:     map[string]string{"app_slug": "another-app-slug"},
+			expectedStatusCode: http.StatusUnauthorized,
+			expectedResponse:   httpresponse.StandardErrorRespModel{Message: "Unauthorized"},
+		})
+	})
+
+	require.NoError(t, revokeFn())
 }
