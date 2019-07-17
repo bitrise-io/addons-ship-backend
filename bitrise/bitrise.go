@@ -29,6 +29,7 @@ type APIInterface interface {
 	GetAndroidKeystoreFiles(authToken, appSlug string) ([]AndroidKeystoreFile, error)
 	GetServiceAccountFiles(authToken, appSlug string) ([]GenericProjectFile, error)
 	TriggerDENTask(params TaskParams) (*TriggerResponse, error)
+	RegisterWebhook(authToken, appSlug, secret, callbackURL string) error
 }
 
 // API ...
@@ -50,8 +51,16 @@ func New() *API {
 	}
 }
 
-func (a *API) doRequest(authToken, method, path string) (*http.Response, error) {
-	req, err := http.NewRequest(method, fmt.Sprintf("%s/%s", a.url, path), nil)
+func (a *API) doRequest(authToken, method, path string, requestPayload interface{}) (*http.Response, error) {
+	var payloadBytes []byte
+	if requestPayload != nil {
+		var err error
+		payloadBytes, err = json.Marshal(requestPayload)
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
+	}
+	req, err := http.NewRequest(method, fmt.Sprintf("%s/%s", a.url, path), bytes.NewBuffer(payloadBytes))
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -120,7 +129,7 @@ func (a *API) GetArtifacts(authToken, appSlug, buildSlug string) ([]ArtifactList
 
 // GetArtifactPublicInstallPageURL ...
 func (a *API) GetArtifactPublicInstallPageURL(authToken, appSlug, buildSlug, artifactSlug string) (string, error) {
-	resp, err := a.doRequest(authToken, "GET", fmt.Sprintf("/apps/%s/builds/%s/artifacts/%s", appSlug, buildSlug, artifactSlug))
+	resp, err := a.doRequest(authToken, "GET", fmt.Sprintf("/apps/%s/builds/%s/artifacts/%s", appSlug, buildSlug, artifactSlug), nil)
 	if err != nil {
 		return "", errors.WithStack(err)
 	}
@@ -137,7 +146,7 @@ func (a *API) GetArtifactPublicInstallPageURL(authToken, appSlug, buildSlug, art
 
 // GetAppDetails ...
 func (a *API) GetAppDetails(authToken, appSlug string) (*AppDetails, error) {
-	resp, err := a.doRequest(authToken, "GET", "/apps/"+appSlug)
+	resp, err := a.doRequest(authToken, "GET", "/apps/"+appSlug, nil)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -154,7 +163,7 @@ func (a *API) GetAppDetails(authToken, appSlug string) (*AppDetails, error) {
 
 // GetProvisioningProfiles ...
 func (a *API) GetProvisioningProfiles(authToken, appSlug string) ([]ProvisioningProfile, error) {
-	resp, err := a.doRequest(authToken, "GET", fmt.Sprintf("/apps/%s/provisioning-profiles", appSlug))
+	resp, err := a.doRequest(authToken, "GET", fmt.Sprintf("/apps/%s/provisioning-profiles", appSlug), nil)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -171,7 +180,7 @@ func (a *API) GetProvisioningProfiles(authToken, appSlug string) ([]Provisioning
 
 // GetCodeSigningIdentities ...
 func (a *API) GetCodeSigningIdentities(authToken, appSlug string) ([]CodeSigningIdentity, error) {
-	resp, err := a.doRequest(authToken, "GET", fmt.Sprintf("/apps/%s/build-certificates", appSlug))
+	resp, err := a.doRequest(authToken, "GET", fmt.Sprintf("/apps/%s/build-certificates", appSlug), nil)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -188,7 +197,7 @@ func (a *API) GetCodeSigningIdentities(authToken, appSlug string) ([]CodeSigning
 
 // GetAndroidKeystoreFiles ...
 func (a *API) GetAndroidKeystoreFiles(authToken, appSlug string) ([]AndroidKeystoreFile, error) {
-	resp, err := a.doRequest(authToken, "GET", fmt.Sprintf("/apps/%s/android-keystore-files", appSlug))
+	resp, err := a.doRequest(authToken, "GET", fmt.Sprintf("/apps/%s/android-keystore-files", appSlug), nil)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -205,7 +214,7 @@ func (a *API) GetAndroidKeystoreFiles(authToken, appSlug string) ([]AndroidKeyst
 
 // GetServiceAccountFiles ...
 func (a *API) GetServiceAccountFiles(authToken, appSlug string) ([]GenericProjectFile, error) {
-	resp, err := a.doRequest(authToken, "GET", fmt.Sprintf("/apps/%s/generic-project-files", appSlug))
+	resp, err := a.doRequest(authToken, "GET", fmt.Sprintf("/apps/%s/generic-project-files", appSlug), nil)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -263,12 +272,31 @@ func (a *API) TriggerDENTask(params TaskParams) (*TriggerResponse, error) {
 	return &responseModel, nil
 }
 
+// RegisterWebhook ...
+func (a *API) RegisterWebhook(authToken, appSlug, secret, callbackURL string) error {
+	requestBody := map[string]interface{}{
+		"events": []string{"build"},
+		"secret": secret,
+		"url":    callbackURL,
+	}
+	resp, err := a.doRequest(authToken, "POST", fmt.Sprintf("/apps/%s/outgoing-webhooks", appSlug), requestBody)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	defer httpresponse.BodyCloseWithErrorLog(resp)
+	if resp.StatusCode != http.StatusCreated {
+		return errors.Errorf("Failed to register webhook: status: %d", resp.StatusCode)
+	}
+	return nil
+}
+
 func (a *API) listArtifacts(authToken, appSlug, buildSlug, next string) (*artifactListResponseModel, error) {
 	path := fmt.Sprintf("/apps/%s/builds/%s/artifacts", appSlug, buildSlug)
 	if next != "" {
 		path = fmt.Sprintf("%s?next=%s", path, next)
 	}
-	resp, err := a.doRequest(authToken, "GET", path)
+	resp, err := a.doRequest(authToken, "GET", path, nil)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}

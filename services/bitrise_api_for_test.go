@@ -12,6 +12,7 @@ type testBitriseAPI struct {
 	getAndroidKeystoreFilesFn  func(string, string) ([]bitrise.AndroidKeystoreFile, error)
 	getServiceAccountFilesFn   func(string, string) ([]bitrise.GenericProjectFile, error)
 	triggerDENTaskFn           func(params bitrise.TaskParams) (*bitrise.TriggerResponse, error)
+	registerWebhookFn          func(string, string, string, string) error
 }
 
 func (a *testBitriseAPI) GetArtifactData(authToken, appSlug, buildSlug string) (*bitrise.ArtifactData, error) {
@@ -75,4 +76,11 @@ func (a *testBitriseAPI) TriggerDENTask(params bitrise.TaskParams) (*bitrise.Tri
 		panic("You have to override TriggerDENTask function in tests")
 	}
 	return a.triggerDENTaskFn(params)
+}
+
+func (a *testBitriseAPI) RegisterWebhook(authToken, appSlug, secret, callbackURL string) error {
+	if a.registerWebhookFn == nil {
+		panic("You have to override RegisterWebhook function in tests")
+	}
+	return a.registerWebhookFn(authToken, appSlug, secret, callbackURL)
 }

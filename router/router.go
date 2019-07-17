@@ -118,7 +118,7 @@ func New(appEnv *env.AppEnv) *mux.Router {
 			handler: services.AppContactDeleteHandler, allowedMethods: []string{"DELETE", "OPTIONS"},
 		},
 		{
-			path: "/webhook", middleware: services.AuthorizeForWebhookHandling(appEnv),
+			path: "/task-webhook", middleware: services.AuthorizeForWebhookHandling(appEnv),
 			handler: services.WebhookPostHandler, allowedMethods: []string{"POST", "OPTIONS"},
 		},
 	} {
