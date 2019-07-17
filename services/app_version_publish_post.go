@@ -2,7 +2,9 @@ package services
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"os"
 
 	rice "github.com/GeertJohan/go.rice"
 	"github.com/bitrise-io/addons-ship-backend/bitrise"
@@ -40,11 +42,6 @@ func AppVersionPublishPostHandler(env *env.AppEnv, w http.ResponseWriter, r *htt
 	case err != nil:
 		return errors.Wrap(err, "SQL Error")
 	}
-	var workflowToTrigger, stackIDForTrigger string
-	if appVersion.Platform == "ios" {
-		workflowToTrigger = "resign_archive_app_store"
-		stackIDForTrigger = "osx-vs4mac-stable"
-	}
 
 	if env.BitriseAPI == nil {
 		return errors.New("No Bitrise API Service defined for handler")
@@ -64,16 +61,33 @@ func AppVersionPublishPostHandler(env *env.AppEnv, w http.ResponseWriter, r *htt
 		return errors.WithStack(err)
 	}
 
-	inlineEnvs := map[string]string{
-		"BITRISE_APP_SLUG":      appVersion.App.AppSlug,
-		"BITRISE_BUILD_SLUG":    appVersion.BuildSlug,
-		"BITRISE_ARTIFACT_SLUG": artifactData.Slug,
+	var workflowToTrigger, stackIDForTrigger string
+	var inlineEnvs, secrets map[string]string
+	switch appVersion.Platform {
+	case "ios":
+		workflowToTrigger = "resign_archive_app_store"
+		stackIDForTrigger = "osx-vs4mac-stable"
+		inlineEnvs = map[string]string{
+			"BITRISE_APP_SLUG":      appVersion.App.AppSlug,
+			"BITRISE_BUILD_SLUG":    appVersion.BuildSlug,
+			"BITRISE_ARTIFACT_SLUG": artifactData.Slug,
+		}
+		secrets = map[string]string{"BITRISE_ACCESS_TOKEN": appVersion.App.BitriseAPIToken}
+	case "android":
+		workflowToTrigger = "resign_android"
+		stackIDForTrigger = "osx-vs4mac-stable"
+		cloneUser := os.Getenv("ANDROID_PUBLISH_WF_GIT_CLONE_USER")
+		clonePwd := os.Getenv("ANDROID_PUBLISH_WF_GIT_CLONE_PWD")
+		inlineEnvs = map[string]string{
+			"GIT_REPOSITORY_URL": fmt.Sprintf("https://%s:%s@github.com/bitrise-io/addons-ship-bg-worker-task-android", cloneUser, clonePwd),
+		}
 	}
+
 	inlineEnvsBytes, err := json.Marshal(inlineEnvs)
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	secrets := map[string]string{"BITRISE_ACCESS_TOKEN": appVersion.App.BitriseAPIToken}
+
 	secretsBytes, err := json.Marshal(secrets)
 	if err != nil {
 		return errors.WithStack(err)

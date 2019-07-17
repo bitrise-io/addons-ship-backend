@@ -11,6 +11,7 @@ import (
 	"github.com/bitrise-io/addons-ship-backend/services"
 	ctxpkg "github.com/bitrise-io/api-utils/context"
 	"github.com/bitrise-io/api-utils/httpresponse"
+	"github.com/bitrise-io/go-utils/envutil"
 	"github.com/c2fo/testify/require"
 	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
@@ -92,7 +93,7 @@ func Test_AppVersionPublishPostHandler(t *testing.T) {
 		})
 	})
 
-	t.Run("ok - more complex", func(t *testing.T) {
+	t.Run("ok - more complex - ios", func(t *testing.T) {
 		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
 			contextElements: map[ctxpkg.RequestContextKey]interface{}{
 				services.ContextKeyAuthorizedAppVersionID: testAppVersionID,
@@ -140,6 +141,62 @@ func Test_AppVersionPublishPostHandler(t *testing.T) {
 				Data: &bitrise.TriggerResponse{TaskIdentifier: testTaskIdentifier},
 			},
 		})
+	})
+
+	t.Run("ok - more complex - android", func(t *testing.T) {
+		revokeGitUserFn, err := envutil.RevokableSetenv("ANDROID_PUBLISH_WF_GIT_CLONE_USER", "git_user")
+		require.NoError(t, err)
+		revokeGitPwdFn, err := envutil.RevokableSetenv("ANDROID_PUBLISH_WF_GIT_CLONE_PWD", "git_pwd")
+		require.NoError(t, err)
+
+		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppVersionID: testAppVersionID,
+			},
+			env: &env.AppEnv{
+				AddonHostURL: "http://ship.addon.url",
+				AppVersionService: &testAppVersionService{
+					findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
+						require.Equal(t, appVersion.ID, testAppVersionID)
+						return &models.AppVersion{
+							App: models.App{
+								AppSlug:         "test-app-slug",
+								BitriseAPIToken: "bitrise-api-addon-token",
+							},
+							Platform:         "android",
+							AppStoreInfoData: json.RawMessage(`{}`),
+							BuildSlug:        "test-build-slug",
+						}, nil
+					},
+				},
+				BitriseAPI: &testBitriseAPI{
+					getArtifactDataFn: func(apiToken string, appSlug string, buildSlug string) (*bitrise.ArtifactData, error) {
+						require.Equal(t, "bitrise-api-addon-token", apiToken)
+						require.Equal(t, "test-app-slug", appSlug)
+						require.Equal(t, "test-build-slug", buildSlug)
+						return &bitrise.ArtifactData{Slug: "test-artifact-slug"}, nil
+					},
+					triggerDENTaskFn: func(params bitrise.TaskParams) (*bitrise.TriggerResponse, error) {
+						require.Equal(t, `{"GIT_REPOSITORY_URL":"https://git_user:git_pwd@github.com/bitrise-io/addons-ship-bg-worker-task-android"}`, params.InlineEnvs)
+						require.Equal(t, "http://ship.addon.url/task-webhook", params.WebhookURL)
+						require.Equal(t, "resign_android", params.Workflow)
+						return &bitrise.TriggerResponse{TaskIdentifier: testTaskIdentifier}, nil
+					},
+				},
+				PublishTaskService: &testPublishTaskService{
+					createFn: func(publishTask *models.PublishTask) (*models.PublishTask, error) {
+						require.Equal(t, testTaskIdentifier, publishTask.TaskID)
+						return publishTask, nil
+					},
+				},
+			},
+			expectedStatusCode: http.StatusOK,
+			expectedResponse: services.AppVersionPublishResponse{
+				Data: &bitrise.TriggerResponse{TaskIdentifier: testTaskIdentifier},
+			},
+		})
+		require.NoError(t, revokeGitUserFn())
+		require.NoError(t, revokeGitPwdFn())
 	})
 
 	t.Run("when app version not found in database", func(t *testing.T) {
