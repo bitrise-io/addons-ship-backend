@@ -31,7 +31,7 @@ func Test_App_Secret(t *testing.T) {
 	})
 
 	t.Run("when no encrypt key set in env var", func(t *testing.T) {
-		os.Clearenv()
+		require.NoError(t, os.Unsetenv("APP_WEBHOOK_SECRET_ENCRYPT_KEY"))
 		testApp := models.App{}
 		calculatedSecret, err := testApp.Secret()
 		require.EqualError(t, err, "No encrypt key provided")
