@@ -178,7 +178,7 @@ func Test_AppVersionPublishPostHandler(t *testing.T) {
 					},
 					triggerDENTaskFn: func(params bitrise.TaskParams) (*bitrise.TriggerResponse, error) {
 						require.Equal(t, `{"GIT_REPOSITORY_URL":"https://git_user:git_pwd@github.com/bitrise-io/addons-ship-bg-worker-task-android"}`, params.InlineEnvs)
-						require.Equal(t, "http://ship.addon.url/webhook", params.WebhookURL)
+						require.Equal(t, "http://ship.addon.url/task-webhook", params.WebhookURL)
 						require.Equal(t, "resign_android", params.Workflow)
 						return &bitrise.TriggerResponse{TaskIdentifier: testTaskIdentifier}, nil
 					},
