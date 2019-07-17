@@ -4,6 +4,7 @@ package models_test
 
 import (
 	"testing"
+	"time"
 
 	"github.com/bitrise-io/addons-ship-backend/dataservices"
 	"github.com/bitrise-io/addons-ship-backend/models"
@@ -18,15 +19,31 @@ func Test_AppService_Create(t *testing.T) {
 	defer dbCloseCallbackMethod()
 
 	appService := models.AppService{DB: dataservices.GetDB()}
-	testApp := &models.App{
-		AppSlug: "test-app-slug",
-	}
-	createdApp, err := appService.Create(testApp)
-	require.NoError(t, err)
-	require.False(t, createdApp.ID.String() == "")
-	require.False(t, createdApp.CreatedAt.String() == "")
-	require.False(t, createdApp.UpdatedAt.String() == "")
-	require.Equal(t, createdApp.ID, createdApp.AppSettings.AppID)
+
+	t.Run("ok", func(t *testing.T) {
+		testApp := &models.App{
+			AppSlug: "test-app-slug",
+		}
+		createdApp, err := appService.Create(testApp)
+		require.NoError(t, err)
+		require.False(t, createdApp.ID.String() == "")
+		require.False(t, createdApp.CreatedAt == time.Time{})
+		require.False(t, createdApp.UpdatedAt == time.Time{})
+		require.Equal(t, createdApp.ID, createdApp.AppSettings.AppID)
+	})
+
+	t.Run("ok - when encrypted secret IV is filled, no secret will be generated", func(t *testing.T) {
+		testApp := &models.App{
+			AppSlug:           "test-app-slug",
+			EncryptedSecretIV: []byte("somerandombytes"),
+		}
+		createdApp, err := appService.Create(testApp)
+		require.NoError(t, err)
+		require.False(t, createdApp.ID.String() == "")
+		require.False(t, createdApp.CreatedAt == time.Time{})
+		require.False(t, createdApp.UpdatedAt == time.Time{})
+		require.Nil(t, createdApp.EncryptedSecret)
+	})
 }
 
 func Test_AppService_Find(t *testing.T) {

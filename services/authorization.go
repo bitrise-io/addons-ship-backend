@@ -10,6 +10,7 @@ import (
 	"github.com/bitrise-io/addons-ship-backend/models"
 	"github.com/bitrise-io/api-utils/httprequest"
 	"github.com/bitrise-io/api-utils/httpresponse"
+	"github.com/bitrise-io/api-utils/security"
 	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
@@ -275,6 +276,68 @@ func AuthorizeForAppContactAccessHandlerFunc(env *env.AppEnv, h http.Handler) ht
 
 		// Access granted
 		ctx := ContextWithAuthorizedAppContactID(r.Context(), appContact.ID)
+		h.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
+// AuthorizeBuildWebhookForAppAccessFunc ...
+func AuthorizeBuildWebhookForAppAccessFunc(env *env.AppEnv, h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		appSlug := r.Header.Get("Bitrise-App-Id")
+		if appSlug == "" {
+			httpresponse.RespondWithUnauthorizedNoErr(w)
+			return
+		}
+
+		if env.AppService == nil {
+			httpresponse.RespondWithInternalServerError(w, errors.New("No App Service provided"))
+			return
+		}
+
+		app, err := env.AppService.Find(&models.App{AppSlug: appSlug})
+		switch {
+		case errors.Cause(err) == gorm.ErrRecordNotFound:
+			httpresponse.RespondWithNotFoundErrorNoErr(w)
+			return
+		case err != nil:
+			httpresponse.RespondWithInternalServerError(w, err)
+			return
+		}
+
+		if len(app.EncryptedSecretIV) == 0 {
+			ctx := ContextWithAuthorizedAppID(r.Context(), app.ID)
+			h.ServeHTTP(w, r.WithContext(ctx))
+			return
+		}
+
+		appSecret, err := app.Secret()
+		if err != nil {
+			httpresponse.RespondWithInternalServerError(w, err)
+			return
+		}
+		if appSecret == "" {
+			ctx := ContextWithAuthorizedAppID(r.Context(), app.ID)
+			h.ServeHTTP(w, r.WithContext(ctx))
+			return
+		}
+
+		requestPayloadSignature := r.Header.Get("Bitrise-Hook-Signature")
+		payloadBytes, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			httpresponse.RespondWithInternalServerError(w, errors.Wrap(err, "Failed to get request payload"))
+			return
+		}
+
+		r.Body = ioutil.NopCloser(bytes.NewReader(payloadBytes))
+
+		signatureVerifier := security.NewSignatureVerifier(appSecret, string(payloadBytes), requestPayloadSignature)
+		if !signatureVerifier.Verify() {
+			httpresponse.RespondWithUnauthorizedNoErr(w)
+			return
+		}
+
+		// Access granted
+		ctx := ContextWithAuthorizedAppID(r.Context(), app.ID)
 		h.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

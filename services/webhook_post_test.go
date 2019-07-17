@@ -17,7 +17,7 @@ import (
 
 func Test_WebhookPostHandler(t *testing.T) {
 	httpMethod := "POST"
-	url := "/webhook"
+	url := "/task-webhook"
 	handler := services.WebhookPostHandler
 
 	behavesAsServiceCravingHandler(t, httpMethod, url, handler, []string{"AppVersionService", "AppVersionEventService", "WorkerService"}, ControllerTestCase{
