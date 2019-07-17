@@ -43,12 +43,12 @@ func (a *App) BeforeCreate(scope *gorm.Scope) error {
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		var appWebhookCount int64
-		err := scope.DB().Model(&App{}).Where("encrypted_secret_iv = ?", a.EncryptedSecretIV).Count(&appWebhookCount).Error
+		var appCount int64
+		err := scope.DB().Model(&App{}).Where("encrypted_secret_iv = ?", a.EncryptedSecretIV).Count(&appCount).Error
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		if appWebhookCount == 0 {
+		if appCount == 0 {
 			break
 		}
 	}
