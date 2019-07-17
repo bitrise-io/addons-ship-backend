@@ -33,7 +33,6 @@ func (a *App) BeforeCreate(scope *gorm.Scope) error {
 		return nil
 	}
 
-	var err error
 	secret, err := crypto.SecureRandomHex(12)
 	if err != nil {
 		return errors.Wrap(err, "Failed to generate secret")
