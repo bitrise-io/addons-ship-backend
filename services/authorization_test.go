@@ -424,6 +424,7 @@ func Test_AuthorizeForAppVersionAccessHandlerFunc(t *testing.T) {
 			AppVersionService: &testAppVersionService{
 				findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
 					require.Equal(t, appVersion.ID.String(), "de438ddc-98e5-4226-a5f4-fd2d53474879")
+					require.Equal(t, appVersion.AppID.String(), "211afc15-127a-40f9-8cbe-1dadc1f86cdf")
 					return &models.AppVersion{
 						Record: models.Record{ID: uuid.FromStringOrNil("de438ddc-98e5-4226-a5f4-fd2d53474879")},
 					}, nil
@@ -432,8 +433,7 @@ func Test_AuthorizeForAppVersionAccessHandlerFunc(t *testing.T) {
 		}, authHandler)
 		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
 			contextElements: map[ctxpkg.RequestContextKey]interface{}{
-				services.ContextKeyAuthorizedAppID:        uuid.FromStringOrNil("211afc15-127a-40f9-8cbe-1dadc1f86cdf"),
-				services.ContextKeyAuthorizedAppVersionID: uuid.FromStringOrNil("de438ddc-98e5-4226-a5f4-fd2d53474879"),
+				services.ContextKeyAuthorizedAppID: uuid.FromStringOrNil("211afc15-127a-40f9-8cbe-1dadc1f86cdf"),
 			},
 			requestHeaders: map[string]string{
 				"Authorization": "token test-auth-token",
@@ -459,7 +459,7 @@ func Test_AuthorizeForAppVersionAccessHandlerFunc(t *testing.T) {
 		}, authHandler)
 		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
 			contextElements: map[ctxpkg.RequestContextKey]interface{}{
-				services.ContextKeyAuthorizedAppVersionID: uuid.FromStringOrNil("de438ddc-98e5-4226-a5f4-fd2d53474879"),
+				services.ContextKeyAuthorizedAppID: uuid.FromStringOrNil("211afc15-127a-40f9-8cbe-1dadc1f86cdf"),
 			},
 			requestHeaders: map[string]string{
 				"Authorization": "token test-auth-token",
@@ -468,6 +468,33 @@ func Test_AuthorizeForAppVersionAccessHandlerFunc(t *testing.T) {
 			expectedResponse: map[string]interface{}{
 				"message": "Internal Server Error",
 			},
+		})
+	})
+
+	t.Run("when no app id found in context", func(t *testing.T) {
+		handler := services.AuthorizeForAppVersionAccessHandlerFunc(&env.AppEnv{
+			RequestParams: &providers.RequestParamsMock{
+				Params: map[string]string{
+					"version-id": "de438ddc-98e5-4226-a5f4-fd2d53474879",
+				},
+			},
+			AppVersionService: &testAppVersionService{
+				findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
+					return &models.AppVersion{
+						Record: models.Record{ID: uuid.FromStringOrNil("de438ddc-98e5-4226-a5f4-fd2d53474879")},
+					}, nil
+				},
+			},
+		}, authHandler)
+		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppID: nil,
+			},
+			requestHeaders: map[string]string{
+				"Authorization": "token test-auth-token",
+			},
+			expectedStatusCode: http.StatusInternalServerError,
+			expectedResponse:   map[string]interface{}{"message": "Internal Server Error"},
 		})
 	})
 
@@ -487,7 +514,7 @@ func Test_AuthorizeForAppVersionAccessHandlerFunc(t *testing.T) {
 		}, authHandler)
 		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
 			contextElements: map[ctxpkg.RequestContextKey]interface{}{
-				services.ContextKeyAuthorizedAppVersionID: uuid.FromStringOrNil("de438ddc-98e5-4226-a5f4-fd2d53474879"),
+				services.ContextKeyAuthorizedAppID: uuid.FromStringOrNil("211afc15-127a-40f9-8cbe-1dadc1f86cdf"),
 			},
 			requestHeaders: map[string]string{
 				"Authorization": "token test-auth-token",
@@ -517,7 +544,7 @@ func Test_AuthorizeForAppVersionAccessHandlerFunc(t *testing.T) {
 		}, authHandler)
 		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
 			contextElements: map[ctxpkg.RequestContextKey]interface{}{
-				services.ContextKeyAuthorizedAppVersionID: uuid.FromStringOrNil("de438ddc-98e5-4226-a5f4-fd2d53474879"),
+				services.ContextKeyAuthorizedAppID: uuid.FromStringOrNil("211afc15-127a-40f9-8cbe-1dadc1f86cdf"),
 			},
 			requestHeaders: map[string]string{
 				"Authorization": "token test-auth-token",
@@ -539,7 +566,7 @@ func Test_AuthorizeForAppVersionAccessHandlerFunc(t *testing.T) {
 		}, authHandler)
 		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
 			contextElements: map[ctxpkg.RequestContextKey]interface{}{
-				services.ContextKeyAuthorizedAppVersionID: uuid.FromStringOrNil("de438ddc-98e5-4226-a5f4-fd2d53474879"),
+				services.ContextKeyAuthorizedAppID: uuid.FromStringOrNil("211afc15-127a-40f9-8cbe-1dadc1f86cdf"),
 			},
 			requestHeaders: map[string]string{
 				"Authorization": "token test-auth-token",
@@ -567,7 +594,7 @@ func Test_AuthorizeForAppVersionAccessHandlerFunc(t *testing.T) {
 		}, authHandler)
 		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
 			contextElements: map[ctxpkg.RequestContextKey]interface{}{
-				services.ContextKeyAuthorizedAppVersionID: uuid.FromStringOrNil("de438ddc-98e5-4226-a5f4-fd2d53474879"),
+				services.ContextKeyAuthorizedAppID: uuid.FromStringOrNil("211afc15-127a-40f9-8cbe-1dadc1f86cdf"),
 			},
 			requestHeaders: map[string]string{
 				"Authorization": "token test-auth-token",
@@ -594,7 +621,7 @@ func Test_AuthorizeForAppVersionAccessHandlerFunc(t *testing.T) {
 		}, authHandler)
 		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
 			contextElements: map[ctxpkg.RequestContextKey]interface{}{
-				services.ContextKeyAuthorizedAppVersionID: uuid.FromStringOrNil("de438ddc-98e5-4226-a5f4-fd2d53474879"),
+				services.ContextKeyAuthorizedAppID: uuid.FromStringOrNil("211afc15-127a-40f9-8cbe-1dadc1f86cdf"),
 			},
 			requestHeaders: map[string]string{
 				"Authorization": "token test-auth-token",

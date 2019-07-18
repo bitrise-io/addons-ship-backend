@@ -99,6 +99,12 @@ func AuthorizeForAppVersionAccessHandlerFunc(env *env.AppEnv, h http.Handler) ht
 			return
 		}
 
+		authorizedAppID, err := GetAuthorizedAppIDFromContext(r.Context())
+		if err != nil {
+			httpresponse.RespondWithInternalServerError(w, errors.New("No Authorized App ID found in context"))
+			return
+		}
+
 		appVersionID, err := getUUIDFromRequest(env, r, "version-id")
 		if err != nil {
 			httpresponse.RespondWithBadRequestErrorNoErr(w, err.Error())
@@ -109,8 +115,7 @@ func AuthorizeForAppVersionAccessHandlerFunc(env *env.AppEnv, h http.Handler) ht
 			httpresponse.RespondWithInternalServerError(w, errors.New("No App Version Service provided"))
 			return
 		}
-		appVersion, err := env.AppVersionService.Find(&models.AppVersion{Record: models.Record{ID: appVersionID}})
-
+		appVersion, err := env.AppVersionService.Find(&models.AppVersion{Record: models.Record{ID: appVersionID}, AppID: authorizedAppID})
 		switch {
 		case errors.Cause(err) == gorm.ErrRecordNotFound:
 			httpresponse.RespondWithNotFoundErrorNoErr(w)
