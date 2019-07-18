@@ -101,7 +101,7 @@ func AuthorizeForAppVersionAccessHandlerFunc(env *env.AppEnv, h http.Handler) ht
 
 		authorizedAppID, err := GetAuthorizedAppIDFromContext(r.Context())
 		if err != nil {
-			httpresponse.RespondWithInternalServerError(w, errors.New("No Authorized App ID found in context"))
+			httpresponse.RespondWithInternalServerError(w, err)
 			return
 		}
 
@@ -141,7 +141,7 @@ func AuthorizeForAppVersionScreenshotAccessHandlerFunc(env *env.AppEnv, h http.H
 
 		appVersionID, err := GetAuthorizedAppVersionIDFromContext(r.Context())
 		if err != nil {
-			httpresponse.RespondWithBadRequestErrorNoErr(w, err.Error())
+			httpresponse.RespondWithInternalServerError(w, err)
 			return
 		}
 
@@ -290,7 +290,7 @@ func AuthorizeBuildWebhookForAppAccessFunc(env *env.AppEnv, h http.Handler) http
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		appSlug := r.Header.Get("Bitrise-App-Id")
 		if appSlug == "" {
-			httpresponse.RespondWithUnauthorizedNoErr(w)
+			httpresponse.RespondWithNotFoundErrorNoErr(w)
 			return
 		}
 
@@ -337,7 +337,7 @@ func AuthorizeBuildWebhookForAppAccessFunc(env *env.AppEnv, h http.Handler) http
 
 		signatureVerifier := security.NewSignatureVerifier(appSecret, string(payloadBytes), requestPayloadSignature)
 		if !signatureVerifier.Verify() {
-			httpresponse.RespondWithUnauthorizedNoErr(w)
+			httpresponse.RespondWithNotFoundErrorNoErr(w)
 			return
 		}
 

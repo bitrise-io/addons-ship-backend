@@ -679,7 +679,6 @@ func Test_AuthorizeForAppVersionScreenshotAccessHandlerFunc(t *testing.T) {
 			contextElements: map[ctxpkg.RequestContextKey]interface{}{
 				services.ContextKeyAuthorizedAppID:        uuid.FromStringOrNil(testAppID),
 				services.ContextKeyAuthorizedAppVersionID: uuid.FromStringOrNil(testAppVersionID),
-				services.ContextKeyAuthorizedScreenshotID: uuid.FromStringOrNil(testScreenshotID),
 			},
 			requestHeaders:     testRequestHeaders,
 			expectedStatusCode: http.StatusOK,
@@ -704,6 +703,21 @@ func Test_AuthorizeForAppVersionScreenshotAccessHandlerFunc(t *testing.T) {
 			expectedResponse: map[string]interface{}{
 				"message": "Internal Server Error",
 			},
+		})
+	})
+
+	t.Run("when no authorized app version ID found in context", func(t *testing.T) {
+		handler := services.AuthorizeForAppVersionScreenshotAccessHandlerFunc(&env.AppEnv{
+			RequestParams:     validRequestParams,
+			ScreenshotService: successfulTestScreenshotService,
+		}, authHandler)
+		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppVersionID: nil,
+			},
+			requestHeaders:     testRequestHeaders,
+			expectedStatusCode: http.StatusInternalServerError,
+			expectedResponse:   map[string]interface{}{"message": "Internal Server Error"},
 		})
 	})
 
@@ -1253,8 +1267,8 @@ func Test_AuthorizeBuildWebhookForAppAccessFunc(t *testing.T) {
 		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
 			requestHeaders:     testRequestHeaders,
 			requestPayload:     map[string]string{"app_slug": "test-app-slug"},
-			expectedStatusCode: http.StatusUnauthorized,
-			expectedResponse:   httpresponse.StandardErrorRespModel{Message: "Unauthorized"},
+			expectedStatusCode: http.StatusNotFound,
+			expectedResponse:   httpresponse.StandardErrorRespModel{Message: "Not Found"},
 		})
 	})
 
@@ -1398,8 +1412,8 @@ func Test_AuthorizeBuildWebhookForAppAccessFunc(t *testing.T) {
 		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
 			requestHeaders:     testRequestHeaders,
 			requestPayload:     map[string]string{"app_slug": "another-app-slug"},
-			expectedStatusCode: http.StatusUnauthorized,
-			expectedResponse:   httpresponse.StandardErrorRespModel{Message: "Unauthorized"},
+			expectedStatusCode: http.StatusNotFound,
+			expectedResponse:   httpresponse.StandardErrorRespModel{Message: "Not Found"},
 		})
 	})
 
