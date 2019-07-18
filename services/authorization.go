@@ -99,6 +99,12 @@ func AuthorizeForAppVersionAccessHandlerFunc(env *env.AppEnv, h http.Handler) ht
 			return
 		}
 
+		authorizedAppID, err := GetAuthorizedAppIDFromContext(r.Context())
+		if err != nil {
+			httpresponse.RespondWithInternalServerError(w, err)
+			return
+		}
+
 		appVersionID, err := getUUIDFromRequest(env, r, "version-id")
 		if err != nil {
 			httpresponse.RespondWithBadRequestErrorNoErr(w, err.Error())
@@ -109,8 +115,7 @@ func AuthorizeForAppVersionAccessHandlerFunc(env *env.AppEnv, h http.Handler) ht
 			httpresponse.RespondWithInternalServerError(w, errors.New("No App Version Service provided"))
 			return
 		}
-		appVersion, err := env.AppVersionService.Find(&models.AppVersion{Record: models.Record{ID: appVersionID}})
-
+		appVersion, err := env.AppVersionService.Find(&models.AppVersion{Record: models.Record{ID: appVersionID}, AppID: authorizedAppID})
 		switch {
 		case errors.Cause(err) == gorm.ErrRecordNotFound:
 			httpresponse.RespondWithNotFoundErrorNoErr(w)
@@ -136,7 +141,7 @@ func AuthorizeForAppVersionScreenshotAccessHandlerFunc(env *env.AppEnv, h http.H
 
 		appVersionID, err := GetAuthorizedAppVersionIDFromContext(r.Context())
 		if err != nil {
-			httpresponse.RespondWithBadRequestErrorNoErr(w, err.Error())
+			httpresponse.RespondWithInternalServerError(w, err)
 			return
 		}
 
@@ -285,7 +290,7 @@ func AuthorizeBuildWebhookForAppAccessFunc(env *env.AppEnv, h http.Handler) http
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		appSlug := r.Header.Get("Bitrise-App-Id")
 		if appSlug == "" {
-			httpresponse.RespondWithUnauthorizedNoErr(w)
+			httpresponse.RespondWithNotFoundErrorNoErr(w)
 			return
 		}
 
@@ -332,7 +337,7 @@ func AuthorizeBuildWebhookForAppAccessFunc(env *env.AppEnv, h http.Handler) http
 
 		signatureVerifier := security.NewSignatureVerifier(appSecret, string(payloadBytes), requestPayloadSignature)
 		if !signatureVerifier.Verify() {
-			httpresponse.RespondWithUnauthorizedNoErr(w)
+			httpresponse.RespondWithNotFoundErrorNoErr(w)
 			return
 		}
 
