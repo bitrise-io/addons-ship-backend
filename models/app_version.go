@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/bitrise-io/addons-ship-backend/bitrise"
 	"github.com/jinzhu/gorm"
+	"github.com/lib/pq"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 )
@@ -31,14 +33,21 @@ type AppStoreInfo struct {
 // AppVersion ...
 type AppVersion struct {
 	Record
-	Version          string          `json:"version"`
-	Platform         string          `json:"platform"`
-	BuildNumber      string          `json:"build_number"`
-	BuildSlug        string          `json:"build_slug"`
-	LastUpdate       time.Time       `json:"last_update"`
-	Scheme           string          `json:"scheme"`
-	Configuration    string          `json:"configuration"`
-	AppStoreInfoData json.RawMessage `json:"-" db:"app_store_info" gorm:"column:app_store_info;type:json"`
+	Version              string          `json:"version"`
+	Platform             string          `json:"platform"`
+	BuildNumber          string          `json:"build_number"`
+	BuildSlug            string          `json:"build_slug"`
+	LastUpdate           time.Time       `json:"last_update"`
+	Scheme               string          `json:"scheme"`
+	Configuration        string          `json:"configuration"`
+	MinimumOS            string          `json:"minimum_os"`
+	MinimumSDK           string          `json:"minimum_sdk"`
+	CertificateExpiresAt time.Time       `json:"certificate_expires_at"`
+	DistributionType     string          `json:"distribution_type"`
+	SupportedDeviceTypes pq.StringArray  `json:"supported_device_types" gorm:"type:varchar(255)[]"`
+	AppInfoData          json.RawMessage `json:"-" db:"app_info" gorm:"column:app_info;type:json"`
+	ProvisioningInfoData json.RawMessage `json:"-" db:"provisioning_info" gorm:"column:provisioning_info;type:json"`
+	AppStoreInfoData     json.RawMessage `json:"-" db:"app_store_info" gorm:"column:app_store_info;type:json"`
 
 	AppID uuid.UUID `db:"app_id" json:"-"`
 	App   App       `gorm:"foreignkey:AppID" json:"-"`
@@ -100,4 +109,24 @@ func (a *AppVersion) AppStoreInfo() (AppStoreInfo, error) {
 		return AppStoreInfo{}, err
 	}
 	return appStoreInfo, nil
+}
+
+// AppInfo ...
+func (a *AppVersion) AppInfo() (bitrise.AppInfo, error) {
+	var appInfo bitrise.AppInfo
+	err := json.Unmarshal(a.AppInfoData, &appInfo)
+	if err != nil {
+		return bitrise.AppInfo{}, err
+	}
+	return appInfo, nil
+}
+
+// ProvisioningInfo ...
+func (a *AppVersion) ProvisioningInfo() (bitrise.ProvisioningInfo, error) {
+	var provisioningInfo bitrise.ProvisioningInfo
+	err := json.Unmarshal(a.ProvisioningInfoData, &provisioningInfo)
+	if err != nil {
+		return bitrise.ProvisioningInfo{}, err
+	}
+	return provisioningInfo, nil
 }
