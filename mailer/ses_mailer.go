@@ -75,3 +75,24 @@ func (m *SES) SendEmailConfirmation(appTitle, confirmURL string, contact *models
 			},
 		})
 }
+
+// SendEmailNewVersion ...
+func (m *SES) SendEmailNewVersion(targetEmail string) error {
+	return m.sendMail(&Request{
+		To:      []string{targetEmail},
+		From:    m.FromEmail,
+		Subject: "New app version is available on Ship.",
+	},
+		"email/new_version.html",
+		map[string]interface{}{
+			"CurrentTime": func() string { return "2019-07-19 12:00:00 UTC" },
+			"Name":        func() string { return "test.user" },
+			"AppTitle":    func() string { return "Standup Timer" },
+			"AppIconURL": func() string {
+				return "https://bitrise-public-content-production.s3.amazonaws.com/emails/invitation-app-32x32.png"
+			},
+			"NewVersion":  func() string { return "1.1.0" },
+			"BuildNumber": func() string { return "28" },
+			"AppURL":      func() string { return "https://bitrise.io" },
+		})
+}
