@@ -49,19 +49,33 @@
                           <td
                             style="padding: 0; padding-top: 8px; line-height: 24px; font-size: 19px; font-weight: 500; color: #492f5c;"
                           >
-                            New app version is available on Ship.
+                            Your app has been
+                            <a
+                              href="{{ PublishURL }}"
+                              style="
+                                text-decoration: none;
+                                color: {{ if PublishSucceeded }}#35c894{{ else }}#ff2158{{ end }};"
+                              >{{ if PublishSucceeded }}successfully published{{ else }}failed to publish{{ end }}</a
+                            >
+                            to {{ PublishTarget }}.
                           </td>
                         </tr>
                         <tr>
                           <td style="padding: 0; padding-top: 24px;">
                             <table style="width: 100%; border-spacing: 0;">
                               <tr>
-                                <td style="border: 1px solid #ececec; border-radius: 8px; padding: 10px;">
+                                <td
+                                  style="
+                                    border: 1px solid {{ if PublishSucceeded }}#0fc389{{ else }}#ff2158{{ end }};
+                                    border-radius: 8px;
+                                    padding: 10px;
+                                    background-color: {{ if PublishSucceeded }}#e7f9f3{{ else }}#ffe8ee{{ end }};"
+                                >
                                   <table style="width: 100%; border-spacing: 0;">
                                     <tr>
                                       <td style="border-radius: 4px; padding: 0;">
                                         <img
-                                          alt="{{ AppTitle }} v{{ NewVersion }} ({{ BuildNumber }})"
+                                          alt="{{ AppTitle }} v{{ Version }} ({{ BuildNumber }})"
                                           height="32px"
                                           src="{{ AppIconURL }}"
                                           style="display: block; border-radius: 3px;"
@@ -69,12 +83,12 @@
                                         />
                                       </td>
                                       <td
-                                        style="width: 100%; padding: 0; padding-left: 16px; line-height: 16px; font-size: 16px; font-weight: 700; color: #777;"
+                                        style="width: 100%; padding: 0; padding-left: 16px; line-height: 16px; font-size: 16px; font-weight: 700; color: #351d48;"
                                       >
-                                        {{ AppTitle }} v{{ NewVersion }} ({{ BuildNumber }})
+                                        {{ AppTitle }} v{{ Version }} ({{ BuildNumber }})
                                       </td>
                                       <td
-                                        style="padding: 0; padding-left: 16px; line-height: 16px; font-size: 13px; font-weight: 500; color: #616161; text-transform: uppercase;"
+                                        style="padding: 0; padding-left: 16px; line-height: 16px; font-size: 13px; font-weight: 500; color: #351d48; text-transform: uppercase;"
                                       >
                                         {{ AppPlatform }}
                                       </td>
@@ -97,7 +111,7 @@
                                         <td
                                           style="border-radius: 4px; padding: 14px 16px; line-height: 20px; text-align: center; font-size: 16px; font-weight: 700; color: #f8f8f8; background: #760fc3; background-image: linear-gradient(#6c0eb2, #450674 97%);"
                                         >
-                                          View App
+                                          View at Ship
                                         </td>
                                       </tr>
                                     </table></a

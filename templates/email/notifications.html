@@ -49,7 +49,7 @@
                           <td
                             style="padding: 0; padding-top: 8px; line-height: 24px; font-size: 19px; font-weight: 500; color: #492f5c;"
                           >
-                            New app version is available on Ship.
+                            Ship wants to send you notifications about the activity of this app:
                           </td>
                         </tr>
                         <tr>
@@ -61,7 +61,7 @@
                                     <tr>
                                       <td style="border-radius: 4px; padding: 0;">
                                         <img
-                                          alt="{{ AppTitle }} v{{ NewVersion }} ({{ BuildNumber }})"
+                                          alt="{{ AppTitle }} v{{ Version }} ({{ BuildNumber }})"
                                           height="32px"
                                           src="{{ AppIconURL }}"
                                           style="display: block; border-radius: 3px;"
@@ -71,13 +71,67 @@
                                       <td
                                         style="width: 100%; padding: 0; padding-left: 16px; line-height: 16px; font-size: 16px; font-weight: 700; color: #777;"
                                       >
-                                        {{ AppTitle }} v{{ NewVersion }} ({{ BuildNumber }})
+                                        {{ AppTitle }} v{{ Version }} ({{ BuildNumber }})
                                       </td>
                                       <td
                                         style="padding: 0; padding-left: 16px; line-height: 16px; font-size: 13px; font-weight: 500; color: #616161; text-transform: uppercase;"
                                       >
                                         {{ AppPlatform }}
                                       </td>
+                                    </tr>
+                                  </table>
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style="padding: 0; padding-top: 16px;">
+                            <table style="width: 100%; border-spacing: 0;">
+                              <tr style="height: 32px;">
+                                <td style="padding: 0; font-weight: 700; color: #616161;">Notification Settings:</td>
+                              </tr>
+                              <tr>
+                                <td style="padding: 0;">
+                                  <table style="width: 100%; border-spacing: 0;">
+                                    <tr style="height: 24px;">
+                                      <td style="width: 32px; padding: 0;">
+                                        <img
+                                          alt="enabled"
+                                          height="10px"
+                                          src="https://bitrise-public-content-production.s3.amazonaws.com/addons-ship/tick.png"
+                                          style="display: block; border-radius: 3px;"
+                                          width="14px"
+                                          margin="6px"
+                                        />
+                                      </td>
+                                      <td style="padding: 0; font-weight: 500; color: #616161;">New app version</td>
+                                    </tr>
+                                    <tr style="height: 24px;">
+                                      <td style="width: 32px; padding: 0;">
+                                        <img
+                                          alt="disabled"
+                                          height="12px"
+                                          src="https://bitrise-public-content-production.s3.amazonaws.com/addons-ship/cross.png"
+                                          style="display: block; border-radius: 3px;"
+                                          width="12px"
+                                          margin="6px"
+                                        />
+                                      </td>
+                                      <td style="padding: 0; font-weight: 500; color: #616161;">Successful publish</td>
+                                    </tr>
+                                    <tr style="height: 24px;">
+                                      <td style="width: 32px; padding: 0;">
+                                        <img
+                                          alt="enabled"
+                                          height="10px"
+                                          src="https://bitrise-public-content-production.s3.amazonaws.com/addons-ship/tick.png"
+                                          style="display: block; border-radius: 3px;"
+                                          width="14px"
+                                          margin="6px"
+                                        />
+                                      </td>
+                                      <td style="padding: 0; font-weight: 500; color: #616161;">Failed publish</td>
                                     </tr>
                                   </table>
                                 </td>
@@ -106,6 +160,13 @@
                                 <td style="width: 50%; padding: 0;"></td>
                               </tr>
                             </table>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td
+                            style="padding: 0; padding-top: 32px; line-height: 24px; font-size: 16px; font-weight: 400; color: #616161;"
+                          >
+                            If you don’t want to get notifications from this app, just forget this email.
                           </td>
                         </tr>
                         <tr style="display: none;">
