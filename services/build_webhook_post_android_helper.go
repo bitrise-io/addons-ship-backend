@@ -1,6 +1,7 @@
 package services
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/bitrise-io/addons-ship-backend/bitrise"
@@ -10,9 +11,12 @@ import (
 	"github.com/pkg/errors"
 )
 
-func appVersionGetAndroidHelper(env *env.AppEnv, w http.ResponseWriter,
-	r *http.Request, appVersion *models.AppVersion,
-	artifacts []bitrise.ArtifactListElementResponseModel) error {
+func prepareAppVersionForAndroidPlatform(env *env.AppEnv, w http.ResponseWriter,
+	r *http.Request, apiToken, appSlug, buildSlug string) (*models.AppVersion, error) {
+	artifacts, err := env.BitriseAPI.GetArtifacts(apiToken, appSlug, buildSlug)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
 	publishEnabled := false
 	publicInstallPageEnabled := false
 	publicInstallPageArtifactSlug := ""
@@ -34,31 +38,35 @@ func appVersionGetAndroidHelper(env *env.AppEnv, w http.ResponseWriter,
 	if publicInstallPageEnabled {
 		var err error
 		artifactPublicInstallPageURL, err = env.BitriseAPI.GetArtifactPublicInstallPageURL(
-			appVersion.App.BitriseAPIToken,
-			appVersion.App.AppSlug,
-			appVersion.BuildSlug,
-			publicInstallPageArtifactSlug,
+			apiToken, appSlug, buildSlug, publicInstallPageArtifactSlug,
 		)
 		if err != nil {
-			return errors.WithStack(err)
+			return nil, errors.WithStack(err)
 		}
 	}
 
 	if selectedArtifact == nil {
-		return httpresponse.RespondWithNotFoundError(w)
+		return nil, httpresponse.RespondWithNotFoundError(w)
 	}
 
-	appDetails, err := env.BitriseAPI.GetAppDetails(appVersion.App.BitriseAPIToken, appVersion.App.AppSlug)
+	appDetails, err := env.BitriseAPI.GetAppDetails(apiToken, appSlug)
 	if err != nil {
-		return errors.WithStack(err)
+		return nil, errors.WithStack(err)
 	}
 
-	responseData, err := newArtifactVersionGetResponse(appVersion, *selectedArtifact, artifactPublicInstallPageURL, appDetails, publishEnabled)
+	appInfo := models.AppInfo{
+		MinimumSDK:  selectedArtifact.ArtifactMeta.AppInfo.MinimumSDKVersion,
+		PackageName: selectedArtifact.ArtifactMeta.AppInfo.PackageName,
+	}
+	appInfoData, err := json.Marshal(appInfo)
 	if err != nil {
-		return errors.WithStack(err)
+		return nil, errors.WithStack(err)
 	}
 
-	return httpresponse.RespondWithSuccess(w, AppVersionGetResponse{
-		Data: responseData,
-	})
+	return &models.AppVersion{
+		Platform:    "android",
+		Version:     selectedArtifact.ArtifactMeta.AppInfo.VersionName,
+		BuildSlug:   buildSlug,
+		AppInfoData: appInfoData,
+	}, nil
 }

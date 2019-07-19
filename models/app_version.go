@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/bitrise-io/addons-ship-backend/bitrise"
 	"github.com/jinzhu/gorm"
 	"github.com/lib/pq"
 	"github.com/pkg/errors"
@@ -17,6 +16,21 @@ const (
 	maxCharNumberForAndroidFullDescription  = 80
 	maxCharNumberForIOSFullDescription      = 255
 )
+
+// AppInfo ...
+type AppInfo struct {
+	MinimumOS            string   `json:"minimum_os"`
+	MinimumSDK           string   `json:"minimum_sdk"`
+	BundleID             string   `json:"bundle_id"`
+	SupportedDeviceTypes []string `json:"supported_device_types"`
+	PackageName          string   `json:"package_name"`
+}
+
+// ProvisioningInfo ...
+type ProvisioningInfo struct {
+	ExpireDate       time.Time `json:"expire_date"`
+	DistributionType string    `json:"distribution_type"`
+}
 
 // AppStoreInfo ...
 type AppStoreInfo struct {
@@ -40,6 +54,7 @@ type AppVersion struct {
 	LastUpdate           time.Time       `json:"last_update"`
 	Scheme               string          `json:"scheme"`
 	Configuration        string          `json:"configuration"`
+	Size                 int64           `json:"size"`
 	MinimumOS            string          `json:"minimum_os"`
 	MinimumSDK           string          `json:"minimum_sdk"`
 	CertificateExpiresAt time.Time       `json:"certificate_expires_at"`
@@ -112,21 +127,21 @@ func (a *AppVersion) AppStoreInfo() (AppStoreInfo, error) {
 }
 
 // AppInfo ...
-func (a *AppVersion) AppInfo() (bitrise.AppInfo, error) {
-	var appInfo bitrise.AppInfo
+func (a *AppVersion) AppInfo() (AppInfo, error) {
+	var appInfo AppInfo
 	err := json.Unmarshal(a.AppInfoData, &appInfo)
 	if err != nil {
-		return bitrise.AppInfo{}, err
+		return AppInfo{}, err
 	}
 	return appInfo, nil
 }
 
 // ProvisioningInfo ...
-func (a *AppVersion) ProvisioningInfo() (bitrise.ProvisioningInfo, error) {
-	var provisioningInfo bitrise.ProvisioningInfo
+func (a *AppVersion) ProvisioningInfo() (ProvisioningInfo, error) {
+	var provisioningInfo ProvisioningInfo
 	err := json.Unmarshal(a.ProvisioningInfoData, &provisioningInfo)
 	if err != nil {
-		return bitrise.ProvisioningInfo{}, err
+		return ProvisioningInfo{}, err
 	}
 	return provisioningInfo, nil
 }

@@ -2,7 +2,6 @@ package services
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/bitrise-io/addons-ship-backend/bitrise"
 	"github.com/bitrise-io/addons-ship-backend/env"
@@ -22,16 +21,7 @@ type AppData struct {
 // AppVersionGetResponseData ...
 type AppVersionGetResponseData struct {
 	*models.AppVersion
-	MinimumOS            string              `json:"minimum_os"`
-	MinimumSDK           string              `json:"minimum_sdk"`
-	PackageName          string              `json:"package_name"`
-	CertificateExpires   time.Time           `json:"certificate_expires"`
-	BundleID             string              `json:"bundle_id"`
-	Size                 int64               `json:"size"`
-	SupportedDeviceTypes []string            `json:"supported_device_types"`
-	DistributionType     string              `json:"distribution_type"`
 	PublicInstallPageURL string              `json:"public_install_page_url"`
-	AppInfo              AppData             `json:"app_info"`
 	AppStoreInfo         models.AppStoreInfo `json:"app_store_info"`
 	PublishEnabled       bool                `json:"publish_enabled"`
 }
@@ -116,17 +106,8 @@ func newArtifactVersionGetResponse(appVersion *models.AppVersion, artifact bitri
 	}
 	return AppVersionGetResponseData{
 		AppVersion:           appVersion,
-		MinimumOS:            artifactMeta.AppInfo.MinimumOS,
-		MinimumSDK:           artifactMeta.AppInfo.MinimumSDKVersion,
-		PackageName:          artifactMeta.AppInfo.PackageName,
-		CertificateExpires:   artifactMeta.ProvisioningInfo.ExpireDate,
-		BundleID:             artifactMeta.AppInfo.BundleID,
-		SupportedDeviceTypes: supportedDeviceTypes,
-		DistributionType:     artifactMeta.ProvisioningInfo.DistributionType,
 		PublicInstallPageURL: publicInstallPageURL,
-		AppInfo:              appData,
 		AppStoreInfo:         appStoreInfo,
-		Size:                 size,
 		PublishEnabled:       publishEnabled,
 	}, nil
 }
