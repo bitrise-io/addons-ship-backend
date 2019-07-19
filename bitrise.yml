@@ -156,3 +156,15 @@ workflows:
                 #!/bin/bash
                 set -ex
                 docker-compose run --rm app bash -c 'cd db/seed && go run main.go'
+  send-test-mail:
+    envs:
+      - MAIL_TO_SEND:
+      - TARGET_EMAIL:
+    steps:
+      - script@1.1.5:
+          title: Send test email
+          inputs:
+            - content: |
+                #!/bin/bash
+                set -ex
+                docker-compose run --rm app bash -c 'cd mailer/test && go run main.go'
