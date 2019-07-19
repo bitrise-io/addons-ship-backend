@@ -37,10 +37,34 @@ func main() {
 	switch emailName {
 	case "confirmation":
 		err := ses.SendEmailConfirmation("Your test app", "http://here.you.can.confirm", &models.AppContact{
-			Email: targetEmail,
+			Email:                       targetEmail,
 			NotificationPreferencesData: json.RawMessage(`{}`),
 			ConfirmationToken:           pointers.NewStringPtr("your-confirmation-token"),
 		})
+		if err != nil {
+			fmt.Printf("Failed to send email: %s\n", err)
+			os.Exit(1)
+		}
+	case "new_version":
+		err := ses.SendEmailNewVersion(targetEmail)
+		if err != nil {
+			fmt.Printf("Failed to send email: %s\n", err)
+			os.Exit(1)
+		}
+	case "publish_succeeded":
+		err := ses.SendEmailPublish(targetEmail, true)
+		if err != nil {
+			fmt.Printf("Failed to send email: %s\n", err)
+			os.Exit(1)
+		}
+	case "publish_failed":
+		err := ses.SendEmailPublish(targetEmail, false)
+		if err != nil {
+			fmt.Printf("Failed to send email: %s\n", err)
+			os.Exit(1)
+		}
+	case "notifications":
+		err := ses.SendEmailNotifications(targetEmail)
 		if err != nil {
 			fmt.Printf("Failed to send email: %s\n", err)
 			os.Exit(1)

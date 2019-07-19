@@ -75,3 +75,72 @@ func (m *SES) SendEmailConfirmation(appTitle, confirmURL string, contact *models
 			},
 		})
 }
+
+// SendEmailNewVersion ...
+func (m *SES) SendEmailNewVersion(targetEmail string) error {
+	return m.sendMail(&Request{
+		To:      []string{targetEmail},
+		From:    m.FromEmail,
+		Subject: "New app version is available on Ship.",
+	},
+		"email/new_version.html",
+		map[string]interface{}{
+			"CurrentTime": func() string { return "2019-07-19 12:00:00 UTC" },
+			"Name":        func() string { return "test.user" },
+			"AppTitle":    func() string { return "Standup Timer" },
+			"AppIconURL": func() string {
+				return "https://bitrise-public-content-production.s3.amazonaws.com/emails/invitation-app-32x32.png"
+			},
+			"NewVersion":  func() string { return "1.1.0" },
+			"BuildNumber": func() string { return "28" },
+			"AppPlatform": func() string { return "ios" },
+			"AppURL":      func() string { return "https://bitrise.io" },
+		})
+}
+
+// SendEmailPublish ...
+func (m *SES) SendEmailPublish(targetEmail string, publishSucceeded bool) error {
+	return m.sendMail(&Request{
+		To:      []string{targetEmail},
+		From:    m.FromEmail,
+		Subject: "App publish notification on Ship.",
+	},
+		"email/publish.html",
+		map[string]interface{}{
+			"CurrentTime": func() string { return "2019-07-19 12:00:00 UTC" },
+			"Name":        func() string { return "test.user" },
+			"AppTitle":    func() string { return "Standup Timer" },
+			"AppIconURL": func() string {
+				return "https://bitrise-public-content-production.s3.amazonaws.com/emails/invitation-app-32x32.png"
+			},
+			"Version":          func() string { return "1.1.0" },
+			"BuildNumber":      func() string { return "28" },
+			"AppPlatform":      func() string { return "ios" },
+			"AppURL":           func() string { return "https://bitrise.io" },
+			"PublishSucceeded": func() bool { return publishSucceeded },
+			"PublishURL":       func() string { return "https://bitrise.io" },
+			"PublishTarget":    func() string { return "App Store Connect" },
+		})
+}
+
+// SendEmailNotifications ...
+func (m *SES) SendEmailNotifications(targetEmail string) error {
+	return m.sendMail(&Request{
+		To:      []string{targetEmail},
+		From:    m.FromEmail,
+		Subject: "Ship wants to send you notifications.",
+	},
+		"email/notifications.html",
+		map[string]interface{}{
+			"CurrentTime": func() string { return "2019-07-19 12:00:00 UTC" },
+			"Name":        func() string { return "test.user" },
+			"AppTitle":    func() string { return "Standup Timer" },
+			"AppIconURL": func() string {
+				return "https://bitrise-public-content-production.s3.amazonaws.com/emails/invitation-app-32x32.png"
+			},
+			"Version":     func() string { return "1.1.0" },
+			"BuildNumber": func() string { return "28" },
+			"AppPlatform": func() string { return "ios" },
+			"AppURL":      func() string { return "https://bitrise.io" },
+		})
+}
