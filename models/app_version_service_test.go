@@ -18,11 +18,9 @@ func compareAppVersion(t *testing.T, expected, actual models.AppVersion) {
 	expected.CreatedAt = time.Time{}
 	expected.UpdatedAt = time.Time{}
 	expected.LastUpdate = time.Time{}
-	expected.CertificateExpiresAt = time.Time{}
 	actual.CreatedAt = time.Time{}
 	actual.UpdatedAt = time.Time{}
 	actual.LastUpdate = time.Time{}
-	actual.CertificateExpiresAt = time.Time{}
 	require.Equal(t, expected, actual)
 }
 
@@ -33,7 +31,8 @@ func Test_AppVersionService_Create(t *testing.T) {
 	appVersionService := models.AppVersionService{DB: dataservices.GetDB()}
 	t.Run("ok", func(t *testing.T) {
 		testAppVersion := &models.AppVersion{
-			Version:          "v1.0",
+			Platform:         "ios",
+			ArtifactInfoData: json.RawMessage(`{"version":"v1.0"}`),
 			AppStoreInfoData: json.RawMessage(`{"short_description":"Some quite short description"}`),
 		}
 		expectedAppStoreInfo := models.AppStoreInfo{
@@ -156,8 +155,8 @@ func Test_AppVersionService_Update(t *testing.T) {
 
 	t.Run("ok", func(t *testing.T) {
 		testAppVersions := []*models.AppVersion{
-			createTestAppVersion(t, &models.AppVersion{Platform: "iOS", Version: "v1.0"}),
-			createTestAppVersion(t, &models.AppVersion{Platform: "Android", Version: "v1.2"}),
+			createTestAppVersion(t, &models.AppVersion{Platform: "iOS", ArtifactInfoData: json.RawMessage(`{"version":"v1.0"}`)}),
+			createTestAppVersion(t, &models.AppVersion{Platform: "Android", ArtifactInfoData: json.RawMessage(`{"version":"v1.2"}`)}),
 		}
 
 		testAppVersions[0].AppStoreInfoData = json.RawMessage(`{"short_description": "Some short description"}`)
@@ -180,7 +179,7 @@ func Test_AppVersionService_Update(t *testing.T) {
 	})
 
 	t.Run("when short description is longer than 80 characters", func(t *testing.T) {
-		testAppVersion := createTestAppVersion(t, &models.AppVersion{Platform: "android", Version: "v1.0"})
+		testAppVersion := createTestAppVersion(t, &models.AppVersion{Platform: "android", ArtifactInfoData: json.RawMessage(`{"version":"v1.0"}`)})
 		testAppVersion.AppStoreInfoData = json.RawMessage(`{"short_description":"Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula e"}`)
 		verrs, err := appVersionService.Update(testAppVersion, []string{"AppStoreInfoData"})
 		require.Equal(t, 1, len(verrs))
@@ -189,7 +188,7 @@ func Test_AppVersionService_Update(t *testing.T) {
 	})
 
 	t.Run("when trying to update non-existing field", func(t *testing.T) {
-		testAppVersion := createTestAppVersion(t, &models.AppVersion{Platform: "iOS", Version: "v1.0"})
+		testAppVersion := createTestAppVersion(t, &models.AppVersion{Platform: "iOS", ArtifactInfoData: json.RawMessage(`{"version":"v1.0"}`)})
 		verrs, err := appVersionService.Update(testAppVersion, []string{"NonExistingField"})
 		require.EqualError(t, err, "Attribute name doesn't exist in the model")
 		require.Equal(t, 0, len(verrs))

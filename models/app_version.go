@@ -27,7 +27,6 @@ type ArtifactInfo struct {
 	PackageName          string    `json:"package_name"`
 	ExpireDate           time.Time `json:"expire_date"`
 	DistributionType     string    `json:"distribution_type"`
-	CertificateExpiresAt time.Time `json:"certificate_expires_at"`
 }
 
 // AppStoreInfo ...

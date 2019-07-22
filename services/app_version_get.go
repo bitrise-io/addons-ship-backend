@@ -25,10 +25,12 @@ type AppVersionGetResponseData struct {
 	AppStoreInfo         models.AppStoreInfo `json:"app_store_info"`
 	PublishEnabled       bool                `json:"publish_enabled"`
 	AppInfo              AppData             `json:"app_info"`
-	DistributionType     string              `json:"distributuin_type"`
+	DistributionType     string              `json:"distributuin_type,omitempty"`
 	Version              string              `json:"version"`
 	MinimumOS            string              `json:"minimum_os,omitempty"`
 	MinimumSDK           string              `json:"minimum_sdk,omitempty"`
+	BundleID             string              `json:"bundle_id,omitempty"`
+	PackageName          string              `json:"package_name,omitempty"`
 	Size                 int64               `json:"size"`
 	SupportedDeviceTypes []string            `json:"supported_device_types"`
 }
