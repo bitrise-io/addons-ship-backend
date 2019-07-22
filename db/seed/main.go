@@ -63,17 +63,22 @@ func main() {
 			fmt.Printf("Failed to marshal app store info: %#v, app store info: %#v", err, appVersionData.AppStoreInfo)
 			os.Exit(1)
 		}
+		artifactInfoBytes, err := json.Marshal(models.ArtifactInfo{Version: appVersionData.Version})
+		if err != nil {
+			fmt.Printf("Failed to marshal srtifact info: %#v, app version data: %#v", err, appVersionData)
+			os.Exit(1)
+		}
 		appVersion := models.AppVersion{
 			Record:           models.Record{ID: appVersionData.ID},
 			AppID:            appVersionData.AppID,
 			Platform:         appVersionData.Platform,
-			Version:          appVersionData.Version,
 			BuildSlug:        appVersionData.BuildSlug,
 			BuildNumber:      appVersionData.BuildNumber,
 			LastUpdate:       appVersionData.LastUpdate,
 			Scheme:           appVersionData.Scheme,
 			Configuration:    appVersionData.Configuration,
 			AppStoreInfoData: appStoreInfoBytes,
+			ArtifactInfoData: artifactInfoBytes,
 		}
 		if err := db.Create(&appVersion).Error; err != nil {
 			fmt.Printf("Failed to seed db with app version: %#v, app version: %#v", err, appVersion)

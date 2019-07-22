@@ -8,7 +8,6 @@ import (
 	"github.com/bitrise-io/addons-ship-backend/bitrise"
 	"github.com/bitrise-io/addons-ship-backend/env"
 	"github.com/bitrise-io/addons-ship-backend/models"
-	"github.com/bitrise-io/api-utils/httpresponse"
 	"github.com/pkg/errors"
 )
 
@@ -21,7 +20,7 @@ func prepareAppVersionForIosPlatform(env *env.AppEnv, w http.ResponseWriter,
 
 	selectedArtifact, _, _, _ := selectIosArtifact(artifacts)
 	if selectedArtifact == nil {
-		return nil, httpresponse.RespondWithNotFoundError(w)
+		return nil, errors.New("No artifact found")
 	}
 
 	if selectedArtifact.ArtifactMeta == nil {
@@ -46,31 +45,23 @@ func prepareAppVersionForIosPlatform(env *env.AppEnv, w http.ResponseWriter,
 			supportedDeviceTypes = append(supportedDeviceTypes, "Unknown")
 		}
 	}
-	appInfo := models.AppInfo{
+	artifactInfo := models.ArtifactInfo{
+		Version:              selectedArtifact.ArtifactMeta.AppInfo.Version,
 		MinimumOS:            selectedArtifact.ArtifactMeta.AppInfo.MinimumOS,
 		BundleID:             selectedArtifact.ArtifactMeta.AppInfo.BundleID,
 		SupportedDeviceTypes: supportedDeviceTypes,
+		ExpireDate:           selectedArtifact.ArtifactMeta.ProvisioningInfo.ExpireDate,
+		DistributionType:     selectedArtifact.ArtifactMeta.ProvisioningInfo.DistributionType,
 	}
-	appInfoData, err := json.Marshal(appInfo)
-	if err != nil {
-		return nil, errors.WithStack(err)
-	}
-
-	provisioningInfo := models.ProvisioningInfo{
-		ExpireDate:       selectedArtifact.ArtifactMeta.ProvisioningInfo.ExpireDate,
-		DistributionType: selectedArtifact.ArtifactMeta.ProvisioningInfo.DistributionType,
-	}
-	provisioningInfoData, err := json.Marshal(provisioningInfo)
+	artifactInfoData, err := json.Marshal(artifactInfo)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 
 	return &models.AppVersion{
-		Platform:             "ios",
-		Version:              selectedArtifact.ArtifactMeta.AppInfo.Version,
-		BuildSlug:            buildSlug,
-		AppInfoData:          appInfoData,
-		ProvisioningInfoData: provisioningInfoData,
+		Platform:         "ios",
+		BuildSlug:        buildSlug,
+		ArtifactInfoData: artifactInfoData,
 	}, nil
 }
 

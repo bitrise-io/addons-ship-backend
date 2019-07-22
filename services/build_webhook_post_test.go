@@ -111,9 +111,12 @@ func Test_BuildWebhookHandler(t *testing.T) {
 						createFn: func(appVersion *models.AppVersion) (*models.AppVersion, []error, error) {
 							require.Equal(t, "ios", appVersion.Platform)
 							require.Equal(t, "test-build-slug", appVersion.BuildSlug)
-							require.Equal(t, "1.0", appVersion.Version)
 							require.NotEqual(t, time.Time{}, appVersion.LastUpdate)
 							require.Equal(t, "12", appVersion.BuildNumber)
+							artifactData, err := appVersion.ArtifactInfo()
+							require.NoError(t, err)
+							require.Equal(t, "1.0", artifactData.Version)
+							require.Equal(t, []string{"iPhone", "iPod Touch", "iPad"}, artifactData.SupportedDeviceTypes)
 							return appVersion, nil, nil
 						},
 					},
@@ -127,7 +130,8 @@ func Test_BuildWebhookHandler(t *testing.T) {
 									Title: "my-ios-artifact.ipa",
 									ArtifactMeta: &bitrise.ArtifactMeta{
 										AppInfo: bitrise.AppInfo{
-											Version: "1.0",
+											Version:          "1.0",
+											DeviceFamilyList: []int{1, 2},
 										},
 										ProvisioningInfo: bitrise.ProvisioningInfo{DistributionType: "app-store"},
 									},
@@ -168,7 +172,9 @@ func Test_BuildWebhookHandler(t *testing.T) {
 						createFn: func(appVersion *models.AppVersion) (*models.AppVersion, []error, error) {
 							require.Equal(t, "ios", appVersion.Platform)
 							require.Equal(t, "test-build-slug", appVersion.BuildSlug)
-							require.Equal(t, "1.0", appVersion.Version)
+							artifactData, err := appVersion.ArtifactInfo()
+							require.NoError(t, err)
+							require.Equal(t, "1.0", artifactData.Version)
 							require.NotEqual(t, time.Time{}, appVersion.LastUpdate)
 							return appVersion, nil, nil
 						},
@@ -299,6 +305,254 @@ func Test_BuildWebhookHandler(t *testing.T) {
 			})
 		})
 
+		t.Run("when getting artifacts from API retrieves error", func(t *testing.T) {
+			performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+				contextElements: map[ctxpkg.RequestContextKey]interface{}{
+					services.ContextKeyAuthorizedAppID: uuid.NewV4(),
+				},
+				requestHeaders: map[string]string{"Bitrise-Event-Type": "build/finished"},
+				env: &env.AppEnv{
+					AppService: &testAppService{
+						findFn: func(app *models.App) (*models.App, error) {
+							return app, nil
+						},
+					},
+					AppSettingsService: &testAppSettingsService{
+						findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
+							return &models.AppSettings{
+								IosWorkflow: "ios-wf,ios-wf2",
+								App: &models.App{
+									APIToken: "test-api-token",
+									AppSlug:  "test-app-slug",
+								},
+							}, nil
+						},
+					},
+					AppVersionService: &testAppVersionService{
+						createFn: func(appVersion *models.AppVersion) (*models.AppVersion, []error, error) {
+							require.Equal(t, "ios", appVersion.Platform)
+							require.Equal(t, "test-build-slug", appVersion.BuildSlug)
+							require.NotEqual(t, time.Time{}, appVersion.LastUpdate)
+							artifactData, err := appVersion.ArtifactInfo()
+							require.NoError(t, err)
+							require.Equal(t, "1.0", artifactData.Version)
+							return appVersion, nil, nil
+						},
+					},
+					BitriseAPI: &testBitriseAPI{
+						getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
+							return nil, errors.New("SOME-BITRISE-API-ERROR")
+						},
+					},
+				},
+				requestBody:         `{"build_slug":"test-build-slug","build_triggered_workflow":"ios-wf"}`,
+				expectedInternalErr: "SOME-BITRISE-API-ERROR",
+			})
+		})
+
+		t.Run("when no matching artifact found", func(t *testing.T) {
+			performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+				contextElements: map[ctxpkg.RequestContextKey]interface{}{
+					services.ContextKeyAuthorizedAppID: uuid.NewV4(),
+				},
+				requestHeaders: map[string]string{"Bitrise-Event-Type": "build/finished"},
+				env: &env.AppEnv{
+					AppService: &testAppService{
+						findFn: func(app *models.App) (*models.App, error) {
+							return app, nil
+						},
+					},
+					AppSettingsService: &testAppSettingsService{
+						findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
+							return &models.AppSettings{
+								IosWorkflow: "ios-wf,ios-wf2",
+								App: &models.App{
+									APIToken: "test-api-token",
+									AppSlug:  "test-app-slug",
+								},
+							}, nil
+						},
+					},
+					AppVersionService: &testAppVersionService{
+						createFn: func(appVersion *models.AppVersion) (*models.AppVersion, []error, error) {
+							require.Equal(t, "ios", appVersion.Platform)
+							require.Equal(t, "test-build-slug", appVersion.BuildSlug)
+							require.NotEqual(t, time.Time{}, appVersion.LastUpdate)
+							artifactData, err := appVersion.ArtifactInfo()
+							require.NoError(t, err)
+							require.Equal(t, "1.0", artifactData.Version)
+							return appVersion, nil, nil
+						},
+					},
+					BitriseAPI: &testBitriseAPI{
+						getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
+							return []bitrise.ArtifactListElementResponseModel{}, nil
+						},
+					},
+				},
+				requestBody:         `{"build_slug":"test-build-slug","build_triggered_workflow":"ios-wf"}`,
+				expectedInternalErr: "No artifact found",
+			})
+		})
+
+		t.Run("when selected artifact has no artifact meta", func(t *testing.T) {
+			performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+				contextElements: map[ctxpkg.RequestContextKey]interface{}{
+					services.ContextKeyAuthorizedAppID: uuid.NewV4(),
+				},
+				requestHeaders: map[string]string{"Bitrise-Event-Type": "build/finished"},
+				env: &env.AppEnv{
+					AppService: &testAppService{
+						findFn: func(app *models.App) (*models.App, error) {
+							return app, nil
+						},
+					},
+					AppSettingsService: &testAppSettingsService{
+						findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
+							return &models.AppSettings{
+								IosWorkflow: "ios-wf,ios-wf2",
+								App: &models.App{
+									APIToken: "test-api-token",
+									AppSlug:  "test-app-slug",
+								},
+							}, nil
+						},
+					},
+					AppVersionService: &testAppVersionService{
+						createFn: func(appVersion *models.AppVersion) (*models.AppVersion, []error, error) {
+							require.Equal(t, "ios", appVersion.Platform)
+							require.Equal(t, "test-build-slug", appVersion.BuildSlug)
+							require.NotEqual(t, time.Time{}, appVersion.LastUpdate)
+							artifactData, err := appVersion.ArtifactInfo()
+							require.NoError(t, err)
+							require.Equal(t, "1.0", artifactData.Version)
+							return appVersion, nil, nil
+						},
+					},
+					BitriseAPI: &testBitriseAPI{
+						getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
+							return []bitrise.ArtifactListElementResponseModel{
+								bitrise.ArtifactListElementResponseModel{
+									Title:        "my-ios-xcarchive.zip",
+									ArtifactMeta: nil,
+								},
+							}, nil
+						},
+					},
+				},
+				requestBody:         `{"build_slug":"test-build-slug","build_triggered_workflow":"ios-wf"}`,
+				expectedInternalErr: "No artifact meta data found for artifact",
+			})
+		})
+
+		t.Run("when selected artifact has no artifact meta", func(t *testing.T) {
+			performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+				contextElements: map[ctxpkg.RequestContextKey]interface{}{
+					services.ContextKeyAuthorizedAppID: uuid.NewV4(),
+				},
+				requestHeaders: map[string]string{"Bitrise-Event-Type": "build/finished"},
+				env: &env.AppEnv{
+					AppService: &testAppService{
+						findFn: func(app *models.App) (*models.App, error) {
+							return app, nil
+						},
+					},
+					AppSettingsService: &testAppSettingsService{
+						findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
+							return &models.AppSettings{
+								IosWorkflow: "ios-wf,ios-wf2",
+								App: &models.App{
+									APIToken: "test-api-token",
+									AppSlug:  "test-app-slug",
+								},
+							}, nil
+						},
+					},
+					AppVersionService: &testAppVersionService{
+						createFn: func(appVersion *models.AppVersion) (*models.AppVersion, []error, error) {
+							require.Equal(t, "ios", appVersion.Platform)
+							require.Equal(t, "test-build-slug", appVersion.BuildSlug)
+							require.NotEqual(t, time.Time{}, appVersion.LastUpdate)
+							artifactData, err := appVersion.ArtifactInfo()
+							require.NoError(t, err)
+							require.Equal(t, "1.0", artifactData.Version)
+							return appVersion, nil, nil
+						},
+					},
+					BitriseAPI: &testBitriseAPI{
+						getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
+							return []bitrise.ArtifactListElementResponseModel{
+								bitrise.ArtifactListElementResponseModel{
+									Title: "my-ios-artifact.ipa",
+									ArtifactMeta: &bitrise.ArtifactMeta{
+										AppInfo:          bitrise.AppInfo{},
+										ProvisioningInfo: bitrise.ProvisioningInfo{DistributionType: "app-store"},
+									},
+								},
+							}, nil
+						},
+					},
+				},
+				requestBody:         `{"build_slug":"test-build-slug","build_triggered_workflow":"ios-wf"}`,
+				expectedInternalErr: "No artifact app info found for artifact",
+			})
+		})
+
+		t.Run("when selected artifact has no artifact meta", func(t *testing.T) {
+			performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+				contextElements: map[ctxpkg.RequestContextKey]interface{}{
+					services.ContextKeyAuthorizedAppID: uuid.NewV4(),
+				},
+				requestHeaders: map[string]string{"Bitrise-Event-Type": "build/finished"},
+				env: &env.AppEnv{
+					AppService: &testAppService{
+						findFn: func(app *models.App) (*models.App, error) {
+							return app, nil
+						},
+					},
+					AppSettingsService: &testAppSettingsService{
+						findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
+							return &models.AppSettings{
+								IosWorkflow: "ios-wf,ios-wf2",
+								App: &models.App{
+									APIToken: "test-api-token",
+									AppSlug:  "test-app-slug",
+								},
+							}, nil
+						},
+					},
+					AppVersionService: &testAppVersionService{
+						createFn: func(appVersion *models.AppVersion) (*models.AppVersion, []error, error) {
+							require.Equal(t, "ios", appVersion.Platform)
+							require.Equal(t, "test-build-slug", appVersion.BuildSlug)
+							require.NotEqual(t, time.Time{}, appVersion.LastUpdate)
+							artifactData, err := appVersion.ArtifactInfo()
+							require.NoError(t, err)
+							require.Equal(t, "1.0", artifactData.Version)
+							return appVersion, nil, nil
+						},
+					},
+					BitriseAPI: &testBitriseAPI{
+						getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
+							return []bitrise.ArtifactListElementResponseModel{
+								bitrise.ArtifactListElementResponseModel{
+									Title: "my-xcarchive.zip",
+									ArtifactMeta: &bitrise.ArtifactMeta{
+										AppInfo: bitrise.AppInfo{
+											Version: "1.0",
+										},
+										ProvisioningInfo: bitrise.ProvisioningInfo{},
+									},
+								},
+							}, nil
+						},
+					},
+				},
+				requestBody:         `{"build_slug":"test-build-slug","build_triggered_workflow":"ios-wf"}`,
+				expectedInternalErr: "No artifact provisioning info found for artifact",
+			})
+		})
+
 		t.Run("when validation error is retrieved when creating new ios version", func(t *testing.T) {
 			performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
 				contextElements: map[ctxpkg.RequestContextKey]interface{}{
@@ -426,10 +680,9 @@ func Test_BuildWebhookHandler(t *testing.T) {
 						createFn: func(appVersion *models.AppVersion) (*models.AppVersion, []error, error) {
 							require.Equal(t, "android", appVersion.Platform)
 							require.Equal(t, "test-build-slug", appVersion.BuildSlug)
-							require.Equal(t, "1.0", appVersion.Version)
-							appInfo, err := appVersion.AppInfo()
+							appInfo, err := appVersion.ArtifactInfo()
 							require.NoError(t, err)
-							require.Equal(t, models.AppInfo{MinimumSDK: "1.23", PackageName: "myPackage"}, appInfo)
+							require.Equal(t, models.ArtifactInfo{Version: "1.0", MinimumSDK: "1.23", PackageName: "myPackage"}, appInfo)
 							return appVersion, nil, nil
 						},
 					},
@@ -482,10 +735,9 @@ func Test_BuildWebhookHandler(t *testing.T) {
 						createFn: func(appVersion *models.AppVersion) (*models.AppVersion, []error, error) {
 							require.Equal(t, "android", appVersion.Platform)
 							require.Equal(t, "test-build-slug", appVersion.BuildSlug)
-							require.Equal(t, "1.0", appVersion.Version)
-							appInfo, err := appVersion.AppInfo()
+							appInfo, err := appVersion.ArtifactInfo()
 							require.NoError(t, err)
-							require.Equal(t, models.AppInfo{MinimumSDK: "1.23", PackageName: "myPackage"}, appInfo)
+							require.Equal(t, models.ArtifactInfo{Version: "1.0", MinimumSDK: "1.23", PackageName: "myPackage"}, appInfo)
 							return appVersion, nil, nil
 						},
 					},

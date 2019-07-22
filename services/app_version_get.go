@@ -25,6 +25,12 @@ type AppVersionGetResponseData struct {
 	AppStoreInfo         models.AppStoreInfo `json:"app_store_info"`
 	PublishEnabled       bool                `json:"publish_enabled"`
 	AppInfo              AppData             `json:"app_info"`
+	DistributionType     string              `json:"distributuin_type"`
+	Version              string              `json:"version"`
+	MinimumOS            string              `json:"minimum_os,omitempty"`
+	MinimumSDK           string              `json:"minimum_sdk,omitempty"`
+	Size                 int64               `json:"size"`
+	SupportedDeviceTypes []string            `json:"supported_device_types"`
 }
 
 // AppVersionGetResponse ...
@@ -111,11 +117,21 @@ func newArtifactVersionGetResponse(appVersion *models.AppVersion, env *env.AppEn
 	if err != nil {
 		return AppVersionGetResponseData{}, err
 	}
+	artifactInfo, err := appVersion.ArtifactInfo()
+	if err != nil {
+		return AppVersionGetResponseData{}, err
+	}
 	return AppVersionGetResponseData{
 		AppVersion:           appVersion,
 		PublicInstallPageURL: artifactPublicInstallPageURL,
 		AppStoreInfo:         appStoreInfo,
 		PublishEnabled:       publishEnabled,
 		AppInfo:              appData,
+		DistributionType:     artifactInfo.DistributionType,
+		Version:              artifactInfo.Version,
+		MinimumOS:            artifactInfo.MinimumOS,
+		MinimumSDK:           artifactInfo.MinimumSDK,
+		Size:                 artifactInfo.Size,
+		SupportedDeviceTypes: artifactInfo.SupportedDeviceTypes,
 	}, nil
 }

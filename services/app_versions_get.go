@@ -9,9 +9,20 @@ import (
 	"github.com/pkg/errors"
 )
 
+// AppVersionsGetResponseElement ...
+type AppVersionsGetResponseElement struct {
+	models.AppVersion
+	DistributionType     string   `json:"distributuin_type"`
+	Version              string   `json:"version"`
+	MinimumOS            string   `json:"minimum_os,omitempty"`
+	MinimumSDK           string   `json:"minimum_sdk,omitempty"`
+	Size                 int64    `json:"size"`
+	SupportedDeviceTypes []string `json:"supported_device_types"`
+}
+
 // AppVersionsGetResponse ...
 type AppVersionsGetResponse struct {
-	Data []models.AppVersion `json:"data"`
+	Data []AppVersionsGetResponseElement `json:"data"`
 }
 
 // AppVersionsGetHandler ...
@@ -36,7 +47,33 @@ func AppVersionsGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Reque
 	if err != nil {
 		return errors.Wrap(err, "SQL Error")
 	}
+
+	response, err := newAppVersionsGetResponse(appVersions)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
 	return httpresponse.RespondWithSuccess(w, AppVersionsGetResponse{
-		Data: appVersions,
+		Data: response,
 	})
+}
+
+func newAppVersionsGetResponse(appVersions []models.AppVersion) ([]AppVersionsGetResponseElement, error) {
+	elements := []AppVersionsGetResponseElement{}
+	for _, appVersion := range appVersions {
+		artifactInfo, err := appVersion.ArtifactInfo()
+		if err != nil {
+			return nil, err
+		}
+		elements = append(elements, AppVersionsGetResponseElement{
+			AppVersion:           appVersion,
+			Version:              artifactInfo.Version,
+			MinimumOS:            artifactInfo.MinimumOS,
+			MinimumSDK:           artifactInfo.MinimumSDK,
+			Size:                 artifactInfo.Size,
+			DistributionType:     artifactInfo.DistributionType,
+			SupportedDeviceTypes: artifactInfo.SupportedDeviceTypes,
+		})
+	}
+	return elements, nil
 }

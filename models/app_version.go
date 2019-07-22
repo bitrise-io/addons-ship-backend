@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/jinzhu/gorm"
-	"github.com/lib/pq"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 )
@@ -17,19 +16,18 @@ const (
 	maxCharNumberForIOSFullDescription      = 255
 )
 
-// AppInfo ...
-type AppInfo struct {
-	MinimumOS            string   `json:"minimum_os"`
-	MinimumSDK           string   `json:"minimum_sdk"`
-	BundleID             string   `json:"bundle_id"`
-	SupportedDeviceTypes []string `json:"supported_device_types"`
-	PackageName          string   `json:"package_name"`
-}
-
-// ProvisioningInfo ...
-type ProvisioningInfo struct {
-	ExpireDate       time.Time `json:"expire_date"`
-	DistributionType string    `json:"distribution_type"`
+// ArtifactInfo ...
+type ArtifactInfo struct {
+	Version              string    `json:"version"`
+	MinimumOS            string    `json:"minimum_os"`
+	MinimumSDK           string    `json:"minimum_sdk"`
+	Size                 int64     `json:"size"`
+	BundleID             string    `json:"bundle_id"`
+	SupportedDeviceTypes []string  `json:"supported_device_types"`
+	PackageName          string    `json:"package_name"`
+	ExpireDate           time.Time `json:"expire_date"`
+	DistributionType     string    `json:"distribution_type"`
+	CertificateExpiresAt time.Time `json:"certificate_expires_at"`
 }
 
 // AppStoreInfo ...
@@ -47,22 +45,14 @@ type AppStoreInfo struct {
 // AppVersion ...
 type AppVersion struct {
 	Record
-	Version              string          `json:"version"`
-	Platform             string          `json:"platform"`
-	BuildNumber          string          `json:"build_number"`
-	BuildSlug            string          `json:"build_slug"`
-	LastUpdate           time.Time       `json:"last_update"`
-	Scheme               string          `json:"scheme"`
-	Configuration        string          `json:"configuration"`
-	Size                 int64           `json:"size"`
-	MinimumOS            string          `json:"minimum_os"`
-	MinimumSDK           string          `json:"minimum_sdk"`
-	CertificateExpiresAt time.Time       `json:"certificate_expires_at"`
-	DistributionType     string          `json:"distribution_type"`
-	SupportedDeviceTypes pq.StringArray  `json:"supported_device_types" gorm:"type:varchar(255)[]"`
-	AppInfoData          json.RawMessage `json:"-" db:"app_info" gorm:"column:app_info;type:json"`
-	ProvisioningInfoData json.RawMessage `json:"-" db:"provisioning_info" gorm:"column:provisioning_info;type:json"`
-	AppStoreInfoData     json.RawMessage `json:"-" db:"app_store_info" gorm:"column:app_store_info;type:json"`
+	Platform         string          `json:"platform"`
+	BuildNumber      string          `json:"build_number"`
+	BuildSlug        string          `json:"build_slug"`
+	LastUpdate       time.Time       `json:"last_update"`
+	Scheme           string          `json:"scheme"`
+	Configuration    string          `json:"configuration"`
+	ArtifactInfoData json.RawMessage `json:"-" db:"artifact_info" gorm:"column:app_info;type:json"`
+	AppStoreInfoData json.RawMessage `json:"-" db:"app_store_info" gorm:"column:app_store_info;type:json"`
 
 	AppID uuid.UUID `db:"app_id" json:"-"`
 	App   App       `gorm:"foreignkey:AppID" json:"-"`
@@ -76,11 +66,8 @@ func (a *AppVersion) BeforeCreate(scope *gorm.Scope) error {
 	if a.AppStoreInfoData == nil {
 		a.AppStoreInfoData = json.RawMessage(`{}`)
 	}
-	if a.AppInfoData == nil {
-		a.AppInfoData = json.RawMessage(`{}`)
-	}
-	if a.ProvisioningInfoData == nil {
-		a.ProvisioningInfoData = json.RawMessage(`{}`)
+	if a.ArtifactInfoData == nil {
+		a.ArtifactInfoData = json.RawMessage(`{}`)
 	}
 	err := a.validate(scope)
 	if err != nil {
@@ -132,22 +119,12 @@ func (a *AppVersion) AppStoreInfo() (AppStoreInfo, error) {
 	return appStoreInfo, nil
 }
 
-// AppInfo ...
-func (a *AppVersion) AppInfo() (AppInfo, error) {
-	var appInfo AppInfo
-	err := json.Unmarshal(a.AppInfoData, &appInfo)
+// ArtifactInfo ...
+func (a *AppVersion) ArtifactInfo() (ArtifactInfo, error) {
+	var artifactInfo ArtifactInfo
+	err := json.Unmarshal(a.ArtifactInfoData, &artifactInfo)
 	if err != nil {
-		return AppInfo{}, err
+		return ArtifactInfo{}, err
 	}
-	return appInfo, nil
-}
-
-// ProvisioningInfo ...
-func (a *AppVersion) ProvisioningInfo() (ProvisioningInfo, error) {
-	var provisioningInfo ProvisioningInfo
-	err := json.Unmarshal(a.ProvisioningInfoData, &provisioningInfo)
-	if err != nil {
-		return ProvisioningInfo{}, err
-	}
-	return provisioningInfo, nil
+	return artifactInfo, nil
 }

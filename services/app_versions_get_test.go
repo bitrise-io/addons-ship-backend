@@ -1,6 +1,7 @@
 package services_test
 
 import (
+	"encoding/json"
 	"net/http"
 	"testing"
 
@@ -52,7 +53,7 @@ func Test_AppVersionsGetHandler(t *testing.T) {
 			},
 			expectedStatusCode: http.StatusOK,
 			expectedResponse: services.AppVersionsGetResponse{
-				Data: []models.AppVersion{},
+				Data: []services.AppVersionsGetResponseElement{},
 			},
 		})
 	})
@@ -67,12 +68,12 @@ func Test_AppVersionsGetHandler(t *testing.T) {
 					findAllFn: func(app *models.App, filterParams map[string]interface{}) ([]models.AppVersion, error) {
 						return []models.AppVersion{
 							models.AppVersion{
-								Version:  "v1.0",
-								Platform: "ios",
+								Platform:         "ios",
+								ArtifactInfoData: json.RawMessage(`{"version":"v1.0"}`),
 							},
 							models.AppVersion{
-								Version:  "v1.12",
-								Platform: "android",
+								Platform:         "android",
+								ArtifactInfoData: json.RawMessage(`{"version":"v1.12"}`),
 							},
 						}, nil
 					},
@@ -80,14 +81,18 @@ func Test_AppVersionsGetHandler(t *testing.T) {
 			},
 			expectedStatusCode: http.StatusOK,
 			expectedResponse: services.AppVersionsGetResponse{
-				Data: []models.AppVersion{
-					models.AppVersion{
-						Version:  "v1.0",
-						Platform: "ios",
+				Data: []services.AppVersionsGetResponseElement{
+					services.AppVersionsGetResponseElement{
+						AppVersion: models.AppVersion{
+							Platform: "ios",
+						},
+						Version: "v1.0",
 					},
-					models.AppVersion{
-						Version:  "v1.12",
-						Platform: "android",
+					services.AppVersionsGetResponseElement{
+						AppVersion: models.AppVersion{
+							Platform: "android",
+						},
+						Version: "v1.12",
 					},
 				},
 			},
@@ -109,8 +114,8 @@ func Test_AppVersionsGetHandler(t *testing.T) {
 						})
 						return []models.AppVersion{
 							models.AppVersion{
-								Version:  "v1.0",
-								Platform: "ios",
+								ArtifactInfoData: json.RawMessage(`{"version":"v1.0"}`),
+								Platform:         "ios",
 							},
 						}, nil
 					},
@@ -118,10 +123,12 @@ func Test_AppVersionsGetHandler(t *testing.T) {
 			},
 			expectedStatusCode: http.StatusOK,
 			expectedResponse: services.AppVersionsGetResponse{
-				Data: []models.AppVersion{
-					models.AppVersion{
-						Version:  "v1.0",
-						Platform: "ios",
+				Data: []services.AppVersionsGetResponseElement{
+					services.AppVersionsGetResponseElement{
+						AppVersion: models.AppVersion{
+							Platform: "ios",
+						},
+						Version: "v1.0",
 					},
 				},
 			},

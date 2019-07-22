@@ -32,20 +32,20 @@ func prepareAppVersionForAndroidPlatform(env *env.AppEnv, w http.ResponseWriter,
 		return nil, errors.New("No artifact app info found for artifact")
 	}
 
-	appInfo := models.AppInfo{
+	artifactInfo := models.ArtifactInfo{
 		MinimumSDK:  selectedArtifact.ArtifactMeta.AppInfo.MinimumSDKVersion,
 		PackageName: selectedArtifact.ArtifactMeta.AppInfo.PackageName,
+		Version:     selectedArtifact.ArtifactMeta.AppInfo.VersionName,
 	}
-	appInfoData, err := json.Marshal(appInfo)
+	artifactInfoData, err := json.Marshal(artifactInfo)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 
 	return &models.AppVersion{
-		Platform:    "android",
-		Version:     selectedArtifact.ArtifactMeta.AppInfo.VersionName,
-		BuildSlug:   buildSlug,
-		AppInfoData: appInfoData,
+		Platform:         "android",
+		BuildSlug:        buildSlug,
+		ArtifactInfoData: artifactInfoData,
 	}, nil
 }
 
