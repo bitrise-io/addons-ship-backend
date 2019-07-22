@@ -8,7 +8,6 @@ import (
 	"github.com/bitrise-io/addons-ship-backend/bitrise"
 	"github.com/bitrise-io/addons-ship-backend/env"
 	"github.com/bitrise-io/addons-ship-backend/models"
-	"github.com/bitrise-io/api-utils/httpresponse"
 	"github.com/pkg/errors"
 )
 
@@ -21,7 +20,7 @@ func prepareAppVersionForAndroidPlatform(env *env.AppEnv, w http.ResponseWriter,
 
 	selectedArtifact, _, _, _ := selectAndroidArtifact(artifacts)
 	if selectedArtifact == nil {
-		return nil, httpresponse.RespondWithNotFoundError(w)
+		return nil, errors.New("No artifact found")
 	}
 
 	if selectedArtifact.ArtifactMeta == nil {
