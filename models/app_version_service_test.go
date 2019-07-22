@@ -18,9 +18,11 @@ func compareAppVersion(t *testing.T, expected, actual models.AppVersion) {
 	expected.CreatedAt = time.Time{}
 	expected.UpdatedAt = time.Time{}
 	expected.LastUpdate = time.Time{}
+	expected.CertificateExpiresAt = time.Time{}
 	actual.CreatedAt = time.Time{}
 	actual.UpdatedAt = time.Time{}
 	actual.LastUpdate = time.Time{}
+	actual.CertificateExpiresAt = time.Time{}
 	require.Equal(t, expected, actual)
 }
 
