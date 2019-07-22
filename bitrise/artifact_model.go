@@ -16,6 +16,8 @@ type AppInfo struct {
 	BundleID          string `json:"bundle_id"`
 	DeviceFamilyList  []int  `json:"device_family_list"`
 	PackageName       string `json:"package_name"`
+	VersionName       string `json:"version_name"`
+	Version           string `json:"version"`
 }
 
 // ProvisioningInfo ...
@@ -97,7 +99,7 @@ func (a ArtifactListElementResponseModel) IsIPA() bool {
 
 // IsXCodeArchive ...
 func (a ArtifactListElementResponseModel) IsXCodeArchive() bool {
-	return strings.Contains(strings.ToLower(a.Title), "xcodearchive") && filepath.Ext(a.Title) == ".zip"
+	return strings.Contains(strings.ToLower(a.Title), "xcarchive") && filepath.Ext(a.Title) == ".zip"
 }
 
 // IsAAB ...

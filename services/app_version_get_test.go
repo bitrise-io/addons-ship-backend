@@ -60,6 +60,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 							return &models.AppVersion{
 								App:              models.App{},
 								AppStoreInfoData: json.RawMessage(`{}`),
+								ArtifactInfoData: json.RawMessage(`{"distribution_type":"development"}`),
 								Platform:         "ios",
 							}, nil
 						},
@@ -89,7 +90,9 @@ func Test_AppVersionGetHandler(t *testing.T) {
 				expectedStatusCode: http.StatusOK,
 				expectedResponse: services.AppVersionGetResponse{
 					Data: services.AppVersionGetResponseData{
-						AppVersion:       &models.AppVersion{Platform: "ios"},
+						AppVersion: &models.AppVersion{
+							Platform: "ios",
+						},
 						DistributionType: "development",
 					},
 				},
@@ -105,12 +108,12 @@ func Test_AppVersionGetHandler(t *testing.T) {
 					AppVersionService: &testAppVersionService{
 						findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
 							return &models.AppVersion{
-								Version:          "v1.0",
 								Platform:         "ios",
 								AppStoreInfoData: json.RawMessage(`{"short_description":"Some shorter description"}`),
 								App: models.App{
 									BitriseAPIToken: "test-api-token",
 								},
+								ArtifactInfoData: json.RawMessage(`{"version":"v1.0","distribution_type":"app-store","size":1024,"minimum_os":"11.1"}`),
 							}, nil
 						},
 					},
@@ -145,17 +148,17 @@ func Test_AppVersionGetHandler(t *testing.T) {
 				expectedResponse: services.AppVersionGetResponse{
 					Data: services.AppVersionGetResponseData{
 						AppVersion: &models.AppVersion{
-							Version:  "v1.0",
 							Platform: "ios",
 						},
-						MinimumOS: "11.1",
+						MinimumOS:        "11.1",
+						Size:             1024,
+						DistributionType: "app-store",
+						Version:          "v1.0",
 						AppInfo: services.AppData{
 							Title:       "The Adventures of Stealy",
 							AppIconURL:  pointers.NewStringPtr("https://bit.ly/1LixVJu"),
 							ProjectType: "ios",
 						},
-						Size:             1024,
-						DistributionType: "app-store",
 						AppStoreInfo: models.AppStoreInfo{
 							ShortDescription: "Some shorter description",
 						},
@@ -174,12 +177,12 @@ func Test_AppVersionGetHandler(t *testing.T) {
 					AppVersionService: &testAppVersionService{
 						findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
 							return &models.AppVersion{
-								Version:          "v1.0",
 								Platform:         "ios",
 								AppStoreInfoData: json.RawMessage(`{"short_description":"Some shorter description"}`),
 								App: models.App{
 									BitriseAPIToken: "test-api-token",
 								},
+								ArtifactInfoData: json.RawMessage(`{"version":"v1.0","minimum_os":"11.1"}`),
 							}, nil
 						},
 					},
@@ -187,7 +190,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 						getArtifactsFn: func(string, string, string) ([]bitrise.ArtifactListElementResponseModel, error) {
 							return []bitrise.ArtifactListElementResponseModel{
 								bitrise.ArtifactListElementResponseModel{
-									Title: "XCodeArchive.zip",
+									Title: "XCode10.xcarchive.zip",
 									ArtifactMeta: &bitrise.ArtifactMeta{
 										AppInfo: bitrise.AppInfo{MinimumOS: "11.1"},
 									},
@@ -210,9 +213,9 @@ func Test_AppVersionGetHandler(t *testing.T) {
 				expectedResponse: services.AppVersionGetResponse{
 					Data: services.AppVersionGetResponseData{
 						AppVersion: &models.AppVersion{
-							Version:  "v1.0",
 							Platform: "ios",
 						},
+						Version:   "v1.0",
 						MinimumOS: "11.1",
 						AppInfo: services.AppData{
 							Title:       "The Adventures of Stealy",
@@ -237,12 +240,12 @@ func Test_AppVersionGetHandler(t *testing.T) {
 					AppVersionService: &testAppVersionService{
 						findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
 							return &models.AppVersion{
-								Version:          "v1.0",
 								Platform:         "ios",
 								AppStoreInfoData: json.RawMessage(`{"short_description":"Some shorter description"}`),
 								App: models.App{
 									BitriseAPIToken: "test-api-token",
 								},
+								ArtifactInfoData: json.RawMessage(`{"version":"v1.0","distribution_type":"development","minimum_os":"10.1"}`),
 							}, nil
 						},
 					},
@@ -276,17 +279,17 @@ func Test_AppVersionGetHandler(t *testing.T) {
 				expectedResponse: services.AppVersionGetResponse{
 					Data: services.AppVersionGetResponseData{
 						AppVersion: &models.AppVersion{
-							Version:  "v1.0",
 							Platform: "ios",
 						},
+						Version:              "v1.0",
 						MinimumOS:            "10.1",
+						DistributionType:     "development",
 						PublicInstallPageURL: "http://don.t.go.there",
 						AppInfo: services.AppData{
 							Title:       "The Adventures of Stealy",
 							AppIconURL:  pointers.NewStringPtr("https://bit.ly/1LixVJu"),
 							ProjectType: "ios",
 						},
-						DistributionType: "development",
 						AppStoreInfo: models.AppStoreInfo{
 							ShortDescription: "Some shorter description",
 						},
@@ -304,12 +307,12 @@ func Test_AppVersionGetHandler(t *testing.T) {
 					AppVersionService: &testAppVersionService{
 						findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
 							return &models.AppVersion{
-								Version:          "v1.0",
 								Platform:         "ios",
 								AppStoreInfoData: json.RawMessage(`{}`),
 								App: models.App{
 									BitriseAPIToken: "test-api-token",
 								},
+								ArtifactInfoData: json.RawMessage(`{"version":"v1.0","distribution_type":"development","minimum_os":"10.1","supported_device_types":["iPhone","iPod Touch","iPad"]}`),
 							}, nil
 						},
 					},
@@ -343,18 +346,18 @@ func Test_AppVersionGetHandler(t *testing.T) {
 				expectedResponse: services.AppVersionGetResponse{
 					Data: services.AppVersionGetResponseData{
 						AppVersion: &models.AppVersion{
-							Version:  "v1.0",
 							Platform: "ios",
 						},
+						Version:              "v1.0",
 						MinimumOS:            "10.1",
 						SupportedDeviceTypes: []string{"iPhone", "iPod Touch", "iPad"},
+						DistributionType:     "development",
 						PublicInstallPageURL: "http://don.t.go.there",
 						AppInfo: services.AppData{
 							Title:       "The Adventures of Stealy",
 							AppIconURL:  pointers.NewStringPtr("https://bit.ly/1LixVJu"),
 							ProjectType: "ios",
 						},
-						DistributionType: "development",
 					},
 				},
 			})
@@ -369,12 +372,12 @@ func Test_AppVersionGetHandler(t *testing.T) {
 					AppVersionService: &testAppVersionService{
 						findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
 							return &models.AppVersion{
-								Version:          "v1.0",
 								Platform:         "ios",
 								AppStoreInfoData: json.RawMessage(`{}`),
 								App: models.App{
 									BitriseAPIToken: "test-api-token",
 								},
+								ArtifactInfoData: json.RawMessage(`{"version":"v1.0","minimum_os":"10.1","supported_device_types":["Unknown"]}`),
 							}, nil
 						},
 					},
@@ -408,9 +411,9 @@ func Test_AppVersionGetHandler(t *testing.T) {
 				expectedResponse: services.AppVersionGetResponse{
 					Data: services.AppVersionGetResponseData{
 						AppVersion: &models.AppVersion{
-							Version:  "v1.0",
 							Platform: "ios",
 						},
+						Version:              "v1.0",
 						MinimumOS:            "10.1",
 						SupportedDeviceTypes: []string{"Unknown"},
 						PublicInstallPageURL: "http://don.t.go.there",
@@ -419,7 +422,6 @@ func Test_AppVersionGetHandler(t *testing.T) {
 							AppIconURL:  pointers.NewStringPtr("https://bit.ly/1LixVJu"),
 							ProjectType: "ios",
 						},
-						DistributionType: "development",
 					},
 				},
 			})
@@ -491,8 +493,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 						},
 					},
 				},
-				expectedStatusCode: http.StatusNotFound,
-				expectedResponse:   httpresponse.StandardErrorRespModel{Message: "Not Found"},
+				expectedInternalErr: "SOME-BITRISE-API-ERROR",
 			})
 		})
 
@@ -548,6 +549,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 							return &models.AppVersion{
 								App:              models.App{},
 								AppStoreInfoData: json.RawMessage(`{}`),
+								ArtifactInfoData: json.RawMessage(`{}`),
 								Platform:         "android",
 							}, nil
 						},
@@ -593,6 +595,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 							return &models.AppVersion{
 								App:              models.App{},
 								AppStoreInfoData: json.RawMessage(`{}`),
+								ArtifactInfoData: json.RawMessage(`{}`),
 								Platform:         "android",
 							}, nil
 						},
@@ -690,8 +693,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 						},
 					},
 				},
-				expectedStatusCode: http.StatusNotFound,
-				expectedResponse:   httpresponse.StandardErrorRespModel{Message: "Not Found"},
+				expectedInternalErr: "SOME-BITRISE-API-ERROR",
 			})
 		})
 

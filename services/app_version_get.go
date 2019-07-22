@@ -2,7 +2,6 @@ package services
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/bitrise-io/addons-ship-backend/bitrise"
 	"github.com/bitrise-io/addons-ship-backend/env"
@@ -22,18 +21,18 @@ type AppData struct {
 // AppVersionGetResponseData ...
 type AppVersionGetResponseData struct {
 	*models.AppVersion
-	MinimumOS            string              `json:"minimum_os"`
-	MinimumSDK           string              `json:"minimum_sdk"`
-	PackageName          string              `json:"package_name"`
-	CertificateExpires   time.Time           `json:"certificate_expires"`
-	BundleID             string              `json:"bundle_id"`
-	Size                 int64               `json:"size"`
-	SupportedDeviceTypes []string            `json:"supported_device_types"`
-	DistributionType     string              `json:"distribution_type"`
 	PublicInstallPageURL string              `json:"public_install_page_url"`
-	AppInfo              AppData             `json:"app_info"`
 	AppStoreInfo         models.AppStoreInfo `json:"app_store_info"`
 	PublishEnabled       bool                `json:"publish_enabled"`
+	AppInfo              AppData             `json:"app_info"`
+	DistributionType     string              `json:"distributuin_type,omitempty"`
+	Version              string              `json:"version"`
+	MinimumOS            string              `json:"minimum_os,omitempty"`
+	MinimumSDK           string              `json:"minimum_sdk,omitempty"`
+	BundleID             string              `json:"bundle_id,omitempty"`
+	PackageName          string              `json:"package_name,omitempty"`
+	Size                 int64               `json:"size"`
+	SupportedDeviceTypes []string            `json:"supported_device_types"`
 }
 
 // AppVersionGetResponse ...
@@ -65,68 +64,76 @@ func AppVersionGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Reques
 		return errors.New("No Bitrise API Service defined for handler")
 	}
 
-	artifacts, err := env.BitriseAPI.GetArtifacts(
-		appVersion.App.BitriseAPIToken,
-		appVersion.App.AppSlug,
-		appVersion.BuildSlug,
-	)
+	artifacts, err := env.BitriseAPI.GetArtifacts(appVersion.App.APIToken, appVersion.App.AppSlug, appVersion.BuildSlug)
 	if err != nil {
 		return errors.WithStack(err)
 	}
 
-	switch appVersion.Platform {
-	case "ios":
-		return appVersionGetIosHelper(env, w, r, appVersion, artifacts)
-	case "android":
-		return appVersionGetAndroidHelper(env, w, r, appVersion, artifacts)
-	default:
-		return errors.Errorf("Invalid platform type of app version: %s", appVersion.Platform)
+	responseData, err := newArtifactVersionGetResponse(appVersion, env, artifacts)
+	if err != nil {
+		return errors.WithStack(err)
 	}
+
+	return httpresponse.RespondWithSuccess(w, AppVersionGetResponse{
+		Data: responseData,
+	})
 }
 
-func newArtifactVersionGetResponse(appVersion *models.AppVersion, artifact bitrise.ArtifactListElementResponseModel,
-	publicInstallPageURL string, appDetails *bitrise.AppDetails, publishEnabled bool) (AppVersionGetResponseData, error) {
-	var supportedDeviceTypes []string
-	artifactMeta := artifact.ArtifactMeta
-	if artifactMeta == nil {
-		return AppVersionGetResponseData{}, errors.New("No artifact meta data found for artifact")
+func newArtifactVersionGetResponse(appVersion *models.AppVersion, env *env.AppEnv, artifacts []bitrise.ArtifactListElementResponseModel) (AppVersionGetResponseData, error) {
+	var publishEnabled, publicInstallPageEnabled bool
+	var publicInstallPageArtifactSlug string
+	switch appVersion.Platform {
+	case "ios":
+		_, publishEnabled, publicInstallPageEnabled, publicInstallPageArtifactSlug = selectIosArtifact(artifacts)
+	case "android":
+		_, publishEnabled, publicInstallPageEnabled, publicInstallPageArtifactSlug = selectAndroidArtifact(artifacts)
+	default:
+		return AppVersionGetResponseData{}, errors.Errorf("Invalid platform type of app version: %s", appVersion.Platform)
 	}
-	for _, familyID := range artifactMeta.AppInfo.DeviceFamilyList {
-		switch familyID {
-		case 1:
-			supportedDeviceTypes = append(supportedDeviceTypes, "iPhone", "iPod Touch")
-		case 2:
-			supportedDeviceTypes = append(supportedDeviceTypes, "iPad")
-		default:
-			supportedDeviceTypes = append(supportedDeviceTypes, "Unknown")
+
+	var artifactPublicInstallPageURL string
+	if publicInstallPageEnabled {
+		var err error
+		artifactPublicInstallPageURL, err = env.BitriseAPI.GetArtifactPublicInstallPageURL(
+			appVersion.App.BitriseAPIToken,
+			appVersion.App.AppSlug,
+			appVersion.BuildSlug,
+			publicInstallPageArtifactSlug,
+		)
+		if err != nil {
+			return AppVersionGetResponseData{}, errors.WithStack(err)
 		}
+	}
+
+	appDetails, err := env.BitriseAPI.GetAppDetails(appVersion.App.APIToken, appVersion.App.AppSlug)
+	if err != nil {
+		return AppVersionGetResponseData{}, errors.WithStack(err)
 	}
 	appData := AppData{
 		Title:       appDetails.Title,
 		AppIconURL:  appDetails.AvatarURL,
 		ProjectType: appDetails.ProjectType,
 	}
+
 	appStoreInfo, err := appVersion.AppStoreInfo()
 	if err != nil {
 		return AppVersionGetResponseData{}, err
 	}
-	var size int64
-	if artifact.FileSizeBytes != nil {
-		size = *artifact.FileSizeBytes
+	artifactInfo, err := appVersion.ArtifactInfo()
+	if err != nil {
+		return AppVersionGetResponseData{}, err
 	}
 	return AppVersionGetResponseData{
 		AppVersion:           appVersion,
-		MinimumOS:            artifactMeta.AppInfo.MinimumOS,
-		MinimumSDK:           artifactMeta.AppInfo.MinimumSDKVersion,
-		PackageName:          artifactMeta.AppInfo.PackageName,
-		CertificateExpires:   artifactMeta.ProvisioningInfo.ExpireDate,
-		BundleID:             artifactMeta.AppInfo.BundleID,
-		SupportedDeviceTypes: supportedDeviceTypes,
-		DistributionType:     artifactMeta.ProvisioningInfo.DistributionType,
-		PublicInstallPageURL: publicInstallPageURL,
-		AppInfo:              appData,
+		PublicInstallPageURL: artifactPublicInstallPageURL,
 		AppStoreInfo:         appStoreInfo,
-		Size:                 size,
 		PublishEnabled:       publishEnabled,
+		AppInfo:              appData,
+		DistributionType:     artifactInfo.DistributionType,
+		Version:              artifactInfo.Version,
+		MinimumOS:            artifactInfo.MinimumOS,
+		MinimumSDK:           artifactInfo.MinimumSDK,
+		Size:                 artifactInfo.Size,
+		SupportedDeviceTypes: artifactInfo.SupportedDeviceTypes,
 	}, nil
 }

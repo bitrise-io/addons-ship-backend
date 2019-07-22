@@ -23,3 +23,19 @@ func Test_AppVersion_AppStoreInfo(t *testing.T) {
 		require.Equal(t, models.AppStoreInfo{}, appStoreInfo)
 	})
 }
+
+func Test_AppVersion_ArtifactInfo(t *testing.T) {
+	t.Run("ok", func(t *testing.T) {
+		testAppVersion := &models.AppVersion{ArtifactInfoData: json.RawMessage(`{"minimum_os":"11.0"}`)}
+		artifactInfo, err := testAppVersion.ArtifactInfo()
+		require.NoError(t, err)
+		require.Equal(t, models.ArtifactInfo{MinimumOS: "11.0"}, artifactInfo)
+	})
+
+	t.Run("error unmarshaling store info", func(t *testing.T) {
+		testAppVersion := &models.AppVersion{}
+		artifactInfo, err := testAppVersion.ArtifactInfo()
+		require.EqualError(t, err, "unexpected end of JSON input")
+		require.Equal(t, models.ArtifactInfo{}, artifactInfo)
+	})
+}

@@ -44,6 +44,9 @@ func BuildWebhookHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request
 		if env.AppVersionService == nil {
 			return errors.New("No App Version Service defined for handler")
 		}
+		if env.BitriseAPI == nil {
+			return errors.New("No Bitrise API Service defined for handler")
+		}
 		var params BuildWebhookPayload
 		defer httprequest.BodyCloseWithErrorLog(r)
 		if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
@@ -65,13 +68,14 @@ func BuildWebhookHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request
 
 		if appSettings.IosWorkflow == "all" ||
 			(params.BuildTriggeredWorkflow != "" && strings.Contains(appSettings.IosWorkflow, params.BuildTriggeredWorkflow)) {
-			_, verrs, err := env.AppVersionService.Create(&models.AppVersion{
-				Platform:    "ios",
-				BuildNumber: fmt.Sprintf("%d", params.BuildNumber),
-				BuildSlug:   params.BuildSlug,
-				LastUpdate:  time.Now(),
-				AppID:       authorizedAppID,
-			})
+			appVersion, err := prepareAppVersionForIosPlatform(env, w, r, appSettings.App.APIToken, appSettings.App.AppSlug, params.BuildSlug)
+			if err != nil {
+				return err
+			}
+			appVersion.LastUpdate = time.Now()
+			appVersion.AppID = authorizedAppID
+			appVersion.BuildNumber = fmt.Sprintf("%d", params.BuildNumber)
+			_, verrs, err := env.AppVersionService.Create(appVersion)
 			if len(verrs) > 0 {
 				return httpresponse.RespondWithUnprocessableEntity(w, verrs)
 			}
@@ -82,13 +86,14 @@ func BuildWebhookHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request
 
 		if appSettings.AndroidWorkflow == "all" ||
 			(params.BuildTriggeredWorkflow != "" && strings.Contains(appSettings.AndroidWorkflow, params.BuildTriggeredWorkflow)) {
-			_, verrs, err := env.AppVersionService.Create(&models.AppVersion{
-				Platform:    "android",
-				BuildNumber: fmt.Sprintf("%d", params.BuildNumber),
-				BuildSlug:   params.BuildSlug,
-				LastUpdate:  time.Now(),
-				AppID:       authorizedAppID,
-			})
+			appVersion, err := prepareAppVersionForAndroidPlatform(env, w, r, appSettings.App.APIToken, appSettings.App.AppSlug, params.BuildSlug)
+			if err != nil {
+				return err
+			}
+			appVersion.LastUpdate = time.Now()
+			appVersion.AppID = authorizedAppID
+			appVersion.BuildNumber = fmt.Sprintf("%d", params.BuildNumber)
+			_, verrs, err := env.AppVersionService.Create(appVersion)
 			if len(verrs) > 0 {
 				return httpresponse.RespondWithUnprocessableEntity(w, verrs)
 			}

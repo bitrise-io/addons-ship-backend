@@ -131,8 +131,8 @@ func Test_FeatureGraphicService_Update(t *testing.T) {
 
 	t.Run("ok", func(t *testing.T) {
 		testAppVersions := []*models.AppVersion{
-			createTestAppVersion(t, &models.AppVersion{Platform: "iOS", Version: "v1.0"}),
-			createTestAppVersion(t, &models.AppVersion{Platform: "Android", Version: "v1.2"}),
+			createTestAppVersion(t, &models.AppVersion{Platform: "iOS"}),
+			createTestAppVersion(t, &models.AppVersion{Platform: "Android"}),
 		}
 		testFeatureGraphicToUpdate := *createTestFeatureGraphic(t, &models.FeatureGraphic{
 			UploadableObject: models.UploadableObject{Filename: "screenshot1.png"},

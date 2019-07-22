@@ -16,6 +16,19 @@ const (
 	maxCharNumberForIOSFullDescription      = 255
 )
 
+// ArtifactInfo ...
+type ArtifactInfo struct {
+	Version              string    `json:"version"`
+	MinimumOS            string    `json:"minimum_os"`
+	MinimumSDK           string    `json:"minimum_sdk"`
+	Size                 int64     `json:"size"`
+	BundleID             string    `json:"bundle_id"`
+	SupportedDeviceTypes []string  `json:"supported_device_types"`
+	PackageName          string    `json:"package_name"`
+	ExpireDate           time.Time `json:"expire_date"`
+	DistributionType     string    `json:"distribution_type"`
+}
+
 // AppStoreInfo ...
 type AppStoreInfo struct {
 	ShortDescription string `json:"short_description"`
@@ -31,13 +44,13 @@ type AppStoreInfo struct {
 // AppVersion ...
 type AppVersion struct {
 	Record
-	Version          string          `json:"version"`
 	Platform         string          `json:"platform"`
 	BuildNumber      string          `json:"build_number"`
 	BuildSlug        string          `json:"build_slug"`
 	LastUpdate       time.Time       `json:"last_update"`
 	Scheme           string          `json:"scheme"`
 	Configuration    string          `json:"configuration"`
+	ArtifactInfoData json.RawMessage `json:"-" db:"artifact_info" gorm:"column:app_info;type:json"`
 	AppStoreInfoData json.RawMessage `json:"-" db:"app_store_info" gorm:"column:app_store_info;type:json"`
 
 	AppID uuid.UUID `db:"app_id" json:"-"`
@@ -51,6 +64,9 @@ func (a *AppVersion) BeforeCreate(scope *gorm.Scope) error {
 	}
 	if a.AppStoreInfoData == nil {
 		a.AppStoreInfoData = json.RawMessage(`{}`)
+	}
+	if a.ArtifactInfoData == nil {
+		a.ArtifactInfoData = json.RawMessage(`{}`)
 	}
 	err := a.validate(scope)
 	if err != nil {
@@ -100,4 +116,14 @@ func (a *AppVersion) AppStoreInfo() (AppStoreInfo, error) {
 		return AppStoreInfo{}, err
 	}
 	return appStoreInfo, nil
+}
+
+// ArtifactInfo ...
+func (a *AppVersion) ArtifactInfo() (ArtifactInfo, error) {
+	var artifactInfo ArtifactInfo
+	err := json.Unmarshal(a.ArtifactInfoData, &artifactInfo)
+	if err != nil {
+		return ArtifactInfo{}, err
+	}
+	return artifactInfo, nil
 }

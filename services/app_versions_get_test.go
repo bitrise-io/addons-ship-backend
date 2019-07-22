@@ -1,6 +1,7 @@
 package services_test
 
 import (
+	"encoding/json"
 	"net/http"
 	"testing"
 
@@ -52,7 +53,7 @@ func Test_AppVersionsGetHandler(t *testing.T) {
 			},
 			expectedStatusCode: http.StatusOK,
 			expectedResponse: services.AppVersionsGetResponse{
-				Data: []models.AppVersion{},
+				Data: []services.AppVersionsGetResponseElement{},
 			},
 		})
 	})
@@ -67,12 +68,12 @@ func Test_AppVersionsGetHandler(t *testing.T) {
 					findAllFn: func(app *models.App, filterParams map[string]interface{}) ([]models.AppVersion, error) {
 						return []models.AppVersion{
 							models.AppVersion{
-								Version:  "v1.0",
-								Platform: "ios",
+								Platform:         "ios",
+								ArtifactInfoData: json.RawMessage(`{"version":"v1.0"}`),
 							},
 							models.AppVersion{
-								Version:  "v1.12",
-								Platform: "android",
+								Platform:         "android",
+								ArtifactInfoData: json.RawMessage(`{"version":"v1.12"}`),
 							},
 						}, nil
 					},
@@ -80,14 +81,18 @@ func Test_AppVersionsGetHandler(t *testing.T) {
 			},
 			expectedStatusCode: http.StatusOK,
 			expectedResponse: services.AppVersionsGetResponse{
-				Data: []models.AppVersion{
-					models.AppVersion{
-						Version:  "v1.0",
-						Platform: "ios",
+				Data: []services.AppVersionsGetResponseElement{
+					services.AppVersionsGetResponseElement{
+						AppVersion: models.AppVersion{
+							Platform: "ios",
+						},
+						Version: "v1.0",
 					},
-					models.AppVersion{
-						Version:  "v1.12",
-						Platform: "android",
+					services.AppVersionsGetResponseElement{
+						AppVersion: models.AppVersion{
+							Platform: "android",
+						},
+						Version: "v1.12",
 					},
 				},
 			},
@@ -109,8 +114,8 @@ func Test_AppVersionsGetHandler(t *testing.T) {
 						})
 						return []models.AppVersion{
 							models.AppVersion{
-								Version:  "v1.0",
-								Platform: "ios",
+								ArtifactInfoData: json.RawMessage(`{"version":"v1.0"}`),
+								Platform:         "ios",
 							},
 						}, nil
 					},
@@ -118,10 +123,12 @@ func Test_AppVersionsGetHandler(t *testing.T) {
 			},
 			expectedStatusCode: http.StatusOK,
 			expectedResponse: services.AppVersionsGetResponse{
-				Data: []models.AppVersion{
-					models.AppVersion{
-						Version:  "v1.0",
-						Platform: "ios",
+				Data: []services.AppVersionsGetResponseElement{
+					services.AppVersionsGetResponseElement{
+						AppVersion: models.AppVersion{
+							Platform: "ios",
+						},
+						Version: "v1.0",
 					},
 				},
 			},
@@ -141,6 +148,32 @@ func Test_AppVersionsGetHandler(t *testing.T) {
 				},
 			},
 			expectedInternalErr: "SQL Error: SOME-SQL-ERROR",
+		})
+	})
+
+	t.Run("when invalid JSON is stored in database for artifact info", func(t *testing.T) {
+		urlWithFilter := url + "?platform=ios"
+		performControllerTest(t, httpMethod, urlWithFilter, handler, ControllerTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppID: uuid.FromStringOrNil("211afc15-127a-40f9-8cbe-1dadc1f86cdf"),
+			},
+			env: &env.AppEnv{
+				AppVersionService: &testAppVersionService{
+					findAllFn: func(app *models.App, filterParams map[string]interface{}) ([]models.AppVersion, error) {
+						require.Equal(t, app.ID.String(), "211afc15-127a-40f9-8cbe-1dadc1f86cdf")
+						require.Equal(t, filterParams, map[string]interface{}{
+							"platform": "ios",
+						})
+						return []models.AppVersion{
+							models.AppVersion{
+								ArtifactInfoData: json.RawMessage(`invalid JSON`),
+								Platform:         "ios",
+							},
+						}, nil
+					},
+				},
+			},
+			expectedInternalErr: "invalid character 'i' looking for beginning of value",
 		})
 	})
 }

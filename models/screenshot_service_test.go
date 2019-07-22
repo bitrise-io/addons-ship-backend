@@ -59,10 +59,7 @@ func Test_ScreenshotService_BatchCreate(t *testing.T) {
 	})
 
 	t.Run("when error happens at creation of any screenshot, transaction gets rolled back", func(t *testing.T) {
-		testAppVersion := createTestAppVersion(t, &models.AppVersion{
-			Platform: "iOS",
-			Version:  "v1.0",
-		})
+		testAppVersion := createTestAppVersion(t, &models.AppVersion{Platform: "iOS"})
 		testScreenshots := []*models.Screenshot{
 			&models.Screenshot{
 				AppVersion: *testAppVersion,
@@ -169,8 +166,8 @@ func Test_ScreenshotService_BatchUpdate(t *testing.T) {
 
 	t.Run("ok", func(t *testing.T) {
 		testAppVersions := []*models.AppVersion{
-			createTestAppVersion(t, &models.AppVersion{Platform: "iOS", Version: "v1.0"}),
-			createTestAppVersion(t, &models.AppVersion{Platform: "Android", Version: "v1.2"}),
+			createTestAppVersion(t, &models.AppVersion{Platform: "iOS"}),
+			createTestAppVersion(t, &models.AppVersion{Platform: "Android"}),
 		}
 		testScreenshotsOfVersion1 := []models.Screenshot{
 			*createTestScreenshot(t, &models.Screenshot{
