@@ -76,6 +76,12 @@ func (a *AppVersion) BeforeCreate(scope *gorm.Scope) error {
 	if a.AppStoreInfoData == nil {
 		a.AppStoreInfoData = json.RawMessage(`{}`)
 	}
+	if a.AppInfoData == nil {
+		a.AppInfoData = json.RawMessage(`{}`)
+	}
+	if a.ProvisioningInfoData == nil {
+		a.ProvisioningInfoData = json.RawMessage(`{}`)
+	}
 	err := a.validate(scope)
 	if err != nil {
 		return errors.WithStack(err)
