@@ -3,6 +3,7 @@ package services
 import (
 	"encoding/json"
 	"net/http"
+	"reflect"
 
 	"github.com/bitrise-io/addons-ship-backend/bitrise"
 	"github.com/bitrise-io/addons-ship-backend/env"
@@ -17,53 +18,21 @@ func prepareAppVersionForIosPlatform(env *env.AppEnv, w http.ResponseWriter,
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
-	publishEnabled := false
-	publicInstallPageEnabled := false
-	publicInstallPageArtifactSlug := ""
-	var selectedArtifact *bitrise.ArtifactListElementResponseModel
 
-	for _, artifact := range artifacts {
-		if artifact.IsIPA() {
-			if artifact.HasAppStoreDistributionType() {
-				publishEnabled = true
-				selectedArtifact = &artifact
-			}
-			if artifact.HasDebugDistributionType() {
-				publicInstallPageEnabled = true
-				publicInstallPageArtifactSlug = artifact.Slug
-				if selectedArtifact == nil {
-					selectedArtifact = &artifact
-				}
-			}
-		}
-		if artifact.IsXCodeArchive() {
-			publishEnabled = true
-			if selectedArtifact == nil {
-				selectedArtifact = &artifact
-			}
-		}
-	}
-	var artifactPublicInstallPageURL string
-	if publicInstallPageEnabled {
-		var err error
-		artifactPublicInstallPageURL, err = env.BitriseAPI.GetArtifactPublicInstallPageURL(
-			apiToken,
-			appSlug,
-			buildSlug,
-			publicInstallPageArtifactSlug,
-		)
-		if err != nil {
-			return nil, errors.WithStack(err)
-		}
-	}
-
+	selectedArtifact, _, _, _ := selectIosArtifact(artifacts)
 	if selectedArtifact == nil {
 		return nil, httpresponse.RespondWithNotFoundError(w)
 	}
 
-	appDetails, err := env.BitriseAPI.GetAppDetails(apiToken, appSlug)
-	if err != nil {
-		return nil, errors.WithStack(err)
+	if selectedArtifact.ArtifactMeta == nil {
+		return nil, errors.New("No artifact meta data found for artifact")
+	}
+
+	if reflect.DeepEqual(selectedArtifact.ArtifactMeta.AppInfo, bitrise.AppInfo{}) {
+		return nil, errors.New("No artifact app info found for artifact")
+	}
+	if reflect.DeepEqual(selectedArtifact.ArtifactMeta.ProvisioningInfo, bitrise.ProvisioningInfo{}) {
+		return nil, errors.New("No artifact provisioning info found for artifact")
 	}
 
 	var supportedDeviceTypes []string
@@ -103,4 +72,33 @@ func prepareAppVersionForIosPlatform(env *env.AppEnv, w http.ResponseWriter,
 		AppInfoData:          appInfoData,
 		ProvisioningInfoData: provisioningInfoData,
 	}, nil
+}
+
+func selectIosArtifact(artifacts []bitrise.ArtifactListElementResponseModel) (*bitrise.ArtifactListElementResponseModel, bool, bool, string) {
+	publishEnabled := false
+	publicInstallPageEnabled := false
+	publicInstallPageArtifactSlug := ""
+	var selectedArtifact *bitrise.ArtifactListElementResponseModel
+	for _, artifact := range artifacts {
+		if artifact.IsIPA() {
+			if artifact.HasAppStoreDistributionType() {
+				publishEnabled = true
+				selectedArtifact = &artifact
+			}
+			if artifact.HasDebugDistributionType() {
+				publicInstallPageEnabled = true
+				publicInstallPageArtifactSlug = artifact.Slug
+				if selectedArtifact == nil {
+					selectedArtifact = &artifact
+				}
+			}
+		}
+		if artifact.IsXCodeArchive() {
+			publishEnabled = true
+			if selectedArtifact == nil {
+				selectedArtifact = &artifact
+			}
+		}
+	}
+	return selectedArtifact, publishEnabled, publicInstallPageEnabled, publicInstallPageArtifactSlug
 }

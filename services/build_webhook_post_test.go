@@ -3,7 +3,9 @@ package services_test
 import (
 	"net/http"
 	"testing"
+	"time"
 
+	"github.com/bitrise-io/addons-ship-backend/bitrise"
 	"github.com/bitrise-io/addons-ship-backend/env"
 	"github.com/bitrise-io/addons-ship-backend/models"
 	"github.com/bitrise-io/addons-ship-backend/services"
@@ -20,7 +22,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 	url := "/webhook"
 	handler := services.BuildWebhookHandler
 
-	behavesAsServiceCravingHandler(t, httpMethod, url, handler, []string{"AppService", "AppSettingsService", "AppVersionService"}, ControllerTestCase{
+	behavesAsServiceCravingHandler(t, httpMethod, url, handler, []string{"AppService", "AppSettingsService", "AppVersionService", "BitriseAPI"}, ControllerTestCase{
 		contextElements: map[ctxpkg.RequestContextKey]interface{}{
 			services.ContextKeyAuthorizedAppID: uuid.NewV4(),
 		},
@@ -29,6 +31,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 			AppService:         &testAppService{},
 			AppVersionService:  &testAppVersionService{},
 			AppSettingsService: &testAppSettingsService{},
+			BitriseAPI:         &testBitriseAPI{},
 		},
 	})
 
@@ -41,6 +44,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 			AppService:         &testAppService{},
 			AppVersionService:  &testAppVersionService{},
 			AppSettingsService: &testAppSettingsService{},
+			BitriseAPI:         &testBitriseAPI{},
 		},
 	})
 
@@ -73,6 +77,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 						},
 					},
 					AppVersionService: &testAppVersionService{},
+					BitriseAPI:        &testBitriseAPI{},
 				},
 				requestBody:        `{}`,
 				expectedStatusCode: http.StatusOK,
@@ -93,18 +98,45 @@ func Test_BuildWebhookHandler(t *testing.T) {
 					},
 					AppSettingsService: &testAppSettingsService{
 						findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
-							return &models.AppSettings{IosWorkflow: "all"}, nil
+							return &models.AppSettings{
+								IosWorkflow: "all",
+								App: &models.App{
+									APIToken: "test-api-token",
+									AppSlug:  "test-app-slug",
+								},
+							}, nil
 						},
 					},
 					AppVersionService: &testAppVersionService{
 						createFn: func(appVersion *models.AppVersion) (*models.AppVersion, []error, error) {
 							require.Equal(t, "ios", appVersion.Platform)
 							require.Equal(t, "test-build-slug", appVersion.BuildSlug)
+							require.Equal(t, "1.0", appVersion.Version)
+							require.NotEqual(t, time.Time{}, appVersion.LastUpdate)
+							require.Equal(t, "12", appVersion.BuildNumber)
 							return appVersion, nil, nil
 						},
 					},
+					BitriseAPI: &testBitriseAPI{
+						getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
+							require.Equal(t, "test-api-token", apiToken)
+							require.Equal(t, "test-app-slug", appSlug)
+							require.Equal(t, "test-build-slug", buildSlug)
+							return []bitrise.ArtifactListElementResponseModel{
+								bitrise.ArtifactListElementResponseModel{
+									Title: "my-ios-artifact.ipa",
+									ArtifactMeta: &bitrise.ArtifactMeta{
+										AppInfo: bitrise.AppInfo{
+											Version: "1.0",
+										},
+										ProvisioningInfo: bitrise.ProvisioningInfo{DistributionType: "app-store"},
+									},
+								},
+							}, nil
+						},
+					},
 				},
-				requestBody:        `{"build_slug":"test-build-slug"}`,
+				requestBody:        `{"build_slug":"test-build-slug","build_number":12}`,
 				expectedStatusCode: http.StatusOK,
 			})
 		})
@@ -123,14 +155,40 @@ func Test_BuildWebhookHandler(t *testing.T) {
 					},
 					AppSettingsService: &testAppSettingsService{
 						findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
-							return &models.AppSettings{IosWorkflow: "ios-wf,ios-wf2"}, nil
+							return &models.AppSettings{
+								IosWorkflow: "ios-wf,ios-wf2",
+								App: &models.App{
+									APIToken: "test-api-token",
+									AppSlug:  "test-app-slug",
+								},
+							}, nil
 						},
 					},
 					AppVersionService: &testAppVersionService{
 						createFn: func(appVersion *models.AppVersion) (*models.AppVersion, []error, error) {
 							require.Equal(t, "ios", appVersion.Platform)
 							require.Equal(t, "test-build-slug", appVersion.BuildSlug)
+							require.Equal(t, "1.0", appVersion.Version)
+							require.NotEqual(t, time.Time{}, appVersion.LastUpdate)
 							return appVersion, nil, nil
+						},
+					},
+					BitriseAPI: &testBitriseAPI{
+						getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
+							require.Equal(t, "test-api-token", apiToken)
+							require.Equal(t, "test-app-slug", appSlug)
+							require.Equal(t, "test-build-slug", buildSlug)
+							return []bitrise.ArtifactListElementResponseModel{
+								bitrise.ArtifactListElementResponseModel{
+									Title: "my-ios-artifact.ipa",
+									ArtifactMeta: &bitrise.ArtifactMeta{
+										AppInfo: bitrise.AppInfo{
+											Version: "1.0",
+										},
+										ProvisioningInfo: bitrise.ProvisioningInfo{DistributionType: "app-store"},
+									},
+								},
+							}, nil
 						},
 					},
 				},
@@ -157,6 +215,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 						},
 					},
 					AppVersionService: &testAppVersionService{},
+					BitriseAPI:        &testBitriseAPI{},
 				},
 				requestBody:        `invalid JSON`,
 				expectedStatusCode: http.StatusBadRequest,
@@ -182,6 +241,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 						},
 					},
 					AppVersionService: &testAppVersionService{},
+					BitriseAPI:        &testBitriseAPI{},
 				},
 				requestBody:         `{}`,
 				expectedInternalErr: "SQL Error: SOME-SQL-ERROR",
@@ -206,6 +266,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 						},
 					},
 					AppVersionService: &testAppVersionService{},
+					BitriseAPI:        &testBitriseAPI{},
 				},
 				requestBody:        `{}`,
 				expectedStatusCode: http.StatusNotFound,
@@ -231,6 +292,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 						},
 					},
 					AppVersionService: &testAppVersionService{},
+					BitriseAPI:        &testBitriseAPI{},
 				},
 				requestBody:         `{}`,
 				expectedInternalErr: "SQL Error: SOME-SQL-ERROR",
@@ -251,12 +313,33 @@ func Test_BuildWebhookHandler(t *testing.T) {
 					},
 					AppSettingsService: &testAppSettingsService{
 						findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
-							return &models.AppSettings{IosWorkflow: "all"}, nil
+							return &models.AppSettings{
+								IosWorkflow: "all",
+								App: &models.App{
+									APIToken: "test-api-token",
+									AppSlug:  "test-app-slug",
+								},
+							}, nil
 						},
 					},
 					AppVersionService: &testAppVersionService{
 						createFn: func(appVersion *models.AppVersion) (*models.AppVersion, []error, error) {
 							return nil, []error{errors.New("SOME-VALIDATION-ERROR")}, nil
+						},
+					},
+					BitriseAPI: &testBitriseAPI{
+						getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
+							return []bitrise.ArtifactListElementResponseModel{
+								bitrise.ArtifactListElementResponseModel{
+									Title: "my-ios-artifact.ipa",
+									ArtifactMeta: &bitrise.ArtifactMeta{
+										AppInfo: bitrise.AppInfo{
+											Version: "1.0",
+										},
+										ProvisioningInfo: bitrise.ProvisioningInfo{DistributionType: "app-store"},
+									},
+								},
+							}, nil
 						},
 					},
 				},
@@ -283,12 +366,32 @@ func Test_BuildWebhookHandler(t *testing.T) {
 					},
 					AppSettingsService: &testAppSettingsService{
 						findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
-							return &models.AppSettings{IosWorkflow: "all"}, nil
+							return &models.AppSettings{IosWorkflow: "all",
+								App: &models.App{
+									APIToken: "test-api-token",
+									AppSlug:  "test-app-slug",
+								},
+							}, nil
 						},
 					},
 					AppVersionService: &testAppVersionService{
 						createFn: func(appVersion *models.AppVersion) (*models.AppVersion, []error, error) {
 							return nil, nil, errors.New("SOME-SQL-ERROR")
+						},
+					},
+					BitriseAPI: &testBitriseAPI{
+						getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
+							return []bitrise.ArtifactListElementResponseModel{
+								bitrise.ArtifactListElementResponseModel{
+									Title: "my-ios-artifact.ipa",
+									ArtifactMeta: &bitrise.ArtifactMeta{
+										AppInfo: bitrise.AppInfo{
+											Version: "1.0",
+										},
+										ProvisioningInfo: bitrise.ProvisioningInfo{DistributionType: "app-store"},
+									},
+								},
+							}, nil
 						},
 					},
 				},
@@ -311,14 +414,39 @@ func Test_BuildWebhookHandler(t *testing.T) {
 					},
 					AppSettingsService: &testAppSettingsService{
 						findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
-							return &models.AppSettings{AndroidWorkflow: "all"}, nil
+							return &models.AppSettings{AndroidWorkflow: "all",
+								App: &models.App{
+									APIToken: "test-api-token",
+									AppSlug:  "test-app-slug",
+								},
+							}, nil
 						},
 					},
 					AppVersionService: &testAppVersionService{
 						createFn: func(appVersion *models.AppVersion) (*models.AppVersion, []error, error) {
 							require.Equal(t, "android", appVersion.Platform)
 							require.Equal(t, "test-build-slug", appVersion.BuildSlug)
+							require.Equal(t, "1.0", appVersion.Version)
+							appInfo, err := appVersion.AppInfo()
+							require.NoError(t, err)
+							require.Equal(t, models.AppInfo{MinimumSDK: "1.23", PackageName: "myPackage"}, appInfo)
 							return appVersion, nil, nil
+						},
+					},
+					BitriseAPI: &testBitriseAPI{
+						getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
+							return []bitrise.ArtifactListElementResponseModel{
+								bitrise.ArtifactListElementResponseModel{
+									Title: "my-android-artifact.aab",
+									ArtifactMeta: &bitrise.ArtifactMeta{
+										AppInfo: bitrise.AppInfo{
+											VersionName:       "1.0",
+											MinimumSDKVersion: "1.23",
+											PackageName:       "myPackage",
+										},
+									},
+								},
+							}, nil
 						},
 					},
 				},
@@ -341,14 +469,40 @@ func Test_BuildWebhookHandler(t *testing.T) {
 					},
 					AppSettingsService: &testAppSettingsService{
 						findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
-							return &models.AppSettings{AndroidWorkflow: "android-wf,android-wf2"}, nil
+							return &models.AppSettings{
+								AndroidWorkflow: "android-wf,android-wf2",
+								App: &models.App{
+									APIToken: "test-api-token",
+									AppSlug:  "test-app-slug",
+								},
+							}, nil
 						},
 					},
 					AppVersionService: &testAppVersionService{
 						createFn: func(appVersion *models.AppVersion) (*models.AppVersion, []error, error) {
 							require.Equal(t, "android", appVersion.Platform)
 							require.Equal(t, "test-build-slug", appVersion.BuildSlug)
+							require.Equal(t, "1.0", appVersion.Version)
+							appInfo, err := appVersion.AppInfo()
+							require.NoError(t, err)
+							require.Equal(t, models.AppInfo{MinimumSDK: "1.23", PackageName: "myPackage"}, appInfo)
 							return appVersion, nil, nil
+						},
+					},
+					BitriseAPI: &testBitriseAPI{
+						getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
+							return []bitrise.ArtifactListElementResponseModel{
+								bitrise.ArtifactListElementResponseModel{
+									Title: "my-android-artifact.aab",
+									ArtifactMeta: &bitrise.ArtifactMeta{
+										AppInfo: bitrise.AppInfo{
+											VersionName:       "1.0",
+											MinimumSDKVersion: "1.23",
+											PackageName:       "myPackage",
+										},
+									},
+								},
+							}, nil
 						},
 					},
 				},
@@ -371,12 +525,34 @@ func Test_BuildWebhookHandler(t *testing.T) {
 					},
 					AppSettingsService: &testAppSettingsService{
 						findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
-							return &models.AppSettings{AndroidWorkflow: "all"}, nil
+							return &models.AppSettings{
+								AndroidWorkflow: "all",
+								App: &models.App{
+									APIToken: "test-api-token",
+									AppSlug:  "test-app-slug",
+								},
+							}, nil
 						},
 					},
 					AppVersionService: &testAppVersionService{
 						createFn: func(appVersion *models.AppVersion) (*models.AppVersion, []error, error) {
 							return nil, []error{errors.New("SOME-VALIDATION-ERROR")}, nil
+						},
+					},
+					BitriseAPI: &testBitriseAPI{
+						getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
+							return []bitrise.ArtifactListElementResponseModel{
+								bitrise.ArtifactListElementResponseModel{
+									Title: "my-android-artifact.aab",
+									ArtifactMeta: &bitrise.ArtifactMeta{
+										AppInfo: bitrise.AppInfo{
+											VersionName:       "1.0",
+											MinimumSDKVersion: "1.23",
+											PackageName:       "myPackage",
+										},
+									},
+								},
+							}, nil
 						},
 					},
 				},
@@ -403,12 +579,34 @@ func Test_BuildWebhookHandler(t *testing.T) {
 					},
 					AppSettingsService: &testAppSettingsService{
 						findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
-							return &models.AppSettings{AndroidWorkflow: "all"}, nil
+							return &models.AppSettings{
+								AndroidWorkflow: "all",
+								App: &models.App{
+									APIToken: "test-api-token",
+									AppSlug:  "test-app-slug",
+								},
+							}, nil
 						},
 					},
 					AppVersionService: &testAppVersionService{
 						createFn: func(appVersion *models.AppVersion) (*models.AppVersion, []error, error) {
 							return nil, nil, errors.New("SOME-SQL-ERROR")
+						},
+					},
+					BitriseAPI: &testBitriseAPI{
+						getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
+							return []bitrise.ArtifactListElementResponseModel{
+								bitrise.ArtifactListElementResponseModel{
+									Title: "my-android-artifact.aab",
+									ArtifactMeta: &bitrise.ArtifactMeta{
+										AppInfo: bitrise.AppInfo{
+											VersionName:       "1.0",
+											MinimumSDKVersion: "1.23",
+											PackageName:       "myPackage",
+										},
+									},
+								},
+							}, nil
 						},
 					},
 				},

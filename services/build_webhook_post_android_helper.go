@@ -3,6 +3,7 @@ package services
 import (
 	"encoding/json"
 	"net/http"
+	"reflect"
 
 	"github.com/bitrise-io/addons-ship-backend/bitrise"
 	"github.com/bitrise-io/addons-ship-backend/env"
@@ -17,41 +18,18 @@ func prepareAppVersionForAndroidPlatform(env *env.AppEnv, w http.ResponseWriter,
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
-	publishEnabled := false
-	publicInstallPageEnabled := false
-	publicInstallPageArtifactSlug := ""
-	var selectedArtifact *bitrise.ArtifactListElementResponseModel
 
-	for _, artifact := range artifacts {
-		if artifact.IsAAB() {
-			publishEnabled = true
-			selectedArtifact = &artifact
-		}
-		if artifact.IsUniversalAPK() {
-			publicInstallPageEnabled = true
-			publicInstallPageArtifactSlug = artifact.Slug
-			selectedArtifact = &artifact
-		}
-		// TODO: check the split APK condition
-	}
-	var artifactPublicInstallPageURL string
-	if publicInstallPageEnabled {
-		var err error
-		artifactPublicInstallPageURL, err = env.BitriseAPI.GetArtifactPublicInstallPageURL(
-			apiToken, appSlug, buildSlug, publicInstallPageArtifactSlug,
-		)
-		if err != nil {
-			return nil, errors.WithStack(err)
-		}
-	}
-
+	selectedArtifact, _, _, _ := selectAndroidArtifact(artifacts)
 	if selectedArtifact == nil {
 		return nil, httpresponse.RespondWithNotFoundError(w)
 	}
 
-	appDetails, err := env.BitriseAPI.GetAppDetails(apiToken, appSlug)
-	if err != nil {
-		return nil, errors.WithStack(err)
+	if selectedArtifact.ArtifactMeta == nil {
+		return nil, errors.New("No artifact meta data found for artifact")
+	}
+
+	if reflect.DeepEqual(selectedArtifact.ArtifactMeta.AppInfo, bitrise.AppInfo{}) {
+		return nil, errors.New("No artifact app info found for artifact")
 	}
 
 	appInfo := models.AppInfo{
@@ -69,4 +47,24 @@ func prepareAppVersionForAndroidPlatform(env *env.AppEnv, w http.ResponseWriter,
 		BuildSlug:   buildSlug,
 		AppInfoData: appInfoData,
 	}, nil
+}
+
+func selectAndroidArtifact(artifacts []bitrise.ArtifactListElementResponseModel) (*bitrise.ArtifactListElementResponseModel, bool, bool, string) {
+	publishEnabled := false
+	publicInstallPageEnabled := false
+	publicInstallPageArtifactSlug := ""
+	var selectedArtifact *bitrise.ArtifactListElementResponseModel
+	for _, artifact := range artifacts {
+		if artifact.IsAAB() {
+			publishEnabled = true
+			selectedArtifact = &artifact
+		}
+		if artifact.IsUniversalAPK() {
+			publicInstallPageEnabled = true
+			publicInstallPageArtifactSlug = artifact.Slug
+			selectedArtifact = &artifact
+		}
+		// TODO: check the split APK condition
+	}
+	return selectedArtifact, publishEnabled, publicInstallPageEnabled, publicInstallPageArtifactSlug
 }

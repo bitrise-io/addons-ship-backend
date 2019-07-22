@@ -24,6 +24,7 @@ type AppVersionGetResponseData struct {
 	PublicInstallPageURL string              `json:"public_install_page_url"`
 	AppStoreInfo         models.AppStoreInfo `json:"app_store_info"`
 	PublishEnabled       bool                `json:"publish_enabled"`
+	AppInfo              AppData             `json:"app_info"`
 }
 
 // AppVersionGetResponse ...
@@ -55,59 +56,66 @@ func AppVersionGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Reques
 		return errors.New("No Bitrise API Service defined for handler")
 	}
 
-	artifacts, err := env.BitriseAPI.GetArtifacts(
-		appVersion.App.BitriseAPIToken,
-		appVersion.App.AppSlug,
-		appVersion.BuildSlug,
-	)
+	artifacts, err := env.BitriseAPI.GetArtifacts(appVersion.App.APIToken, appVersion.App.AppSlug, appVersion.BuildSlug)
 	if err != nil {
 		return errors.WithStack(err)
 	}
 
-	switch appVersion.Platform {
-	case "ios":
-		return appVersionGetIosHelper(env, w, r, appVersion, artifacts)
-	case "android":
-		return appVersionGetAndroidHelper(env, w, r, appVersion, artifacts)
-	default:
-		return errors.Errorf("Invalid platform type of app version: %s", appVersion.Platform)
+	responseData, err := newArtifactVersionGetResponse(appVersion, env, artifacts)
+	if err != nil {
+		return errors.WithStack(err)
 	}
+
+	return httpresponse.RespondWithSuccess(w, AppVersionGetResponse{
+		Data: responseData,
+	})
 }
 
-func newArtifactVersionGetResponse(appVersion *models.AppVersion, artifact bitrise.ArtifactListElementResponseModel,
-	publicInstallPageURL string, appDetails *bitrise.AppDetails, publishEnabled bool) (AppVersionGetResponseData, error) {
-	var supportedDeviceTypes []string
-	artifactMeta := artifact.ArtifactMeta
-	if artifactMeta == nil {
-		return AppVersionGetResponseData{}, errors.New("No artifact meta data found for artifact")
+func newArtifactVersionGetResponse(appVersion *models.AppVersion, env *env.AppEnv, artifacts []bitrise.ArtifactListElementResponseModel) (AppVersionGetResponseData, error) {
+	var publishEnabled, publicInstallPageEnabled bool
+	var publicInstallPageArtifactSlug string
+	switch appVersion.Platform {
+	case "ios":
+		_, publishEnabled, publicInstallPageEnabled, publicInstallPageArtifactSlug = selectIosArtifact(artifacts)
+	case "android":
+		_, publishEnabled, publicInstallPageEnabled, publicInstallPageArtifactSlug = selectAndroidArtifact(artifacts)
+	default:
+		return AppVersionGetResponseData{}, errors.Errorf("Invalid platform type of app version: %s", appVersion.Platform)
 	}
-	for _, familyID := range artifactMeta.AppInfo.DeviceFamilyList {
-		switch familyID {
-		case 1:
-			supportedDeviceTypes = append(supportedDeviceTypes, "iPhone", "iPod Touch")
-		case 2:
-			supportedDeviceTypes = append(supportedDeviceTypes, "iPad")
-		default:
-			supportedDeviceTypes = append(supportedDeviceTypes, "Unknown")
+
+	var artifactPublicInstallPageURL string
+	if publicInstallPageEnabled {
+		var err error
+		artifactPublicInstallPageURL, err = env.BitriseAPI.GetArtifactPublicInstallPageURL(
+			appVersion.App.BitriseAPIToken,
+			appVersion.App.AppSlug,
+			appVersion.BuildSlug,
+			publicInstallPageArtifactSlug,
+		)
+		if err != nil {
+			return AppVersionGetResponseData{}, errors.WithStack(err)
 		}
+	}
+
+	appDetails, err := env.BitriseAPI.GetAppDetails(appVersion.App.APIToken, appVersion.App.AppSlug)
+	if err != nil {
+		return AppVersionGetResponseData{}, errors.WithStack(err)
 	}
 	appData := AppData{
 		Title:       appDetails.Title,
 		AppIconURL:  appDetails.AvatarURL,
 		ProjectType: appDetails.ProjectType,
 	}
+
 	appStoreInfo, err := appVersion.AppStoreInfo()
 	if err != nil {
 		return AppVersionGetResponseData{}, err
 	}
-	var size int64
-	if artifact.FileSizeBytes != nil {
-		size = *artifact.FileSizeBytes
-	}
 	return AppVersionGetResponseData{
 		AppVersion:           appVersion,
-		PublicInstallPageURL: publicInstallPageURL,
+		PublicInstallPageURL: artifactPublicInstallPageURL,
 		AppStoreInfo:         appStoreInfo,
 		PublishEnabled:       publishEnabled,
+		AppInfo:              appData,
 	}, nil
 }

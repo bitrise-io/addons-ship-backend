@@ -61,6 +61,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 								App:              models.App{},
 								AppStoreInfoData: json.RawMessage(`{}`),
 								Platform:         "ios",
+								DistributionType: "development",
 							}, nil
 						},
 					},
@@ -89,8 +90,10 @@ func Test_AppVersionGetHandler(t *testing.T) {
 				expectedStatusCode: http.StatusOK,
 				expectedResponse: services.AppVersionGetResponse{
 					Data: services.AppVersionGetResponseData{
-						AppVersion:       &models.AppVersion{Platform: "ios"},
-						DistributionType: "development",
+						AppVersion: &models.AppVersion{
+							Platform:         "ios",
+							DistributionType: "development",
+						},
 					},
 				},
 			})
@@ -111,6 +114,9 @@ func Test_AppVersionGetHandler(t *testing.T) {
 								App: models.App{
 									BitriseAPIToken: "test-api-token",
 								},
+								DistributionType: "app-store",
+								Size:             1024,
+								MinimumOS:        "11.1",
 							}, nil
 						},
 					},
@@ -145,17 +151,17 @@ func Test_AppVersionGetHandler(t *testing.T) {
 				expectedResponse: services.AppVersionGetResponse{
 					Data: services.AppVersionGetResponseData{
 						AppVersion: &models.AppVersion{
-							Version:  "v1.0",
-							Platform: "ios",
+							Version:          "v1.0",
+							Platform:         "ios",
+							MinimumOS:        "11.1",
+							Size:             1024,
+							DistributionType: "app-store",
 						},
-						MinimumOS: "11.1",
 						AppInfo: services.AppData{
 							Title:       "The Adventures of Stealy",
 							AppIconURL:  pointers.NewStringPtr("https://bit.ly/1LixVJu"),
 							ProjectType: "ios",
 						},
-						Size:             1024,
-						DistributionType: "app-store",
 						AppStoreInfo: models.AppStoreInfo{
 							ShortDescription: "Some shorter description",
 						},
@@ -180,6 +186,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 								App: models.App{
 									BitriseAPIToken: "test-api-token",
 								},
+								MinimumOS: "11.1",
 							}, nil
 						},
 					},
@@ -187,7 +194,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 						getArtifactsFn: func(string, string, string) ([]bitrise.ArtifactListElementResponseModel, error) {
 							return []bitrise.ArtifactListElementResponseModel{
 								bitrise.ArtifactListElementResponseModel{
-									Title: "XCodeArchive.zip",
+									Title: "XCode10.xcarchive.zip",
 									ArtifactMeta: &bitrise.ArtifactMeta{
 										AppInfo: bitrise.AppInfo{MinimumOS: "11.1"},
 									},
@@ -210,10 +217,10 @@ func Test_AppVersionGetHandler(t *testing.T) {
 				expectedResponse: services.AppVersionGetResponse{
 					Data: services.AppVersionGetResponseData{
 						AppVersion: &models.AppVersion{
-							Version:  "v1.0",
-							Platform: "ios",
+							Version:   "v1.0",
+							Platform:  "ios",
+							MinimumOS: "11.1",
 						},
-						MinimumOS: "11.1",
 						AppInfo: services.AppData{
 							Title:       "The Adventures of Stealy",
 							AppIconURL:  pointers.NewStringPtr("https://bit.ly/1LixVJu"),
@@ -243,6 +250,8 @@ func Test_AppVersionGetHandler(t *testing.T) {
 								App: models.App{
 									BitriseAPIToken: "test-api-token",
 								},
+								DistributionType: "development",
+								MinimumOS:        "10.1",
 							}, nil
 						},
 					},
@@ -276,17 +285,17 @@ func Test_AppVersionGetHandler(t *testing.T) {
 				expectedResponse: services.AppVersionGetResponse{
 					Data: services.AppVersionGetResponseData{
 						AppVersion: &models.AppVersion{
-							Version:  "v1.0",
-							Platform: "ios",
+							Version:          "v1.0",
+							Platform:         "ios",
+							MinimumOS:        "10.1",
+							DistributionType: "development",
 						},
-						MinimumOS:            "10.1",
 						PublicInstallPageURL: "http://don.t.go.there",
 						AppInfo: services.AppData{
 							Title:       "The Adventures of Stealy",
 							AppIconURL:  pointers.NewStringPtr("https://bit.ly/1LixVJu"),
 							ProjectType: "ios",
 						},
-						DistributionType: "development",
 						AppStoreInfo: models.AppStoreInfo{
 							ShortDescription: "Some shorter description",
 						},
@@ -310,6 +319,9 @@ func Test_AppVersionGetHandler(t *testing.T) {
 								App: models.App{
 									BitriseAPIToken: "test-api-token",
 								},
+								DistributionType:     "development",
+								MinimumOS:            "10.1",
+								SupportedDeviceTypes: []string{"iPhone", "iPod Touch", "iPad"},
 							}, nil
 						},
 					},
@@ -343,18 +355,18 @@ func Test_AppVersionGetHandler(t *testing.T) {
 				expectedResponse: services.AppVersionGetResponse{
 					Data: services.AppVersionGetResponseData{
 						AppVersion: &models.AppVersion{
-							Version:  "v1.0",
-							Platform: "ios",
+							Version:              "v1.0",
+							Platform:             "ios",
+							MinimumOS:            "10.1",
+							SupportedDeviceTypes: []string{"iPhone", "iPod Touch", "iPad"},
+							DistributionType:     "development",
 						},
-						MinimumOS:            "10.1",
-						SupportedDeviceTypes: []string{"iPhone", "iPod Touch", "iPad"},
 						PublicInstallPageURL: "http://don.t.go.there",
 						AppInfo: services.AppData{
 							Title:       "The Adventures of Stealy",
 							AppIconURL:  pointers.NewStringPtr("https://bit.ly/1LixVJu"),
 							ProjectType: "ios",
 						},
-						DistributionType: "development",
 					},
 				},
 			})
@@ -375,6 +387,8 @@ func Test_AppVersionGetHandler(t *testing.T) {
 								App: models.App{
 									BitriseAPIToken: "test-api-token",
 								},
+								MinimumOS:            "10.1",
+								SupportedDeviceTypes: []string{"Unknown"},
 							}, nil
 						},
 					},
@@ -408,18 +422,17 @@ func Test_AppVersionGetHandler(t *testing.T) {
 				expectedResponse: services.AppVersionGetResponse{
 					Data: services.AppVersionGetResponseData{
 						AppVersion: &models.AppVersion{
-							Version:  "v1.0",
-							Platform: "ios",
+							Version:              "v1.0",
+							Platform:             "ios",
+							MinimumOS:            "10.1",
+							SupportedDeviceTypes: []string{"Unknown"},
 						},
-						MinimumOS:            "10.1",
-						SupportedDeviceTypes: []string{"Unknown"},
 						PublicInstallPageURL: "http://don.t.go.there",
 						AppInfo: services.AppData{
 							Title:       "The Adventures of Stealy",
 							AppIconURL:  pointers.NewStringPtr("https://bit.ly/1LixVJu"),
 							ProjectType: "ios",
 						},
-						DistributionType: "development",
 					},
 				},
 			})
@@ -491,8 +504,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 						},
 					},
 				},
-				expectedStatusCode: http.StatusNotFound,
-				expectedResponse:   httpresponse.StandardErrorRespModel{Message: "Not Found"},
+				expectedInternalErr: "SOME-BITRISE-API-ERROR",
 			})
 		})
 
@@ -690,8 +702,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 						},
 					},
 				},
-				expectedStatusCode: http.StatusNotFound,
-				expectedResponse:   httpresponse.StandardErrorRespModel{Message: "Not Found"},
+				expectedInternalErr: "SOME-BITRISE-API-ERROR",
 			})
 		})
 

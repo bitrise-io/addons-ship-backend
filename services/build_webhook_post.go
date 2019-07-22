@@ -44,6 +44,9 @@ func BuildWebhookHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request
 		if env.AppVersionService == nil {
 			return errors.New("No App Version Service defined for handler")
 		}
+		if env.BitriseAPI == nil {
+			return errors.New("No Bitrise API Service defined for handler")
+		}
 		var params BuildWebhookPayload
 		defer httprequest.BodyCloseWithErrorLog(r)
 		if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
