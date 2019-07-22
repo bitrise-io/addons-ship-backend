@@ -150,4 +150,30 @@ func Test_AppVersionsGetHandler(t *testing.T) {
 			expectedInternalErr: "SQL Error: SOME-SQL-ERROR",
 		})
 	})
+
+	t.Run("when invalid JSON is stored in database for artifact info", func(t *testing.T) {
+		urlWithFilter := url + "?platform=ios"
+		performControllerTest(t, httpMethod, urlWithFilter, handler, ControllerTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppID: uuid.FromStringOrNil("211afc15-127a-40f9-8cbe-1dadc1f86cdf"),
+			},
+			env: &env.AppEnv{
+				AppVersionService: &testAppVersionService{
+					findAllFn: func(app *models.App, filterParams map[string]interface{}) ([]models.AppVersion, error) {
+						require.Equal(t, app.ID.String(), "211afc15-127a-40f9-8cbe-1dadc1f86cdf")
+						require.Equal(t, filterParams, map[string]interface{}{
+							"platform": "ios",
+						})
+						return []models.AppVersion{
+							models.AppVersion{
+								ArtifactInfoData: json.RawMessage(`invalid JSON`),
+								Platform:         "ios",
+							},
+						}, nil
+					},
+				},
+			},
+			expectedInternalErr: "invalid character 'i' looking for beginning of value",
+		})
+	})
 }
