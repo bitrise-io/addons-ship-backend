@@ -3,6 +3,7 @@
 package models_test
 
 import (
+	"encoding/json"
 	"reflect"
 	"testing"
 
@@ -20,7 +21,7 @@ func Test_ScreenshotService_BatchCreate(t *testing.T) {
 
 	screenshotService := models.ScreenshotService{DB: dataservices.GetDB()}
 	testApp := createTestApp(t, &models.App{AppSlug: "test-app-slug"})
-	testAppVersion := createTestAppVersion(t, &models.AppVersion{AppID: testApp.ID, Platform: "ios"})
+	testAppVersion := createTestAppVersion(t, &models.AppVersion{AppID: testApp.ID, Platform: "ios", ArtifactInfoData: json.RawMessage(`{"version":"1.0"}`)})
 
 	t.Run("ok", func(t *testing.T) {
 		testScreenshots := []*models.Screenshot{
@@ -59,7 +60,7 @@ func Test_ScreenshotService_BatchCreate(t *testing.T) {
 	})
 
 	t.Run("when error happens at creation of any screenshot, transaction gets rolled back", func(t *testing.T) {
-		testAppVersion := createTestAppVersion(t, &models.AppVersion{Platform: "iOS"})
+		testAppVersion := createTestAppVersion(t, &models.AppVersion{Platform: "iOS", ArtifactInfoData: json.RawMessage(`{"version":"1.0"}`)})
 		testScreenshots := []*models.Screenshot{
 			&models.Screenshot{
 				AppVersion: *testAppVersion,
@@ -94,8 +95,9 @@ func Test_ScreenshotService_Find(t *testing.T) {
 
 	screenshotService := models.ScreenshotService{DB: dataservices.GetDB()}
 	testAppVersion := createTestAppVersion(t, &models.AppVersion{
-		AppID:    uuid.NewV4(),
-		Platform: "iOS",
+		AppID:            uuid.NewV4(),
+		Platform:         "iOS",
+		ArtifactInfoData: json.RawMessage(`{"version":"1.0"}`),
 	})
 
 	testScreenshot := createTestScreenshot(t, &models.Screenshot{
@@ -112,8 +114,9 @@ func Test_ScreenshotService_Find(t *testing.T) {
 
 	t.Run("error - when screenshot is not found", func(t *testing.T) {
 		otherTestAppVersion := createTestAppVersion(t, &models.AppVersion{
-			AppID:    uuid.NewV4(),
-			Platform: "iOS",
+			AppID:            uuid.NewV4(),
+			Platform:         "iOS",
+			ArtifactInfoData: json.RawMessage(`{"version":"1.0"}`),
 		})
 
 		foundScreenshot, err := screenshotService.Find(&models.Screenshot{Record: models.Record{ID: testScreenshot.ID}, AppVersionID: otherTestAppVersion.ID})
@@ -128,12 +131,14 @@ func Test_ScreenshotService_FindAll(t *testing.T) {
 
 	screenshotService := models.ScreenshotService{DB: dataservices.GetDB()}
 	testAppVersionIOS := createTestAppVersion(t, &models.AppVersion{
-		AppID:    uuid.NewV4(),
-		Platform: "iOS",
+		AppID:            uuid.NewV4(),
+		Platform:         "iOS",
+		ArtifactInfoData: json.RawMessage(`{"version":"1.0"}`),
 	})
 	testAppVersionAndroid := createTestAppVersion(t, &models.AppVersion{
-		AppID:    uuid.NewV4(),
-		Platform: "android",
+		AppID:            uuid.NewV4(),
+		Platform:         "android",
+		ArtifactInfoData: json.RawMessage(`{"version":"1.0"}`),
 	})
 	testScreenshot1 := createTestScreenshot(t, &models.Screenshot{
 		AppVersion: *testAppVersionIOS,
@@ -166,8 +171,8 @@ func Test_ScreenshotService_BatchUpdate(t *testing.T) {
 
 	t.Run("ok", func(t *testing.T) {
 		testAppVersions := []*models.AppVersion{
-			createTestAppVersion(t, &models.AppVersion{Platform: "iOS"}),
-			createTestAppVersion(t, &models.AppVersion{Platform: "Android"}),
+			createTestAppVersion(t, &models.AppVersion{Platform: "iOS", ArtifactInfoData: json.RawMessage(`{"version":"1.0"}`)}),
+			createTestAppVersion(t, &models.AppVersion{Platform: "Android", ArtifactInfoData: json.RawMessage(`{"version":"1.2"}`)}),
 		}
 		testScreenshotsOfVersion1 := []models.Screenshot{
 			*createTestScreenshot(t, &models.Screenshot{
