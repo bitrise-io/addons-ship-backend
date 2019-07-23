@@ -79,8 +79,10 @@ func AppVersionPublishPostHandler(env *env.AppEnv, w http.ResponseWriter, r *htt
 		cloneUser := os.Getenv("ANDROID_PUBLISH_WF_GIT_CLONE_USER")
 		clonePwd := os.Getenv("ANDROID_PUBLISH_WF_GIT_CLONE_PWD")
 		inlineEnvs = map[string]string{
+			"CONFIG_JSON_URL":    fmt.Sprintf("%s/apps/%s/versions/%s/config", env.AddonHostURL, appVersion.App.AppSlug, authorizedAppVersionID),
 			"GIT_REPOSITORY_URL": fmt.Sprintf("https://%s:%s@github.com/bitrise-io/addons-ship-bg-worker-task-android", cloneUser, clonePwd),
 		}
+		secrets = map[string]string{"ADDON_SHIP_ACCESS_TOKEN": env.AddonAccessToken}
 	}
 
 	inlineEnvsBytes, err := json.Marshal(inlineEnvs)
