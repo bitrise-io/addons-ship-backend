@@ -3,6 +3,7 @@
 package models_test
 
 import (
+	"encoding/json"
 	"reflect"
 	"testing"
 
@@ -22,8 +23,9 @@ func Test_FeatureGraphicService_Create(t *testing.T) {
 
 	t.Run("ok", func(t *testing.T) {
 		testAppVersion := createTestAppVersion(t, &models.AppVersion{
-			AppID:    uuid.NewV4(),
-			Platform: "iOS",
+			AppID:            uuid.NewV4(),
+			Platform:         "iOS",
+			ArtifactInfoData: json.RawMessage(`{"version":"1.0"}`),
 		})
 		testFeatureGraphic := &models.FeatureGraphic{
 			AppVersion: *testAppVersion,
@@ -43,8 +45,9 @@ func Test_FeatureGraphicService_Create(t *testing.T) {
 
 	t.Run("when filesize is too big", func(t *testing.T) {
 		testAppVersion := createTestAppVersion(t, &models.AppVersion{
-			AppID:    uuid.NewV4(),
-			Platform: "iOS",
+			AppID:            uuid.NewV4(),
+			Platform:         "iOS",
+			ArtifactInfoData: json.RawMessage(`{"version":"1.0"}`),
 		})
 		testFeatureGraphic := &models.FeatureGraphic{
 			AppVersion: *testAppVersion,
@@ -62,8 +65,9 @@ func Test_FeatureGraphicService_Create(t *testing.T) {
 
 	t.Run("when app version already has feature graphic", func(t *testing.T) {
 		testAppVersion := createTestAppVersion(t, &models.AppVersion{
-			AppID:    uuid.NewV4(),
-			Platform: "iOS",
+			AppID:            uuid.NewV4(),
+			Platform:         "iOS",
+			ArtifactInfoData: json.RawMessage(`{"version":"1.0"}`),
 		})
 		createTestFeatureGraphic(t, &models.FeatureGraphic{
 			AppVersion: *testAppVersion,
@@ -93,8 +97,9 @@ func Test_FeatureGraphicService_Find(t *testing.T) {
 
 	featureGraphicService := models.FeatureGraphicService{DB: dataservices.GetDB()}
 	testAppVersion := createTestAppVersion(t, &models.AppVersion{
-		AppID:    uuid.NewV4(),
-		Platform: "iOS",
+		AppID:            uuid.NewV4(),
+		Platform:         "iOS",
+		ArtifactInfoData: json.RawMessage(`{"version":"1.0"}`),
 	})
 
 	testFeatureGraphic := createTestFeatureGraphic(t, &models.FeatureGraphic{
@@ -113,8 +118,9 @@ func Test_FeatureGraphicService_Find(t *testing.T) {
 
 	t.Run("error - when feature graphic is not found", func(t *testing.T) {
 		otherTestAppVersion := createTestAppVersion(t, &models.AppVersion{
-			AppID:    uuid.NewV4(),
-			Platform: "iOS",
+			AppID:            uuid.NewV4(),
+			Platform:         "iOS",
+			ArtifactInfoData: json.RawMessage(`{"version":"1.0"}`),
 		})
 
 		foundFeatureGraphic, err := featureGraphicService.Find(&models.FeatureGraphic{Record: models.Record{ID: testFeatureGraphic.ID}, AppVersionID: otherTestAppVersion.ID})
@@ -131,8 +137,8 @@ func Test_FeatureGraphicService_Update(t *testing.T) {
 
 	t.Run("ok", func(t *testing.T) {
 		testAppVersions := []*models.AppVersion{
-			createTestAppVersion(t, &models.AppVersion{Platform: "iOS"}),
-			createTestAppVersion(t, &models.AppVersion{Platform: "Android"}),
+			createTestAppVersion(t, &models.AppVersion{Platform: "iOS", ArtifactInfoData: json.RawMessage(`{"version":"1.0"}`)}),
+			createTestAppVersion(t, &models.AppVersion{Platform: "Android", ArtifactInfoData: json.RawMessage(`{"version":"1.2"}`)}),
 		}
 		testFeatureGraphicToUpdate := *createTestFeatureGraphic(t, &models.FeatureGraphic{
 			UploadableObject: models.UploadableObject{Filename: "screenshot1.png"},
@@ -161,8 +167,9 @@ func Test_FeatureGraphicService_Update(t *testing.T) {
 
 	t.Run("when filesize is too big", func(t *testing.T) {
 		testAppVersion := createTestAppVersion(t, &models.AppVersion{
-			AppID:    uuid.NewV4(),
-			Platform: "iOS",
+			AppID:            uuid.NewV4(),
+			Platform:         "iOS",
+			ArtifactInfoData: json.RawMessage(`{"version":"1.0"}`),
 		})
 		testFeatureGraphicToUpdate := *createTestFeatureGraphic(t, &models.FeatureGraphic{
 			UploadableObject: models.UploadableObject{Filename: "screenshot1.png", Filesize: 1234},
