@@ -50,7 +50,7 @@ type AppVersion struct {
 	LastUpdate       time.Time       `json:"last_update"`
 	Scheme           string          `json:"scheme"`
 	Configuration    string          `json:"configuration"`
-	ArtifactInfoData json.RawMessage `json:"-" db:"artifact_info" gorm:"column:app_info;type:json"`
+	ArtifactInfoData json.RawMessage `json:"-" db:"artifact_info" gorm:"column:artifact_info;type:json"`
 	AppStoreInfoData json.RawMessage `json:"-" db:"app_store_info" gorm:"column:app_store_info;type:json"`
 
 	AppID uuid.UUID `db:"app_id" json:"-"`
@@ -102,6 +102,11 @@ func (a *AppVersion) validate(scope *gorm.Scope) error {
 			err = scope.DB().AddError(NewValidationError(fmt.Sprintf("full_description: Mustn't be longer than %d characters", maxCharNumberForIOSFullDescription)))
 		}
 	}
+	artifactInfo, err := a.ArtifactInfo()
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	err = artifactInfo.validate(scope)
 	if err != nil {
 		return errors.New("Validation failed")
 	}
@@ -126,4 +131,11 @@ func (a *AppVersion) ArtifactInfo() (ArtifactInfo, error) {
 		return ArtifactInfo{}, err
 	}
 	return artifactInfo, nil
+}
+
+func (a *ArtifactInfo) validate(scope *gorm.Scope) error {
+	if a.Version == "" {
+		return scope.DB().AddError(NewValidationError("version: Cannot be empty"))
+	}
+	return nil
 }

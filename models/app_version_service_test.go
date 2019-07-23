@@ -54,6 +54,7 @@ func Test_AppVersionService_Create(t *testing.T) {
 		testAppVersion := &models.AppVersion{
 			Platform:         "ios",
 			AppStoreInfoData: json.RawMessage(`invalid json`),
+			ArtifactInfoData: json.RawMessage(`{"version":"1.0"}`),
 		}
 		createdAppVersion, verrs, err := appVersionService.Create(testAppVersion)
 		require.Empty(t, verrs)
@@ -66,6 +67,7 @@ func Test_AppVersionService_Create(t *testing.T) {
 			testAppVersion := &models.AppVersion{
 				Platform:         "android",
 				AppStoreInfoData: json.RawMessage(`{"short_description":"Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula e"}`),
+				ArtifactInfoData: json.RawMessage(`{"version":"1.0"}`),
 			}
 			createdAppVersion, verrs, err := appVersionService.Create(testAppVersion)
 			require.Equal(t, []error{errors.New("short_description: Mustn't be longer than 80 characters")}, verrs)
@@ -77,6 +79,7 @@ func Test_AppVersionService_Create(t *testing.T) {
 			testAppVersion := &models.AppVersion{
 				Platform:         "android",
 				AppStoreInfoData: json.RawMessage(`{"full_description":"Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula e"}`),
+				ArtifactInfoData: json.RawMessage(`{"version":"1.0"}`),
 			}
 			createdAppVersion, verrs, err := appVersionService.Create(testAppVersion)
 			require.Equal(t, []error{errors.New("full_description: Mustn't be longer than 80 characters")}, verrs)
@@ -90,6 +93,7 @@ func Test_AppVersionService_Create(t *testing.T) {
 			testAppVersion := &models.AppVersion{
 				Platform:         "ios",
 				AppStoreInfoData: json.RawMessage(`{"full_description":"Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis,."}`),
+				ArtifactInfoData: json.RawMessage(`{"version":"1.0"}`),
 			}
 			createdAppVersion, verrs, err := appVersionService.Create(testAppVersion)
 			require.Equal(t, []error{errors.New("full_description: Mustn't be longer than 255 characters")}, verrs)
@@ -105,7 +109,8 @@ func Test_AppVersionService_Find(t *testing.T) {
 
 	appVersionService := models.AppVersionService{DB: dataservices.GetDB()}
 	testAppVersion := createTestAppVersion(t, &models.AppVersion{
-		App: *createTestApp(t, &models.App{}),
+		App:              *createTestApp(t, &models.App{}),
+		ArtifactInfoData: json.RawMessage(`{"version":"1.0"}`),
 	})
 
 	foundAppVersion, err := appVersionService.Find(testAppVersion)
@@ -120,12 +125,14 @@ func Test_AppVersionService_FindAll(t *testing.T) {
 	appVersionService := models.AppVersionService{DB: dataservices.GetDB()}
 	testApp1 := createTestApp(t, &models.App{})
 	testApp1VersionAndroid := createTestAppVersion(t, &models.AppVersion{
-		App:      *testApp1,
-		Platform: "android",
+		App:              *testApp1,
+		Platform:         "android",
+		ArtifactInfoData: json.RawMessage(`{"version":"1.0"}`),
 	})
 	testApp1VersionIOS := createTestAppVersion(t, &models.AppVersion{
-		App:      *testApp1,
-		Platform: "ios",
+		App:              *testApp1,
+		Platform:         "ios",
+		ArtifactInfoData: json.RawMessage(`{"version":"1.0"}`),
 	})
 
 	t.Run("when query all versions of test app 1", func(t *testing.T) {
@@ -136,8 +143,9 @@ func Test_AppVersionService_FindAll(t *testing.T) {
 
 	testApp2 := createTestApp(t, &models.App{})
 	createTestAppVersion(t, &models.AppVersion{
-		App:      *testApp2,
-		Platform: "ios",
+		App:              *testApp2,
+		Platform:         "ios",
+		ArtifactInfoData: json.RawMessage(`{"version":"1.0"}`),
 	})
 
 	t.Run("when query ios versions of test app 1", func(t *testing.T) {
@@ -155,8 +163,8 @@ func Test_AppVersionService_Update(t *testing.T) {
 
 	t.Run("ok", func(t *testing.T) {
 		testAppVersions := []*models.AppVersion{
-			createTestAppVersion(t, &models.AppVersion{Platform: "iOS", ArtifactInfoData: json.RawMessage(`{"version":"v1.0"}`)}),
-			createTestAppVersion(t, &models.AppVersion{Platform: "Android", ArtifactInfoData: json.RawMessage(`{"version":"v1.2"}`)}),
+			createTestAppVersion(t, &models.AppVersion{Platform: "iOS", ArtifactInfoData: json.RawMessage(`{"version":"1.0"}`)}),
+			createTestAppVersion(t, &models.AppVersion{Platform: "Android", ArtifactInfoData: json.RawMessage(`{"version":"1.2"}`)}),
 		}
 
 		testAppVersions[0].AppStoreInfoData = json.RawMessage(`{"short_description": "Some short description"}`)

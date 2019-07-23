@@ -3,6 +3,7 @@
 package models_test
 
 import (
+	"encoding/json"
 	"reflect"
 	"testing"
 
@@ -33,7 +34,7 @@ func Test_PublishTaskService_Find(t *testing.T) {
 	defer dbCloseCallbackMethod()
 
 	publishTaskService := models.PublishTaskService{DB: dataservices.GetDB()}
-	testAppVersion := createTestAppVersion(t, &models.AppVersion{Platform: "ios"})
+	testAppVersion := createTestAppVersion(t, &models.AppVersion{Platform: "ios", ArtifactInfoData: json.RawMessage(`{"version":"1.0"}`)})
 	testPublishTask1 := createTestPublishTask(t, &models.PublishTask{TaskID: uuid.FromStringOrNil("600450c0-ca1a-4d01-afee-d184722cc63a"), AppVersion: *testAppVersion})
 	testPublishTask2 := createTestPublishTask(t, &models.PublishTask{TaskID: uuid.FromStringOrNil("188dfbe5-4505-44d9-ae95-9d7aa84dd0be"), AppVersion: *testAppVersion})
 

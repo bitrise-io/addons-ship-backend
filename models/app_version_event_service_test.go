@@ -3,6 +3,7 @@
 package models_test
 
 import (
+	"encoding/json"
 	"reflect"
 	"testing"
 
@@ -32,7 +33,7 @@ func Test_AppVersionEventService_Find(t *testing.T) {
 	defer dbCloseCallbackMethod()
 
 	appVersionEventService := models.AppVersionEventService{DB: dataservices.GetDB()}
-	testAppVersion := createTestAppVersion(t, &models.AppVersion{Platform: "ios"})
+	testAppVersion := createTestAppVersion(t, &models.AppVersion{Platform: "ios", ArtifactInfoData: json.RawMessage(`{"version":"1.0"}`)})
 	testAppVersionEvent := createTestAppVersionEvent(t, &models.AppVersionEvent{Text: "Some interesting event", AppVersion: *testAppVersion})
 
 	t.Run("when querying a app event that belongs to an app", func(t *testing.T) {
@@ -42,7 +43,7 @@ func Test_AppVersionEventService_Find(t *testing.T) {
 	})
 
 	t.Run("error - when app event is not found", func(t *testing.T) {
-		otherTestAppVersion := createTestAppVersion(t, &models.AppVersion{Platform: "android"})
+		otherTestAppVersion := createTestAppVersion(t, &models.AppVersion{Platform: "android", ArtifactInfoData: json.RawMessage(`{"version":"1.0"}`)})
 
 		foundAppVersionEvent, err := appVersionEventService.Find(&models.AppVersionEvent{Record: models.Record{ID: testAppVersionEvent.ID}, AppVersionID: otherTestAppVersion.ID})
 		require.Equal(t, errors.Cause(err), gorm.ErrRecordNotFound)
@@ -55,8 +56,8 @@ func Test_AppVersionEventService_FindAll(t *testing.T) {
 	defer dbCloseCallbackMethod()
 
 	appVersionEventService := models.AppVersionEventService{DB: dataservices.GetDB()}
-	testAppVersion := createTestAppVersion(t, &models.AppVersion{Platform: "ios"})
-	otherTestAppVersion := createTestAppVersion(t, &models.AppVersion{Platform: "android"})
+	testAppVersion := createTestAppVersion(t, &models.AppVersion{Platform: "ios", ArtifactInfoData: json.RawMessage(`{"version":"1.0"}`)})
+	otherTestAppVersion := createTestAppVersion(t, &models.AppVersion{Platform: "android", ArtifactInfoData: json.RawMessage(`{"version":"1.0"}`)})
 	testAppVersionEvent1 := createTestAppVersionEvent(t, &models.AppVersionEvent{Text: "Some interesting event", AppVersion: *testAppVersion})
 	testAppVersionEvent2 := createTestAppVersionEvent(t, &models.AppVersionEvent{Text: "Some other interesting event", AppVersion: *testAppVersion})
 	createTestAppVersionEvent(t, &models.AppVersionEvent{Text: "Some other interesting event", AppVersion: *otherTestAppVersion})
