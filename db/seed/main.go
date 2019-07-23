@@ -134,6 +134,29 @@ func main() {
 			os.Exit(1)
 		}
 	}
+
+	// create test app contacts
+	for _, appContactData := range testData.AppContacts {
+		notificationPreferenceBytes, err := json.Marshal(models.NotificationPreferences(appContactData.NotificationPreferencesData))
+		if err != nil {
+			fmt.Printf("Failed to marshal notification preferences: %#v, app concat data: %#v", err, appContactData)
+			os.Exit(1)
+		}
+
+		appContact := models.AppContact{
+			Record:                      models.Record{ID: appContactData.ID},
+			AppID:                       appContactData.AppID,
+			Email:                       appContactData.Email,
+			ConfirmedAt:                 appContactData.ConfirmedAt,
+			ConfirmationToken:           appContactData.ConfirmationToken,
+			NotificationPreferencesData: notificationPreferenceBytes,
+		}
+
+		if err := db.Create(&appContact).Error; err != nil {
+			fmt.Printf("Failed to seed db with app contact: %#v, app contact: %#v", err, appContact)
+			os.Exit(1)
+		}
+	}
 }
 
 type app struct {
@@ -194,10 +217,26 @@ type featureGraphic struct {
 	Uploaded     bool      `yaml:"uploaded"`
 }
 
+type notificationPreferences struct {
+	NewVersion        bool `yaml:"new_version"`
+	SuccessfulPublish bool `yaml:"successful_publish"`
+	FailedPublish     bool `yaml:"failed_publish"`
+}
+
+type appContact struct {
+	ID                          uuid.UUID               `yaml:"id"`
+	AppID                       uuid.UUID               `yaml:"app_id"`
+	Email                       string                  `yaml:"email"`
+	NotificationPreferencesData notificationPreferences `yaml:"notification_preferences"`
+	ConfirmedAt                 time.Time               `yaml:"confirmed_at"`
+	ConfirmationToken           *string                 `yaml:"confirmation_token"`
+}
+
 type testData struct {
 	Apps             []app             `yaml:"apps"`
 	AppVersions      []appVersion      `yaml:"app_versions"`
 	Screenshots      []screenshot      `yaml:"screenshots"`
 	FeatureGraphics  []featureGraphic  `yaml:"feature_graphics"`
 	AppVersionEvents []appVersionEvent `yaml:"app_version_events"`
+	AppContacts      []appContact      `yaml:"app_contacts"`
 }
