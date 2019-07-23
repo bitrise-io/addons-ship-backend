@@ -46,7 +46,7 @@ func Test_AppContactConfirmPatchHandler(t *testing.T) {
 			env: &env.AppEnv{
 				AppContactService: &testAppContactService{
 					findFn: func(appContact *models.AppContact) (*models.AppContact, error) {
-						return &models.AppContact{}, nil
+						return &models.AppContact{App: &models.App{}}, nil
 					},
 					updateFn: func(appContact *models.AppContact, whitelist []string) error {
 						appContact.ConfirmedAt = time.Time{}
@@ -56,12 +56,16 @@ func Test_AppContactConfirmPatchHandler(t *testing.T) {
 			},
 			expectedStatusCode: http.StatusOK,
 			expectedResponse: services.AppContactPatchResponse{
-				Data: &models.AppContact{},
+				Data: services.AppContactPatchResponseData{
+					AppContact: &models.AppContact{},
+					App:        &models.App{},
+				},
 			},
 		})
 	})
 
 	t.Run("ok - more complex", func(t *testing.T) {
+		testApp := models.App{Record: models.Record{ID: uuid.NewV4()}}
 		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
 			contextElements: map[ctxpkg.RequestContextKey]interface{}{
 				services.ContextKeyAuthorizedAppContactID: uuid.FromStringOrNil("8a230385-0113-4cf3-a9c6-469a313e587a"),
@@ -70,6 +74,7 @@ func Test_AppContactConfirmPatchHandler(t *testing.T) {
 				AppContactService: &testAppContactService{
 					findFn: func(appContact *models.AppContact) (*models.AppContact, error) {
 						require.Equal(t, uuid.FromStringOrNil("8a230385-0113-4cf3-a9c6-469a313e587a"), appContact.ID)
+						appContact.App = &testApp
 						return appContact, nil
 					},
 					updateFn: func(appContact *models.AppContact, whitelist []string) error {
@@ -84,7 +89,10 @@ func Test_AppContactConfirmPatchHandler(t *testing.T) {
 			},
 			expectedStatusCode: http.StatusOK,
 			expectedResponse: services.AppContactPatchResponse{
-				Data: &models.AppContact{Record: models.Record{ID: uuid.FromStringOrNil("8a230385-0113-4cf3-a9c6-469a313e587a")}},
+				Data: services.AppContactPatchResponseData{
+					AppContact: &models.AppContact{Record: models.Record{ID: uuid.FromStringOrNil("8a230385-0113-4cf3-a9c6-469a313e587a")}},
+					App:        &testApp,
+				},
 			},
 		})
 	})

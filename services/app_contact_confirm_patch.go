@@ -10,9 +10,15 @@ import (
 	"github.com/pkg/errors"
 )
 
+// AppContactPatchResponseData ...
+type AppContactPatchResponseData struct {
+	AppContact *models.AppContact `json:"app_contact"`
+	App        *models.App        `json:"app"`
+}
+
 // AppContactPatchResponse ...
 type AppContactPatchResponse struct {
-	Data *models.AppContact `json:"data"`
+	Data AppContactPatchResponseData `json:"data"`
 }
 
 // AppContactConfirmPatchHandler ...
@@ -35,5 +41,7 @@ func AppContactConfirmPatchHandler(env *env.AppEnv, w http.ResponseWriter, r *ht
 		return errors.Wrap(err, "SQL Error")
 	}
 
-	return httpresponse.RespondWithSuccess(w, AppContactPatchResponse{Data: appContact})
+	return httpresponse.RespondWithSuccess(w, AppContactPatchResponse{
+		Data: AppContactPatchResponseData{AppContact: appContact, App: appContact.App},
+	})
 }
