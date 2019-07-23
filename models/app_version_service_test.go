@@ -81,7 +81,7 @@ func Test_AppVersionService_Create(t *testing.T) {
 			ArtifactInfoData: json.RawMessage(`{}`),
 		}
 		createdAppVersion, verrs, err := appVersionService.Create(testAppVersion)
-		require.Equal(t, []error{"version: Cannot be empty"}, verrs)
+		require.Equal(t, []error{errors.New("version: Cannot be empty")}, verrs)
 		require.NoError(t, err)
 		require.Nil(t, createdAppVersion)
 	})
