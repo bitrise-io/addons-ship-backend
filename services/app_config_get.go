@@ -13,7 +13,7 @@ import (
 
 // AppVersionConfigGetResponse ...
 type AppVersionConfigGetResponse struct {
-	MetaData  metaData `json:"meta_data"`
+	MetaData  MetaData `json:"meta_data"`
 	Artifacts []string `json:"artifacts"`
 }
 
@@ -43,11 +43,11 @@ func AppVersionConfigGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.
 		return errors.New("No Screenshot Service defined for handler")
 	}
 
-	config := AppVersionConfigGetResponse{MetaData: metaData{}}
+	config := AppVersionConfigGetResponse{MetaData: MetaData{}}
 
 	appVersion, err := env.AppVersionService.Find(&models.AppVersion{Record: models.Record{ID: authorizedAppVersionID}})
 	if err != nil {
-		return errors.WithStack(err)
+		return errors.Wrap(err, "SQL Error")
 	}
 
 	artifactInfo, err := appVersion.ArtifactInfo()
@@ -61,7 +61,7 @@ func AppVersionConfigGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.
 	case errors.Cause(err) == gorm.ErrRecordNotFound:
 		return httpresponse.RespondWithNotFoundError(w)
 	case err != nil:
-		return errors.WithStack(err)
+		return errors.Wrap(err, "SQL Error")
 	}
 
 	featureGraphicPresignedURL, err := env.AWS.GeneratePresignedGETURL(featureGraphic.AWSPath(), presignedURLExpirationInterval)
@@ -77,7 +77,7 @@ func AppVersionConfigGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	config.MetaData.ListingInfo = listingInfo{
+	config.MetaData.ListingInfo = ListingInfo{
 		ShortDescription: storeInfo.ShortDescription,
 		FullDescription:  storeInfo.FullDescription,
 		WhatsNew:         storeInfo.WhatsNew,
@@ -87,7 +87,7 @@ func AppVersionConfigGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.
 
 	appSettings, err := env.AppSettingsService.Find(&models.AppSettings{AppID: appVersion.AppID})
 	if err != nil {
-		return errors.WithStack(err)
+		return errors.Wrap(err, "SQL Error")
 	}
 
 	androidSettings, err := appSettings.AndroidSettings()
@@ -98,6 +98,9 @@ func AppVersionConfigGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.
 
 	var selectedServiceAccount bitrise.GenericProjectFile
 	serviceAccounts, err := env.BitriseAPI.GetServiceAccountFiles(appVersion.App.APIToken, appVersion.App.AppSlug)
+	if err != nil {
+		return errors.WithStack(err)
+	}
 	for _, serviceAccount := range serviceAccounts {
 		if serviceAccount.Slug == androidSettings.SelectedServiceAccount {
 			selectedServiceAccount = serviceAccount
@@ -107,9 +110,13 @@ func AppVersionConfigGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.
 	if selectedServiceAccount == (bitrise.GenericProjectFile{}) {
 		return httpresponse.RespondWithNotFoundError(w)
 	}
+	config.MetaData.ServiceAccountJSON = selectedServiceAccount.DownloadURL
 
 	var selectedAndroidKeystore bitrise.AndroidKeystoreFile
 	androidKeystoreFiles, err := env.BitriseAPI.GetAndroidKeystoreFiles(appVersion.App.APIToken, appVersion.App.AppSlug)
+	if err != nil {
+		return errors.WithStack(err)
+	}
 	for _, keystore := range androidKeystoreFiles {
 		if keystore.Slug == androidSettings.SelectedKeystoreFile && keystore.UserEnvKey == "ANDROID_KEYSTORE" {
 			selectedAndroidKeystore = keystore
@@ -119,9 +126,7 @@ func AppVersionConfigGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.
 	if selectedAndroidKeystore == (bitrise.AndroidKeystoreFile{}) {
 		return httpresponse.RespondWithNotFoundError(w)
 	}
-	config.MetaData.ServiceAccountJSON = selectedAndroidKeystore.DownloadURL
-
-	ks := keystore{
+	ks := Keystore{
 		URL:         selectedAndroidKeystore.DownloadURL,
 		Password:    selectedAndroidKeystore.ExposedMetadataStore.Password,
 		Alias:       selectedAndroidKeystore.ExposedMetadataStore.Alias,
@@ -130,12 +135,45 @@ func AppVersionConfigGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.
 
 	config.MetaData.Keystore = ks
 
-	// TODO: screenshots
+	screenshots, err := env.ScreenshotService.FindAll(appVersion)
+	if err != nil {
+		return errors.Wrap(err, "SQL Error")
+	}
 
-	return httpresponse.RespondWithSuccess(w, AppVersionConfigGetResponse{})
+	scs, err := newScreenshotsResponse(screenshots, env)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	config.MetaData.ListingInfo.Screenshots = scs
+
+	return httpresponse.RespondWithSuccess(w, config)
 }
 
-type screenshots struct {
+func newScreenshotsResponse(screenshotData []models.Screenshot, env *env.AppEnv) (Screenshots, error) {
+	scs := Screenshots{}
+	for _, sc := range screenshotData {
+		url, err := env.AWS.GeneratePresignedGETURL(sc.AWSPath(), presignedURLExpirationInterval)
+		if err != nil {
+			return Screenshots{}, errors.WithStack(err)
+		}
+		switch sc.ScreenSize {
+		case "tv":
+			scs.Tv = append(scs.Tv, url)
+		case "wear":
+			scs.Wear = append(scs.Wear, url)
+		case "phone":
+			scs.Phone = append(scs.Phone, url)
+		case "ten_inch":
+			scs.TenInch = append(scs.TenInch, url)
+		case "seven_inch":
+			scs.SevenInch = append(scs.SevenInch, url)
+		}
+	}
+	return scs, nil
+}
+
+// Screenshots ...
+type Screenshots struct {
 	Tv        []string `json:"tv,omitempty"`
 	Wear      []string `json:"wear,omitempty"`
 	Phone     []string `json:"phone,omitempty"`
@@ -143,8 +181,9 @@ type screenshots struct {
 	SevenInch []string `json:"seven_inch,omitempty"`
 }
 
-type listingInfo struct {
-	Screenshots      screenshots `json:"screenshots,omitempty"`
+// ListingInfo ...
+type ListingInfo struct {
+	Screenshots      Screenshots `json:"screenshots,omitempty"`
 	Icon             string      `json:"icon,omitempty"`
 	Video            string      `json:"video,omitempty"`
 	Title            string      `json:"title,omitempty"`
@@ -156,17 +195,19 @@ type listingInfo struct {
 	ShortDescription string      `json:"short_description,omitempty"`
 }
 
-type keystore struct {
+// Keystore ...
+type Keystore struct {
 	URL         string `json:"url"`
 	Password    string `json:"password"`
 	Alias       string `json:"alias"`
 	KeyPassword string `json:"key_password"`
 }
 
-type metaData struct {
-	ListingInfo        listingInfo `json:"listing_info"`
+// MetaData ...
+type MetaData struct {
+	ListingInfo        ListingInfo `json:"listing_info"`
 	Track              string      `json:"track"`
 	PackageName        string      `json:"package_name"`
 	ServiceAccountJSON string      `json:"service_account_json"`
-	Keystore           keystore    `json:"keystore"`
+	Keystore           Keystore    `json:"keystore"`
 }
