@@ -4,16 +4,25 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/bitrise-io/addons-ship-backend/bitrise"
+
 	"github.com/bitrise-io/addons-ship-backend/env"
 	"github.com/bitrise-io/addons-ship-backend/models"
 	"github.com/bitrise-io/api-utils/httpresponse"
 	"github.com/pkg/errors"
 )
 
+// AppResponseData ...
+type AppResponseData struct {
+	AppSlug string `json:"app_slug"`
+	Plan    string `json:"plan"`
+	bitrise.AppDetails
+}
+
 // AppContactPatchResponseData ...
 type AppContactPatchResponseData struct {
 	AppContact *models.AppContact `json:"app_contact"`
-	App        *models.App        `json:"app"`
+	App        AppResponseData    `json:"app"`
 }
 
 // AppContactPatchResponse ...
@@ -27,13 +36,24 @@ func AppContactConfirmPatchHandler(env *env.AppEnv, w http.ResponseWriter, r *ht
 	if err != nil {
 		return errors.WithStack(err)
 	}
+
 	if env.AppContactService == nil {
 		return errors.New("No App Contact Service defined for handler")
 	}
+	if env.BitriseAPI == nil {
+		return errors.New("No Bitrise API Service defined for handler")
+	}
+
 	appContact, err := env.AppContactService.Find(&models.AppContact{Record: models.Record{ID: authorizedAppContactID}})
 	if err != nil {
 		return errors.Wrap(err, "SQL Error")
 	}
+
+	appDetails, err := env.BitriseAPI.GetAppDetails(appContact.App.APIToken, appContact.App.AppSlug)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
 	appContact.ConfirmedAt = time.Now()
 	appContact.ConfirmationToken = nil
 	err = env.AppContactService.Update(appContact, []string{"ConfirmedAt", "ConfirmationToken"})
@@ -42,6 +62,14 @@ func AppContactConfirmPatchHandler(env *env.AppEnv, w http.ResponseWriter, r *ht
 	}
 
 	return httpresponse.RespondWithSuccess(w, AppContactPatchResponse{
-		Data: AppContactPatchResponseData{AppContact: appContact, App: appContact.App},
+		Data: AppContactPatchResponseData{AppContact: appContact, App: AppResponseData{
+			AppSlug: appContact.App.AppSlug,
+			Plan:    appContact.App.Plan,
+			AppDetails: bitrise.AppDetails{
+				Title:       appDetails.Title,
+				AvatarURL:   appDetails.AvatarURL,
+				ProjectType: appDetails.ProjectType,
+			},
+		}},
 	})
 }
