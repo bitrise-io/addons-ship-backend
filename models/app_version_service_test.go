@@ -62,6 +62,30 @@ func Test_AppVersionService_Create(t *testing.T) {
 		require.Nil(t, createdAppVersion)
 	})
 
+	t.Run("when artifact info is not a valid JSON", func(t *testing.T) {
+		testAppVersion := &models.AppVersion{
+			Platform:         "ios",
+			AppStoreInfoData: json.RawMessage(`{"short_description":"Some quite short description"}`),
+			ArtifactInfoData: json.RawMessage(`invalid JSON`),
+		}
+		createdAppVersion, verrs, err := appVersionService.Create(testAppVersion)
+		require.Empty(t, verrs)
+		require.EqualError(t, err, "invalid character 'i' looking for beginning of value")
+		require.Nil(t, createdAppVersion)
+	})
+
+	t.Run("when version is empty in artifact info", func(t *testing.T) {
+		testAppVersion := &models.AppVersion{
+			Platform:         "ios",
+			AppStoreInfoData: json.RawMessage(`{"short_description":"Some quite short description"}`),
+			ArtifactInfoData: json.RawMessage(`{}`),
+		}
+		createdAppVersion, verrs, err := appVersionService.Create(testAppVersion)
+		require.Equal(t, []error{"version: Cannot be empty"}, verrs)
+		require.NoError(t, err)
+		require.Nil(t, createdAppVersion)
+	})
+
 	t.Run("when platform is android", func(t *testing.T) {
 		t.Run("when short description is longer, than 80 characters", func(t *testing.T) {
 			testAppVersion := &models.AppVersion{
