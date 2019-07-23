@@ -24,6 +24,25 @@ func AppVersionConfigGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.
 		return errors.WithStack(err)
 	}
 
+	if env.AppVersionService == nil {
+		return errors.New("No App Version Service defined for handler")
+	}
+	if env.AppSettingsService == nil {
+		return errors.New("No App Settings Service defined for handler")
+	}
+	if env.FeatureGraphicService == nil {
+		return errors.New("No Feature Graphic Service defined for handler")
+	}
+	if env.AWS == nil {
+		return errors.New("No AWS Provider defined for handler")
+	}
+	if env.BitriseAPI == nil {
+		return errors.New("No Bitrise API Service defined for handler")
+	}
+	if env.ScreenshotService == nil {
+		return errors.New("No Screenshot Service defined for handler")
+	}
+
 	config := AppVersionConfigGetResponse{MetaData: metaData{}}
 
 	appVersion, err := env.AppVersionService.Find(&models.AppVersion{Record: models.Record{ID: authorizedAppVersionID}})
