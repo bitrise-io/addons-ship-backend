@@ -71,3 +71,22 @@ app_version_events:
     status: finished
     event_text: some new description
     created_at: 2019-07-03 13:28:39
+app_contacts:
+  - id: acc348ff-9b83-4521-b893-5d0592e847c9
+    app_id: 1278ddd3-0b24-4cd6-8ca7-537748b5c284
+    email: jane.doe@bitrise.io
+    notification_preferences:
+      new_version: false
+      successful_publish: true
+      failed_publish: false
+    confirmed_at: null
+    confirmation_token: confirm-token-abc-123
+  - id: 772eacfd-215d-4100-8033-77260d077988
+    app_id: 1278ddd3-0b24-4cd6-8ca7-537748b5c284
+    email: john.doe@bitrise.io
+    notification_preferences:
+      new_version: true
+      successful_publish: true
+      failed_publish: true
+    confirmed_at: 2019-07-23 13:28:39
+    confirmation_token: null

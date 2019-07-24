@@ -20,7 +20,7 @@ type AppContact struct {
 	Email                       string          `json:"email"`
 	NotificationPreferencesData json.RawMessage `gorm:"column:notification_preferences;type:json" json:"notification_preferences"`
 	ConfirmedAt                 time.Time       `json:"confirmed_at"`
-	ConfirmationToken           *string         `json:"-"`
+	ConfirmationToken           *string         `db:"confirmation_token" json:"-"`
 
 	AppID uuid.UUID `db:"app_id" json:"-"`
 	App   *App      `gorm:"foreignkey:AppID" json:"-"`
