@@ -22,7 +22,7 @@ func Test_AppContactConfirmPatchHandler(t *testing.T) {
 	url := "/confirm_email"
 	handler := services.AppContactConfirmPatchHandler
 
-	behavesAsServiceCravingHandler(t, httpMethod, url, handler, []string{"AppContactService"}, ControllerTestCase{
+	behavesAsServiceCravingHandler(t, httpMethod, url, handler, []string{"AppContactService", "BitriseAPI"}, ControllerTestCase{
 		contextElements: map[ctxpkg.RequestContextKey]interface{}{
 			services.ContextKeyAuthorizedAppContactID: uuid.NewV4(),
 		},

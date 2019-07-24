@@ -14,9 +14,9 @@ import (
 
 // AppResponseData ...
 type AppResponseData struct {
+	bitrise.AppDetails
 	AppSlug string `json:"app_slug"`
 	Plan    string `json:"plan"`
-	bitrise.AppDetails
 }
 
 // AppContactPatchResponseData ...
@@ -63,13 +63,9 @@ func AppContactConfirmPatchHandler(env *env.AppEnv, w http.ResponseWriter, r *ht
 
 	return httpresponse.RespondWithSuccess(w, AppContactPatchResponse{
 		Data: AppContactPatchResponseData{AppContact: appContact, App: AppResponseData{
-			AppSlug: appContact.App.AppSlug,
-			Plan:    appContact.App.Plan,
-			AppDetails: bitrise.AppDetails{
-				Title:       appDetails.Title,
-				AvatarURL:   appDetails.AvatarURL,
-				ProjectType: appDetails.ProjectType,
-			},
+			AppSlug:    appContact.App.AppSlug,
+			Plan:       appContact.App.Plan,
+			AppDetails: *appDetails,
 		}},
 	})
 }
