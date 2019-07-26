@@ -126,14 +126,13 @@ func AppVersionConfigGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.
 	if selectedAndroidKeystore == (bitrise.AndroidKeystoreFile{}) {
 		return httpresponse.RespondWithNotFoundError(w)
 	}
-	ks := Keystore{
+
+	config.MetaData.Keystore = Keystore{
 		URL:         selectedAndroidKeystore.DownloadURL,
 		Password:    selectedAndroidKeystore.ExposedMetadataStore.Password,
 		Alias:       selectedAndroidKeystore.ExposedMetadataStore.Alias,
 		KeyPassword: selectedAndroidKeystore.ExposedMetadataStore.PrivateKeyPassword,
 	}
-
-	config.MetaData.Keystore = ks
 
 	screenshots, err := env.ScreenshotService.FindAll(appVersion)
 	if err != nil {
