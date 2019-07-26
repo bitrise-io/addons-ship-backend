@@ -11,14 +11,14 @@ import (
 	"github.com/pkg/errors"
 )
 
-// AppVersionConfigGetResponse ...
-type AppVersionConfigGetResponse struct {
+// AppVersionConfigAndroidGetResponse ...
+type AppVersionConfigAndroidGetResponse struct {
 	MetaData  MetaData `json:"meta_data"`
 	Artifacts []string `json:"artifacts"`
 }
 
-// AppVersionConfigGetHandler ...
-func AppVersionConfigGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request) error {
+// AppVersionConfigAndroidGetHandler ...
+func AppVersionConfigAndroidGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request) error {
 	authorizedAppVersionID, err := GetAuthorizedAppVersionIDFromContext(r.Context())
 	if err != nil {
 		return errors.WithStack(err)
@@ -43,7 +43,7 @@ func AppVersionConfigGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.
 		return errors.New("No Screenshot Service defined for handler")
 	}
 
-	config := AppVersionConfigGetResponse{MetaData: MetaData{}}
+	config := AppVersionConfigAndroidGetResponse{MetaData: MetaData{}}
 
 	appVersion, err := env.AppVersionService.Find(&models.AppVersion{Record: models.Record{ID: authorizedAppVersionID}})
 	if err != nil {

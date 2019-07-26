@@ -20,10 +20,10 @@ import (
 	"github.com/satori/go.uuid"
 )
 
-func Test_AppVersionConfigGetHandler(t *testing.T) {
+func Test_AppVersionConfigAndroidGetHandler(t *testing.T) {
 	httpMethod := "GET"
 	url := "/apps/{app-slug}/versions/{version-id}/config"
-	handler := services.AppVersionConfigGetHandler
+	handler := services.AppVersionConfigAndroidGetHandler
 
 	behavesAsServiceCravingHandler(t, httpMethod, url, handler,
 		[]string{"AppVersionService", "AppSettingsService", "FeatureGraphicService", "AWS", "BitriseAPI", "ScreenshotService"},
@@ -104,7 +104,7 @@ func Test_AppVersionConfigGetHandler(t *testing.T) {
 				},
 			},
 			expectedStatusCode: http.StatusOK,
-			expectedResponse:   services.AppVersionConfigGetResponse{},
+			expectedResponse:   services.AppVersionConfigAndroidGetResponse{},
 		})
 	})
 
@@ -185,7 +185,7 @@ func Test_AppVersionConfigGetHandler(t *testing.T) {
 				},
 			},
 			expectedStatusCode: http.StatusOK,
-			expectedResponse: services.AppVersionConfigGetResponse{
+			expectedResponse: services.AppVersionConfigAndroidGetResponse{
 				MetaData: services.MetaData{
 					ListingInfo: services.ListingInfo{
 						ShortDescription: "Description",
