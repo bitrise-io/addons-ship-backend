@@ -13,9 +13,10 @@ type provisioningProfileListResponseModel struct {
 
 // CodeSigningIdentity ...
 type CodeSigningIdentity struct {
-	Filename    string `json:"upload_file_name"`
-	Slug        string `json:"slug"`
-	DownloadURL string `json:"download_url"`
+	Filename            string `json:"upload_file_name"`
+	Slug                string `json:"slug"`
+	CertificatePassword string `json:"certificate_password"`
+	DownloadURL         string `json:"download_url"`
 }
 
 type codeSigningIdentityListResponseModel struct {
