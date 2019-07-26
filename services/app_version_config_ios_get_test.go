@@ -12,8 +12,11 @@ import (
 	"github.com/bitrise-io/addons-ship-backend/models"
 	"github.com/bitrise-io/addons-ship-backend/services"
 	ctxpkg "github.com/bitrise-io/api-utils/context"
+	"github.com/bitrise-io/api-utils/httpresponse"
 	"github.com/bitrise-io/api-utils/providers"
 	"github.com/c2fo/testify/require"
+	"github.com/jinzhu/gorm"
+	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -212,6 +215,455 @@ func Test_AppVersionIosConfigGetHandler(t *testing.T) {
 					AppleAppSpecificPassword: "my-super-secret-pass",
 				},
 			},
+		})
+	})
+
+	t.Run("when it's failed to find app version", func(t *testing.T) {
+		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppVersionID: uuid.NewV4(),
+			},
+			env: &env.AppEnv{
+				AppVersionService: &testAppVersionService{
+					findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
+						return appVersion, gorm.ErrRecordNotFound
+					},
+				},
+				AWS: &providers.AWSMock{
+					GeneratePresignedGETURLFn: func(path string, expiration time.Duration) (string, error) {
+						return "", nil
+					},
+				},
+				BitriseAPI: &testBitriseAPI{
+					getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
+						return &bitrise.AppDetails{}, nil
+					},
+					getProvisioningProfilesFn: func(apiToken, appSlug string) ([]bitrise.ProvisioningProfile, error) {
+						return []bitrise.ProvisioningProfile{bitrise.ProvisioningProfile{Slug: "prov-profile-slug"}}, nil
+					},
+					getCodeSigningIdentitiesFn: func(apiToken, appSlug string) ([]bitrise.CodeSigningIdentity, error) {
+						return []bitrise.CodeSigningIdentity{bitrise.CodeSigningIdentity{Slug: "code-signing-slug"}}, nil
+					},
+				},
+				AppSettingsService: &testAppSettingsService{
+					findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
+						appSettings.IosSettingsData = json.RawMessage(`{"selected_app_store_provisioning_profile":"prov-profile-slug","selected_code_signing_identity":"code-signing-slug"}`)
+						return appSettings, nil
+					},
+				},
+				ScreenshotService: &testScreenshotService{
+					findAllFn: func(appVersion *models.AppVersion) ([]models.Screenshot, error) {
+						return []models.Screenshot{}, nil
+					},
+				},
+			},
+			expectedInternalErr: "SQL Error: record not found",
+		})
+	})
+
+	t.Run("when failed to get store info from app version", func(t *testing.T) {
+		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppVersionID: uuid.NewV4(),
+			},
+			env: &env.AppEnv{
+				AppVersionService: &testAppVersionService{
+					findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
+						appVersion.ArtifactInfoData = json.RawMessage(`{}`)
+						appVersion.AppStoreInfoData = json.RawMessage(`invalid JSON`)
+						return appVersion, nil
+					},
+				},
+				AWS: &providers.AWSMock{
+					GeneratePresignedGETURLFn: func(path string, expiration time.Duration) (string, error) {
+						return "", nil
+					},
+				},
+				BitriseAPI: &testBitriseAPI{
+					getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
+						return &bitrise.AppDetails{}, nil
+					},
+					getProvisioningProfilesFn: func(apiToken, appSlug string) ([]bitrise.ProvisioningProfile, error) {
+						return []bitrise.ProvisioningProfile{bitrise.ProvisioningProfile{Slug: "prov-profile-slug"}}, nil
+					},
+					getCodeSigningIdentitiesFn: func(apiToken, appSlug string) ([]bitrise.CodeSigningIdentity, error) {
+						return []bitrise.CodeSigningIdentity{bitrise.CodeSigningIdentity{Slug: "code-signing-slug"}}, nil
+					},
+				},
+				AppSettingsService: &testAppSettingsService{
+					findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
+						appSettings.IosSettingsData = json.RawMessage(`{"selected_app_store_provisioning_profile":"prov-profile-slug","selected_code_signing_identity":"code-signing-slug"}`)
+						return appSettings, nil
+					},
+				},
+				ScreenshotService: &testScreenshotService{
+					findAllFn: func(appVersion *models.AppVersion) ([]models.Screenshot, error) {
+						return []models.Screenshot{}, nil
+					},
+				},
+			},
+			expectedInternalErr: "invalid character 'i' looking for beginning of value",
+		})
+	})
+
+	t.Run("when failed to find screenshots", func(t *testing.T) {
+		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppVersionID: uuid.NewV4(),
+			},
+			env: &env.AppEnv{
+				AppVersionService: &testAppVersionService{
+					findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
+						appVersion.ArtifactInfoData = json.RawMessage(`{}`)
+						appVersion.AppStoreInfoData = json.RawMessage(`{}`)
+						return appVersion, nil
+					},
+				},
+				AWS: &providers.AWSMock{
+					GeneratePresignedGETURLFn: func(path string, expiration time.Duration) (string, error) {
+						return "", nil
+					},
+				},
+				BitriseAPI: &testBitriseAPI{
+					getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
+						return &bitrise.AppDetails{}, nil
+					},
+					getProvisioningProfilesFn: func(apiToken, appSlug string) ([]bitrise.ProvisioningProfile, error) {
+						return []bitrise.ProvisioningProfile{bitrise.ProvisioningProfile{Slug: "prov-profile-slug"}}, nil
+					},
+					getCodeSigningIdentitiesFn: func(apiToken, appSlug string) ([]bitrise.CodeSigningIdentity, error) {
+						return []bitrise.CodeSigningIdentity{bitrise.CodeSigningIdentity{Slug: "code-signing-slug"}}, nil
+					},
+				},
+				AppSettingsService: &testAppSettingsService{
+					findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
+						appSettings.IosSettingsData = json.RawMessage(`{"selected_app_store_provisioning_profile":"prov-profile-slug","selected_code_signing_identity":"code-signing-slug"}`)
+						return appSettings, nil
+					},
+				},
+				ScreenshotService: &testScreenshotService{
+					findAllFn: func(appVersion *models.AppVersion) ([]models.Screenshot, error) {
+						return []models.Screenshot{}, errors.New("SOME-SQL-ERROR")
+					},
+				},
+			},
+			expectedInternalErr: "SQL Error: SOME-SQL-ERROR",
+		})
+	})
+
+	t.Run("when failed to generate presigned URL for screenshot", func(t *testing.T) {
+		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppVersionID: uuid.NewV4(),
+			},
+			env: &env.AppEnv{
+				AppVersionService: &testAppVersionService{
+					findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
+						appVersion.ArtifactInfoData = json.RawMessage(`{}`)
+						appVersion.AppStoreInfoData = json.RawMessage(`{}`)
+						return appVersion, nil
+					},
+				},
+				AWS: &providers.AWSMock{
+					GeneratePresignedGETURLFn: func(path string, expiration time.Duration) (string, error) {
+						return "", errors.New("SOME-AWS-ERROR")
+					},
+				},
+				BitriseAPI: &testBitriseAPI{
+					getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
+						return &bitrise.AppDetails{}, nil
+					},
+					getProvisioningProfilesFn: func(apiToken, appSlug string) ([]bitrise.ProvisioningProfile, error) {
+						return []bitrise.ProvisioningProfile{bitrise.ProvisioningProfile{Slug: "prov-profile-slug"}}, nil
+					},
+					getCodeSigningIdentitiesFn: func(apiToken, appSlug string) ([]bitrise.CodeSigningIdentity, error) {
+						return []bitrise.CodeSigningIdentity{bitrise.CodeSigningIdentity{Slug: "code-signing-slug"}}, nil
+					},
+				},
+				AppSettingsService: &testAppSettingsService{
+					findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
+						appSettings.IosSettingsData = json.RawMessage(`{"selected_app_store_provisioning_profile":"prov-profile-slug","selected_code_signing_identity":"code-signing-slug"}`)
+						return appSettings, nil
+					},
+				},
+				ScreenshotService: &testScreenshotService{
+					findAllFn: func(appVersion *models.AppVersion) ([]models.Screenshot, error) {
+						return []models.Screenshot{models.Screenshot{DeviceType: "Apple Watch"}}, nil
+					},
+				},
+			},
+			expectedInternalErr: "SOME-AWS-ERROR",
+		})
+	})
+
+	t.Run("when it's failed to find app setting", func(t *testing.T) {
+		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppVersionID: uuid.NewV4(),
+			},
+			env: &env.AppEnv{
+				AppVersionService: &testAppVersionService{
+					findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
+						appVersion.ArtifactInfoData = json.RawMessage(`{}`)
+						appVersion.AppStoreInfoData = json.RawMessage(`{}`)
+						return appVersion, nil
+					},
+				},
+				AWS: &providers.AWSMock{
+					GeneratePresignedGETURLFn: func(path string, expiration time.Duration) (string, error) {
+						return "", nil
+					},
+				},
+				BitriseAPI: &testBitriseAPI{
+					getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
+						return &bitrise.AppDetails{}, nil
+					},
+					getProvisioningProfilesFn: func(apiToken, appSlug string) ([]bitrise.ProvisioningProfile, error) {
+						return []bitrise.ProvisioningProfile{bitrise.ProvisioningProfile{Slug: "prov-profile-slug"}}, nil
+					},
+					getCodeSigningIdentitiesFn: func(apiToken, appSlug string) ([]bitrise.CodeSigningIdentity, error) {
+						return []bitrise.CodeSigningIdentity{bitrise.CodeSigningIdentity{Slug: "code-signing-slug"}}, nil
+					},
+				},
+				AppSettingsService: &testAppSettingsService{
+					findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
+						return appSettings, gorm.ErrRecordNotFound
+					},
+				},
+				ScreenshotService: &testScreenshotService{
+					findAllFn: func(appVersion *models.AppVersion) ([]models.Screenshot, error) {
+						return []models.Screenshot{}, nil
+					},
+				},
+			},
+			expectedInternalErr: "SQL Error: record not found",
+		})
+	})
+
+	t.Run("when failed to get ios settings from app settings", func(t *testing.T) {
+		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppVersionID: uuid.NewV4(),
+			},
+			env: &env.AppEnv{
+				AppVersionService: &testAppVersionService{
+					findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
+						appVersion.ArtifactInfoData = json.RawMessage(`{}`)
+						appVersion.AppStoreInfoData = json.RawMessage(`{}`)
+						return appVersion, nil
+					},
+				},
+				AWS: &providers.AWSMock{
+					GeneratePresignedGETURLFn: func(path string, expiration time.Duration) (string, error) {
+						return "", nil
+					},
+				},
+				BitriseAPI: &testBitriseAPI{
+					getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
+						return &bitrise.AppDetails{}, nil
+					},
+					getProvisioningProfilesFn: func(apiToken, appSlug string) ([]bitrise.ProvisioningProfile, error) {
+						return []bitrise.ProvisioningProfile{bitrise.ProvisioningProfile{Slug: "prov-profile-slug"}}, nil
+					},
+					getCodeSigningIdentitiesFn: func(apiToken, appSlug string) ([]bitrise.CodeSigningIdentity, error) {
+						return []bitrise.CodeSigningIdentity{bitrise.CodeSigningIdentity{Slug: "code-signing-slug"}}, nil
+					},
+				},
+				AppSettingsService: &testAppSettingsService{
+					findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
+						appSettings.IosSettingsData = json.RawMessage(`invalid JSON`)
+						return appSettings, nil
+					},
+				},
+				ScreenshotService: &testScreenshotService{
+					findAllFn: func(appVersion *models.AppVersion) ([]models.Screenshot, error) {
+						return []models.Screenshot{}, nil
+					},
+				},
+			},
+			expectedInternalErr: "invalid character 'i' looking for beginning of value",
+		})
+	})
+
+	t.Run("when failed to fetch provisioning profiles from API", func(t *testing.T) {
+		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppVersionID: uuid.NewV4(),
+			},
+			env: &env.AppEnv{
+				AppVersionService: &testAppVersionService{
+					findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
+						appVersion.ArtifactInfoData = json.RawMessage(`{}`)
+						appVersion.AppStoreInfoData = json.RawMessage(`{}`)
+						return appVersion, nil
+					},
+				},
+				AWS: &providers.AWSMock{
+					GeneratePresignedGETURLFn: func(path string, expiration time.Duration) (string, error) {
+						return "", nil
+					},
+				},
+				BitriseAPI: &testBitriseAPI{
+					getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
+						return &bitrise.AppDetails{}, nil
+					},
+					getProvisioningProfilesFn: func(apiToken, appSlug string) ([]bitrise.ProvisioningProfile, error) {
+						return []bitrise.ProvisioningProfile{}, errors.New("SOME-BITRISE-API-ERROR")
+					},
+					getCodeSigningIdentitiesFn: func(apiToken, appSlug string) ([]bitrise.CodeSigningIdentity, error) {
+						return []bitrise.CodeSigningIdentity{bitrise.CodeSigningIdentity{Slug: "code-signing-slug"}}, nil
+					},
+				},
+				AppSettingsService: &testAppSettingsService{
+					findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
+						appSettings.IosSettingsData = json.RawMessage(`{"selected_app_store_provisioning_profile":"prov-profile-slug","selected_code_signing_identity":"code-signing-slug"}`)
+						return appSettings, nil
+					},
+				},
+				ScreenshotService: &testScreenshotService{
+					findAllFn: func(appVersion *models.AppVersion) ([]models.Screenshot, error) {
+						return []models.Screenshot{}, nil
+					},
+				},
+			},
+			expectedInternalErr: "SOME-BITRISE-API-ERROR",
+		})
+	})
+
+	t.Run("when no matching provisioning profile found", func(t *testing.T) {
+		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppVersionID: uuid.NewV4(),
+			},
+			env: &env.AppEnv{
+				AppVersionService: &testAppVersionService{
+					findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
+						appVersion.ArtifactInfoData = json.RawMessage(`{}`)
+						appVersion.AppStoreInfoData = json.RawMessage(`{}`)
+						return appVersion, nil
+					},
+				},
+				AWS: &providers.AWSMock{
+					GeneratePresignedGETURLFn: func(path string, expiration time.Duration) (string, error) {
+						return "", nil
+					},
+				},
+				BitriseAPI: &testBitriseAPI{
+					getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
+						return &bitrise.AppDetails{}, nil
+					},
+					getProvisioningProfilesFn: func(apiToken, appSlug string) ([]bitrise.ProvisioningProfile, error) {
+						return []bitrise.ProvisioningProfile{bitrise.ProvisioningProfile{Slug: "not-matching-slug"}}, nil
+					},
+					getCodeSigningIdentitiesFn: func(apiToken, appSlug string) ([]bitrise.CodeSigningIdentity, error) {
+						return []bitrise.CodeSigningIdentity{bitrise.CodeSigningIdentity{Slug: "code-signing-slug"}}, nil
+					},
+				},
+				AppSettingsService: &testAppSettingsService{
+					findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
+						appSettings.IosSettingsData = json.RawMessage(`{"selected_app_store_provisioning_profile":"prov-profile-slug","selected_code_signing_identity":"code-signing-slug"}`)
+						return appSettings, nil
+					},
+				},
+				ScreenshotService: &testScreenshotService{
+					findAllFn: func(appVersion *models.AppVersion) ([]models.Screenshot, error) {
+						return []models.Screenshot{}, nil
+					},
+				},
+			},
+			expectedStatusCode: http.StatusNotFound,
+			expectedResponse:   httpresponse.StandardErrorRespModel{Message: "Not Found"},
+		})
+	})
+
+	t.Run("when failed to fetch code signing identities from API", func(t *testing.T) {
+		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppVersionID: uuid.NewV4(),
+			},
+			env: &env.AppEnv{
+				AppVersionService: &testAppVersionService{
+					findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
+						appVersion.ArtifactInfoData = json.RawMessage(`{}`)
+						appVersion.AppStoreInfoData = json.RawMessage(`{}`)
+						return appVersion, nil
+					},
+				},
+				AWS: &providers.AWSMock{
+					GeneratePresignedGETURLFn: func(path string, expiration time.Duration) (string, error) {
+						return "", nil
+					},
+				},
+				BitriseAPI: &testBitriseAPI{
+					getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
+						return &bitrise.AppDetails{}, nil
+					},
+					getProvisioningProfilesFn: func(apiToken, appSlug string) ([]bitrise.ProvisioningProfile, error) {
+						return []bitrise.ProvisioningProfile{bitrise.ProvisioningProfile{Slug: "prov-profile-slug"}}, nil
+					},
+					getCodeSigningIdentitiesFn: func(apiToken, appSlug string) ([]bitrise.CodeSigningIdentity, error) {
+						return []bitrise.CodeSigningIdentity{}, errors.New("SOME-BITRISE-API-ERROR")
+					},
+				},
+				AppSettingsService: &testAppSettingsService{
+					findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
+						appSettings.IosSettingsData = json.RawMessage(`{"selected_app_store_provisioning_profile":"prov-profile-slug","selected_code_signing_identity":"code-signing-slug"}`)
+						return appSettings, nil
+					},
+				},
+				ScreenshotService: &testScreenshotService{
+					findAllFn: func(appVersion *models.AppVersion) ([]models.Screenshot, error) {
+						return []models.Screenshot{}, nil
+					},
+				},
+			},
+			expectedInternalErr: "SOME-BITRISE-API-ERROR",
+		})
+	})
+
+	t.Run("when no matching code signing identity found", func(t *testing.T) {
+		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppVersionID: uuid.NewV4(),
+			},
+			env: &env.AppEnv{
+				AppVersionService: &testAppVersionService{
+					findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
+						appVersion.ArtifactInfoData = json.RawMessage(`{}`)
+						appVersion.AppStoreInfoData = json.RawMessage(`{}`)
+						return appVersion, nil
+					},
+				},
+				AWS: &providers.AWSMock{
+					GeneratePresignedGETURLFn: func(path string, expiration time.Duration) (string, error) {
+						return "", nil
+					},
+				},
+				BitriseAPI: &testBitriseAPI{
+					getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
+						return &bitrise.AppDetails{}, nil
+					},
+					getProvisioningProfilesFn: func(apiToken, appSlug string) ([]bitrise.ProvisioningProfile, error) {
+						return []bitrise.ProvisioningProfile{bitrise.ProvisioningProfile{Slug: "prov-profile-slug"}}, nil
+					},
+					getCodeSigningIdentitiesFn: func(apiToken, appSlug string) ([]bitrise.CodeSigningIdentity, error) {
+						return []bitrise.CodeSigningIdentity{bitrise.CodeSigningIdentity{Slug: "not-matching-slug"}}, nil
+					},
+				},
+				AppSettingsService: &testAppSettingsService{
+					findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
+						appSettings.IosSettingsData = json.RawMessage(`{"selected_app_store_provisioning_profile":"prov-profile-slug","selected_code_signing_identity":"code-signing-slug"}`)
+						return appSettings, nil
+					},
+				},
+				ScreenshotService: &testScreenshotService{
+					findAllFn: func(appVersion *models.AppVersion) ([]models.Screenshot, error) {
+						return []models.Screenshot{}, nil
+					},
+				},
+			},
+			expectedStatusCode: http.StatusNotFound,
+			expectedResponse:   httpresponse.StandardErrorRespModel{Message: "Not Found"},
 		})
 	})
 }
