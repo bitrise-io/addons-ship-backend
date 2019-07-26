@@ -3,11 +3,13 @@ package mailer
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ses"
+	"github.com/bitrise-io/addons-ship-backend/bitrise"
 	"github.com/bitrise-io/addons-ship-backend/models"
 	"github.com/bitrise-io/api-utils/providers"
 	"github.com/pkg/errors"
@@ -50,7 +52,7 @@ func (m *SES) SendEmailConfirmation(appTitle, confirmURL string, contact *models
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	nameForHey := strings.Split(contact.Email, "@")[0]
+	nameForHey := getUsernameFromEmail(contact.Email)
 	var confirmationToken string
 	if contact.ConfirmationToken != nil {
 		confirmationToken = *contact.ConfirmationToken
@@ -77,25 +79,45 @@ func (m *SES) SendEmailConfirmation(appTitle, confirmURL string, contact *models
 }
 
 // SendEmailNewVersion ...
-func (m *SES) SendEmailNewVersion(targetEmail string) error {
-	return m.sendMail(&Request{
-		To:      []string{targetEmail},
-		From:    m.FromEmail,
-		Subject: "New app version is available on Ship.",
-	},
-		"email/new_version.html",
-		map[string]interface{}{
-			"CurrentTime": func() string { return "2019-07-19 12:00:00 UTC" },
-			"Name":        func() string { return "test.user" },
-			"AppTitle":    func() string { return "Standup Timer" },
-			"AppIconURL": func() string {
-				return "https://bitrise-public-content-production.s3.amazonaws.com/emails/invitation-app-32x32.png"
-			},
-			"NewVersion":  func() string { return "1.1.0" },
-			"BuildNumber": func() string { return "28" },
-			"AppPlatform": func() string { return "ios" },
-			"AppURL":      func() string { return "https://bitrise.io" },
-		})
+func (m *SES) SendEmailNewVersion(appVersion *models.AppVersion, contacts []models.AppContact, frontendBaseURL string, appDetails *bitrise.AppDetails) error {
+	artifactInfo, err := appVersion.ArtifactInfo()
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	appURL := "https://bitrise-public-content-production.s3.amazonaws.com/emails/invitation-app-32x32.png"
+	if appDetails.AvatarURL != nil {
+		appURL = *appDetails.AvatarURL
+	}
+	for _, contact := range contacts {
+		notificationPreferences, err := contact.NotificationPreferences()
+		if err != nil {
+			return errors.WithStack(err)
+		}
+		if !notificationPreferences.NewVersion {
+			return nil
+		}
+		nameForHey := getUsernameFromEmail(contact.Email)
+		err = m.sendMail(&Request{
+			To:      []string{contact.Email},
+			From:    m.FromEmail,
+			Subject: "New app version is available on Ship.",
+		},
+			"email/new_version.html",
+			map[string]interface{}{
+				"CurrentTime": func() time.Time { return time.Now() },
+				"Name":        func() string { return nameForHey },
+				"AppTitle":    func() string { return appDetails.Title },
+				"AppIconURL":  func() string { return appURL },
+				"NewVersion":  func() string { return artifactInfo.Version },
+				"BuildNumber": func() string { return appVersion.BuildNumber },
+				"AppPlatform": func() string { return appVersion.Platform },
+				"AppURL":      func() string { return fmt.Sprintf("%s/apps/%s", frontendBaseURL, appVersion.App.AppSlug) },
+			})
+		if err != nil {
+			return errors.WithStack(err)
+		}
+	}
+	return nil
 }
 
 // SendEmailPublish ...
@@ -143,4 +165,8 @@ func (m *SES) SendEmailNotifications(targetEmail string) error {
 			"AppPlatform": func() string { return "ios" },
 			"AppURL":      func() string { return "https://bitrise.io" },
 		})
+}
+
+func getUsernameFromEmail(email string) string {
+	return strings.Split(email, "@")[0]
 }

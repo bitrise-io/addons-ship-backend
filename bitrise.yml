@@ -158,8 +158,8 @@ workflows:
                 docker-compose run --rm app bash -c 'cd db/seed && go run main.go'
   send-test-mail:
     envs:
-      - MAIL_TO_SEND:
-      - TARGET_EMAIL:
+      - MAIL_TO_SEND: new_version
+      - TARGET_EMAIL: gergely.bekesi@bitrise.io
     steps:
       - script@1.1.5:
           title: Send test email
