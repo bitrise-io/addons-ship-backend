@@ -14,6 +14,7 @@ type IosSettings struct {
 	ApplSpecificPassword                string `json:"app_specific_password"`
 	SelectedAppStoreProvisioningProfile string `json:"selected_app_store_provisioning_profile"`
 	SelectedCodeSigningIdentity         string `json:"selected_code_signing_identity"`
+	IncludeBitCode                      bool   `json:"include_bit_code"`
 }
 
 // Valid ...
