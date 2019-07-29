@@ -39,6 +39,8 @@ func Test_AppContactConfirmPatchHandler(t *testing.T) {
 		},
 	})
 
+	testApp := models.App{AppSlug: "an-app-slug", BitriseAPIToken: "test-api-token", Plan: "gold"}
+
 	t.Run("ok - minimal", func(t *testing.T) {
 		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
 			contextElements: map[ctxpkg.RequestContextKey]interface{}{
@@ -71,7 +73,6 @@ func Test_AppContactConfirmPatchHandler(t *testing.T) {
 	})
 
 	t.Run("ok - more complex", func(t *testing.T) {
-		testApp := models.App{AppSlug: "an-app-slug", BitriseAPIToken: "test-api-token", Plan: "gold"}
 		testAppDetails := bitrise.AppDetails{Title: "Supe Duper App"}
 
 		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
@@ -150,7 +151,7 @@ func Test_AppContactConfirmPatchHandler(t *testing.T) {
 				},
 				AppContactService: &testAppContactService{
 					findFn: func(appContact *models.AppContact) (*models.AppContact, error) {
-						return &models.AppContact{App: &models.App{AppSlug: "an-app-slug", APIToken: "some-token"}}, nil
+						return &models.AppContact{App: &testApp}, nil
 					},
 					updateFn: func(appContact *models.AppContact, whitelist []string) error {
 						return errors.New("SOME-SQL-ERROR")
@@ -174,7 +175,7 @@ func Test_AppContactConfirmPatchHandler(t *testing.T) {
 				},
 				AppContactService: &testAppContactService{
 					findFn: func(appContact *models.AppContact) (*models.AppContact, error) {
-						return &models.AppContact{App: &models.App{AppSlug: "an-app-slug", APIToken: "some-token"}}, nil
+						return &models.AppContact{App: &testApp}, nil
 					},
 					updateFn: func(appContact *models.AppContact, whitelist []string) error {
 						appContact.ConfirmedAt = time.Time{}

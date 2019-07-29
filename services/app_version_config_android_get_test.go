@@ -126,7 +126,7 @@ func Test_AppVersionAndroidConfigGetHandler(t *testing.T) {
 					findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
 						appVersion.ArtifactInfoData = json.RawMessage(`{"package_name":"myPackage"}`)
 						appVersion.AppStoreInfoData = json.RawMessage(`{"short_description":"Description","full_description":"A bit longer description","whats_new":"This is what is new"}`)
-						appVersion.App = models.App{AppSlug: "test-app-slug", APIToken: "test-api-token"}
+						appVersion.App = models.App{AppSlug: "test-app-slug", BitriseAPIToken: "test-api-token"}
 						return appVersion, nil
 					},
 				},
@@ -148,15 +148,21 @@ func Test_AppVersionAndroidConfigGetHandler(t *testing.T) {
 				},
 				BitriseAPI: &testBitriseAPI{
 					getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
+						require.Equal(t, "test-app-slug", appSlug)
+						require.Equal(t, "test-api-token", apiToken)
 						return &bitrise.AppDetails{Title: "my-awesome-app"}, nil
 					},
 					getServiceAccountFilesFn: func(apiToken, appSlug string) ([]bitrise.GenericProjectFile, error) {
+						require.Equal(t, "test-app-slug", appSlug)
+						require.Equal(t, "test-api-token", apiToken)
 						return []bitrise.GenericProjectFile{bitrise.GenericProjectFile{
 							Slug:        "service-account-slug",
 							DownloadURL: "http://service-account-json.url",
 						}}, nil
 					},
 					getAndroidKeystoreFilesFn: func(apiToken, appSlug string) ([]bitrise.AndroidKeystoreFile, error) {
+						require.Equal(t, "test-app-slug", appSlug)
+						require.Equal(t, "test-api-token", apiToken)
 						return []bitrise.AndroidKeystoreFile{
 							bitrise.AndroidKeystoreFile{
 								Slug:        "android-keystore-slug",
@@ -171,6 +177,8 @@ func Test_AppVersionAndroidConfigGetHandler(t *testing.T) {
 						}, nil
 					},
 					getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
+						require.Equal(t, "test-app-slug", appSlug)
+						require.Equal(t, "test-api-token", apiToken)
 						return []bitrise.ArtifactListElementResponseModel{
 							bitrise.ArtifactListElementResponseModel{Title: "app.aab", Slug: "test-artifact-slug"},
 						}, nil

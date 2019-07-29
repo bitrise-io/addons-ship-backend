@@ -47,7 +47,7 @@ func ProvisionHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request) e
 		return errors.New("No Bitrise API Service defined for handler")
 	}
 
-	app, err := env.AppService.Find(&models.App{AppSlug: params.AppSlug})
+	app, err := env.AppService.Find(&models.App{AppSlug: params.AppSlug, BitriseAPIToken: params.BitriseAPIToken})
 	switch {
 	case errors.Cause(err) == gorm.ErrRecordNotFound:
 		app, err = env.AppService.Create(&models.App{
@@ -63,7 +63,7 @@ func ProvisionHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request) e
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		err = env.BitriseAPI.RegisterWebhook(app.APIToken, app.AppSlug, secret, fmt.Sprintf("%s/webhook", env.AddonHostURL))
+		err = env.BitriseAPI.RegisterWebhook(app.BitriseAPIToken, app.AppSlug, secret, fmt.Sprintf("%s/webhook", env.AddonHostURL))
 		if err != nil {
 			return errors.WithStack(err)
 		}
