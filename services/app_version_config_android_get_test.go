@@ -1028,4 +1028,185 @@ func Test_AppVersionAndroidConfigGetHandler(t *testing.T) {
 			expectedInternalErr: "SOME-AWS-ERROR",
 		})
 	})
+
+	t.Run("when failed to fetch artifacts from API", func(t *testing.T) {
+		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppVersionID: uuid.NewV4(),
+			},
+			env: &env.AppEnv{
+				AppVersionService: &testAppVersionService{
+					findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
+						appVersion.ArtifactInfoData = json.RawMessage(`{}`)
+						appVersion.AppStoreInfoData = json.RawMessage(`{}`)
+						return appVersion, nil
+					},
+				},
+				FeatureGraphicService: &testFeatureGraphicService{
+					findFn: func(featureGraphic *models.FeatureGraphic) (*models.FeatureGraphic, error) {
+						featureGraphic.AppVersion = models.AppVersion{App: models.App{}}
+						return featureGraphic, nil
+					},
+				},
+				AWS: &providers.AWSMock{
+					GeneratePresignedGETURLFn: func(path string, expiration time.Duration) (string, error) {
+						return "", nil
+					},
+				},
+				BitriseAPI: &testBitriseAPI{
+					getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
+						return &bitrise.AppDetails{}, nil
+					},
+					getServiceAccountFilesFn: func(apiToken, appSlug string) ([]bitrise.GenericProjectFile, error) {
+						return []bitrise.GenericProjectFile{bitrise.GenericProjectFile{Slug: "service-account-slug"}}, nil
+					},
+					getAndroidKeystoreFilesFn: func(apiToken, appSlug string) ([]bitrise.AndroidKeystoreFile, error) {
+						return []bitrise.AndroidKeystoreFile{
+							bitrise.AndroidKeystoreFile{Slug: "android-keystore-slug", UserEnvKey: "ANDROID_KEYSTORE"},
+						}, nil
+					},
+					getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
+						return []bitrise.ArtifactListElementResponseModel{}, errors.New("SOME-BITRISE-API-ERROR")
+					},
+					getArtifactFn: func(apiToken, appSlug, buildSlug, artifactSlug string) (*bitrise.ArtifactShowResponseItemModel, error) {
+						return nil, nil
+					},
+				},
+				AppSettingsService: &testAppSettingsService{
+					findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
+						appSettings.AndroidSettingsData = json.RawMessage(`{"selected_service_account":"service-account-slug","selected_keystore_file":"android-keystore-slug"}`)
+						return appSettings, nil
+					},
+				},
+				ScreenshotService: &testScreenshotService{
+					findAllFn: func(appVersion *models.AppVersion) ([]models.Screenshot, error) {
+						return []models.Screenshot{}, nil
+					},
+				},
+			},
+			expectedInternalErr: "SOME-BITRISE-API-ERROR",
+		})
+	})
+
+	t.Run("when failed to fetch artifact details from API", func(t *testing.T) {
+		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppVersionID: uuid.NewV4(),
+			},
+			env: &env.AppEnv{
+				AppVersionService: &testAppVersionService{
+					findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
+						appVersion.ArtifactInfoData = json.RawMessage(`{}`)
+						appVersion.AppStoreInfoData = json.RawMessage(`{}`)
+						return appVersion, nil
+					},
+				},
+				FeatureGraphicService: &testFeatureGraphicService{
+					findFn: func(featureGraphic *models.FeatureGraphic) (*models.FeatureGraphic, error) {
+						featureGraphic.AppVersion = models.AppVersion{App: models.App{}}
+						return featureGraphic, nil
+					},
+				},
+				AWS: &providers.AWSMock{
+					GeneratePresignedGETURLFn: func(path string, expiration time.Duration) (string, error) {
+						return "", nil
+					},
+				},
+				BitriseAPI: &testBitriseAPI{
+					getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
+						return &bitrise.AppDetails{}, nil
+					},
+					getServiceAccountFilesFn: func(apiToken, appSlug string) ([]bitrise.GenericProjectFile, error) {
+						return []bitrise.GenericProjectFile{bitrise.GenericProjectFile{Slug: "service-account-slug"}}, nil
+					},
+					getAndroidKeystoreFilesFn: func(apiToken, appSlug string) ([]bitrise.AndroidKeystoreFile, error) {
+						return []bitrise.AndroidKeystoreFile{
+							bitrise.AndroidKeystoreFile{Slug: "android-keystore-slug", UserEnvKey: "ANDROID_KEYSTORE"},
+						}, nil
+					},
+					getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
+						return []bitrise.ArtifactListElementResponseModel{
+							bitrise.ArtifactListElementResponseModel{Title: "app.aab", Slug: "test-artifact-slug"},
+						}, nil
+					},
+					getArtifactFn: func(apiToken, appSlug, buildSlug, artifactSlug string) (*bitrise.ArtifactShowResponseItemModel, error) {
+						return nil, errors.New("SOME-BITRISE-API-ERROR")
+					},
+				},
+				AppSettingsService: &testAppSettingsService{
+					findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
+						appSettings.AndroidSettingsData = json.RawMessage(`{"selected_service_account":"service-account-slug","selected_keystore_file":"android-keystore-slug"}`)
+						return appSettings, nil
+					},
+				},
+				ScreenshotService: &testScreenshotService{
+					findAllFn: func(appVersion *models.AppVersion) ([]models.Screenshot, error) {
+						return []models.Screenshot{}, nil
+					},
+				},
+			},
+			expectedInternalErr: "SOME-BITRISE-API-ERROR",
+		})
+	})
+
+	t.Run("when artifact doesn't have download URL", func(t *testing.T) {
+		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppVersionID: uuid.NewV4(),
+			},
+			env: &env.AppEnv{
+				AppVersionService: &testAppVersionService{
+					findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
+						appVersion.ArtifactInfoData = json.RawMessage(`{}`)
+						appVersion.AppStoreInfoData = json.RawMessage(`{}`)
+						return appVersion, nil
+					},
+				},
+				FeatureGraphicService: &testFeatureGraphicService{
+					findFn: func(featureGraphic *models.FeatureGraphic) (*models.FeatureGraphic, error) {
+						featureGraphic.AppVersion = models.AppVersion{App: models.App{}}
+						return featureGraphic, nil
+					},
+				},
+				AWS: &providers.AWSMock{
+					GeneratePresignedGETURLFn: func(path string, expiration time.Duration) (string, error) {
+						return "", nil
+					},
+				},
+				BitriseAPI: &testBitriseAPI{
+					getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
+						return &bitrise.AppDetails{}, nil
+					},
+					getServiceAccountFilesFn: func(apiToken, appSlug string) ([]bitrise.GenericProjectFile, error) {
+						return []bitrise.GenericProjectFile{bitrise.GenericProjectFile{Slug: "service-account-slug"}}, nil
+					},
+					getAndroidKeystoreFilesFn: func(apiToken, appSlug string) ([]bitrise.AndroidKeystoreFile, error) {
+						return []bitrise.AndroidKeystoreFile{
+							bitrise.AndroidKeystoreFile{Slug: "android-keystore-slug", UserEnvKey: "ANDROID_KEYSTORE"},
+						}, nil
+					},
+					getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
+						return []bitrise.ArtifactListElementResponseModel{
+							bitrise.ArtifactListElementResponseModel{Title: "app.aab", Slug: "test-artifact-slug"},
+						}, nil
+					},
+					getArtifactFn: func(apiToken, appSlug, buildSlug, artifactSlug string) (*bitrise.ArtifactShowResponseItemModel, error) {
+						return &bitrise.ArtifactShowResponseItemModel{Title: pointers.NewStringPtr("app.aab")}, nil
+					},
+				},
+				AppSettingsService: &testAppSettingsService{
+					findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
+						appSettings.AndroidSettingsData = json.RawMessage(`{"selected_service_account":"service-account-slug","selected_keystore_file":"android-keystore-slug"}`)
+						return appSettings, nil
+					},
+				},
+				ScreenshotService: &testScreenshotService{
+					findAllFn: func(appVersion *models.AppVersion) ([]models.Screenshot, error) {
+						return []models.Screenshot{}, nil
+					},
+				},
+			},
+			expectedInternalErr: "Failed to get download URL for artifact",
+		})
+	})
 }
