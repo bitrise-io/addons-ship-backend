@@ -70,7 +70,7 @@ func AppContactPostHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Reque
 		return errors.WithStack(err)
 	}
 
-	err = env.Mailer.SendEmailConfirmation(appDetails.Title, env.EmailConfirmLandingURL, appContact)
+	err = env.Mailer.SendEmailConfirmation(env.EmailConfirmLandingURL, appContact, appDetails)
 	if err != nil {
 		return errors.WithStack(err)
 	}

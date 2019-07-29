@@ -90,9 +90,9 @@ func Test_AppContactPostHandler(t *testing.T) {
 					},
 				},
 				Mailer: &testMailer{
-					sendEmailConfirmationFn: func(appTitle, emailConfirmURL string, contact *models.AppContact) error {
-						require.Equal(t, "My awesome app", appTitle)
-						require.Equal(t, "http://ship.bitrise.io/confirm_email", emailConfirmURL)
+					sendEmailConfirmationFn: func(confirmURL string, contact *models.AppContact, appDetails *bitrise.AppDetails) error {
+						require.Equal(t, "My awesome app", appDetails.Title)
+						require.Equal(t, "http://ship.bitrise.io/confirm_email", confirmURL)
 						require.NotNil(t, contact.ConfirmationToken)
 						contact.ConfirmationToken = nil
 						require.Equal(t, &models.AppContact{
@@ -214,7 +214,7 @@ func Test_AppContactPostHandler(t *testing.T) {
 					},
 				},
 				Mailer: &testMailer{
-					sendEmailConfirmationFn: func(appTitle, emailConfirmURL string, contact *models.AppContact) error {
+					sendEmailConfirmationFn: func(confirmURL string, contact *models.AppContact, appDetails *bitrise.AppDetails) error {
 						return errors.New("SOME-MAILER-ERROR")
 					},
 				},
