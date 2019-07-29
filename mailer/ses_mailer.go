@@ -82,9 +82,9 @@ func (m *SES) SendEmailNewVersion(appVersion *models.AppVersion, contacts []mode
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	appURL := "https://bitrise-public-content-production.s3.amazonaws.com/emails/invitation-app-32x32.png"
+	appIconURL := "https://bitrise-public-content-production.s3.amazonaws.com/emails/invitation-app-32x32.png"
 	if appDetails.AvatarURL != nil {
-		appURL = *appDetails.AvatarURL
+		appIconURL = *appDetails.AvatarURL
 	}
 	for _, contact := range contacts {
 		notificationPreferences, err := contact.NotificationPreferences()
@@ -105,7 +105,7 @@ func (m *SES) SendEmailNewVersion(appVersion *models.AppVersion, contacts []mode
 				"CurrentTime": func() time.Time { return time.Now() },
 				"Name":        func() string { return nameForHey },
 				"AppTitle":    func() string { return appDetails.Title },
-				"AppIconURL":  func() string { return appURL },
+				"AppIconURL":  func() string { return appIconURL },
 				"NewVersion":  func() string { return artifactInfo.Version },
 				"BuildNumber": func() string { return appVersion.BuildNumber },
 				"AppPlatform": func() string { return appVersion.Platform },
