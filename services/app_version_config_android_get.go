@@ -145,6 +145,22 @@ func AppVersionAndroidConfigGetHandler(env *env.AppEnv, w http.ResponseWriter, r
 	}
 	config.MetaData.ListingInfo.Screenshots = scs
 
+	artifacts, err := env.BitriseAPI.GetArtifacts(appVersion.App.APIToken, appVersion.App.AppSlug, appVersion.BuildSlug)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	if len(artifacts) > 0 {
+		selectedArtifact, _, _, _ := selectAndroidArtifact(artifacts)
+		artifactData, err := env.BitriseAPI.GetArtifact(appVersion.App.APIToken, appVersion.App.AppSlug, appVersion.BuildSlug, selectedArtifact.Slug)
+		if err != nil {
+			return errors.WithStack(err)
+		}
+		if artifactData.DownloadPath == nil {
+			return errors.New("Failed to get download URL for artifact")
+		}
+		config.Artifacts = append(config.Artifacts, *artifactData.DownloadPath)
+	}
+
 	return httpresponse.RespondWithSuccess(w, config)
 }
 

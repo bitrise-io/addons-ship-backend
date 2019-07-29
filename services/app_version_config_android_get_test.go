@@ -15,6 +15,8 @@ import (
 	ctxpkg "github.com/bitrise-io/api-utils/context"
 	"github.com/bitrise-io/api-utils/httpresponse"
 	"github.com/bitrise-io/api-utils/providers"
+	"github.com/bitrise-io/go-utils/pointers"
+	"github.com/c2fo/testify/require"
 	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
 	"github.com/satori/go.uuid"
@@ -90,6 +92,12 @@ func Test_AppVersionAndroidConfigGetHandler(t *testing.T) {
 							bitrise.AndroidKeystoreFile{Slug: "android-keystore-slug", UserEnvKey: "ANDROID_KEYSTORE"},
 						}, nil
 					},
+					getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
+						return []bitrise.ArtifactListElementResponseModel{}, nil
+					},
+					getArtifactFn: func(apiToken, appSlug, buildSlug, artifactSlug string) (*bitrise.ArtifactShowResponseItemModel, error) {
+						return nil, nil
+					},
 				},
 				AppSettingsService: &testAppSettingsService{
 					findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
@@ -118,6 +126,7 @@ func Test_AppVersionAndroidConfigGetHandler(t *testing.T) {
 					findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
 						appVersion.ArtifactInfoData = json.RawMessage(`{"package_name":"myPackage"}`)
 						appVersion.AppStoreInfoData = json.RawMessage(`{"short_description":"Description","full_description":"A bit longer description","whats_new":"This is what is new"}`)
+						appVersion.App = models.App{AppSlug: "test-app-slug", APIToken: "test-api-token"}
 						return appVersion, nil
 					},
 				},
@@ -160,6 +169,17 @@ func Test_AppVersionAndroidConfigGetHandler(t *testing.T) {
 								},
 							},
 						}, nil
+					},
+					getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
+						return []bitrise.ArtifactListElementResponseModel{
+							bitrise.ArtifactListElementResponseModel{Title: "app.aab", Slug: "test-artifact-slug"},
+						}, nil
+					},
+					getArtifactFn: func(apiToken, appSlug, buildSlug, artifactSlug string) (*bitrise.ArtifactShowResponseItemModel, error) {
+						require.Equal(t, "test-app-slug", appSlug)
+						require.Equal(t, "test-api-token", apiToken)
+						require.Equal(t, "test-artifact-slug", artifactSlug)
+						return &bitrise.ArtifactShowResponseItemModel{DownloadPath: pointers.NewStringPtr("http://the-url-for-artifact.io")}, nil
 					},
 				},
 				AppSettingsService: &testAppSettingsService{
@@ -210,6 +230,7 @@ func Test_AppVersionAndroidConfigGetHandler(t *testing.T) {
 						KeyPassword: "my-private-key-pass",
 					},
 				},
+				Artifacts: []string{"http://the-url-for-artifact.io"},
 			},
 		})
 	})
