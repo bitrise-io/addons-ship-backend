@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/bitrise-io/addons-ship-backend/bitrise"
 	"github.com/bitrise-io/addons-ship-backend/env"
 	"github.com/bitrise-io/addons-ship-backend/models"
 	"github.com/bitrise-io/addons-ship-backend/redis"
@@ -20,7 +21,7 @@ func Test_WebhookPostHandler(t *testing.T) {
 	url := "/task-webhook"
 	handler := services.WebhookPostHandler
 
-	behavesAsServiceCravingHandler(t, httpMethod, url, handler, []string{"AppVersionService", "AppVersionEventService", "WorkerService"}, ControllerTestCase{
+	behavesAsServiceCravingHandler(t, httpMethod, url, handler, []string{"AppVersionService", "AppVersionEventService", "WorkerService", "BitriseAPI", "AppContactService"}, ControllerTestCase{
 		contextElements: map[ctxpkg.RequestContextKey]interface{}{
 			services.ContextKeyAuthorizedAppVersionID: uuid.NewV4(),
 		},
@@ -28,6 +29,8 @@ func Test_WebhookPostHandler(t *testing.T) {
 			AppVersionService:      &testAppVersionService{},
 			AppVersionEventService: &testAppVersionEventService{},
 			WorkerService:          &testWorkerService{},
+			BitriseAPI:             &testBitriseAPI{},
+			AppContactService:      &testAppContactService{},
 		},
 		requestBody: `{}`,
 	})
@@ -61,6 +64,8 @@ func Test_WebhookPostHandler(t *testing.T) {
 							return nil
 						},
 					},
+					BitriseAPI:        &testBitriseAPI{},
+					AppContactService: &testAppContactService{},
 				},
 				requestBody:        `{"type_id":"log"}`,
 				expectedStatusCode: http.StatusOK,
@@ -92,6 +97,8 @@ func Test_WebhookPostHandler(t *testing.T) {
 							return nil
 						},
 					},
+					BitriseAPI:        &testBitriseAPI{},
+					AppContactService: &testAppContactService{},
 				},
 				requestBody:        `{"type_id":"log","task_id":"96e72f92-6e4c-40d5-b829-48a1ea6440a1","data":{"chunk":"My awesome log chunk","position":1}}`,
 				expectedStatusCode: http.StatusOK,
@@ -116,6 +123,8 @@ func Test_WebhookPostHandler(t *testing.T) {
 							return nil
 						},
 					},
+					BitriseAPI:        &testBitriseAPI{},
+					AppContactService: &testAppContactService{},
 				},
 				requestBody:        `{"type_id":"log","data":"invalid JSON"}`,
 				expectedStatusCode: http.StatusBadRequest,
@@ -140,6 +149,8 @@ func Test_WebhookPostHandler(t *testing.T) {
 							return errors.New("SOME-WORKER-ERROR")
 						},
 					},
+					BitriseAPI:        &testBitriseAPI{},
+					AppContactService: &testAppContactService{},
 				},
 				requestBody:         `{"type_id":"log"}`,
 				expectedInternalErr: "Worker error: SOME-WORKER-ERROR",
@@ -172,6 +183,8 @@ func Test_WebhookPostHandler(t *testing.T) {
 							return nil
 						},
 					},
+					BitriseAPI:        &testBitriseAPI{},
+					AppContactService: &testAppContactService{},
 				},
 				requestBody:        `{"type_id":"status","data":"some invalid JSON"}`,
 				expectedStatusCode: http.StatusBadRequest,
@@ -201,6 +214,8 @@ func Test_WebhookPostHandler(t *testing.T) {
 							return nil
 						},
 					},
+					BitriseAPI:        &testBitriseAPI{},
+					AppContactService: &testAppContactService{},
 				},
 				requestBody:         `{"type_id":"status","data":{"new_status":"some invalid status"}}`,
 				expectedInternalErr: "Invalid status of incoming webhook: some invalid status",
@@ -230,6 +245,8 @@ func Test_WebhookPostHandler(t *testing.T) {
 								return nil
 							},
 						},
+						BitriseAPI:        &testBitriseAPI{},
+						AppContactService: &testAppContactService{},
 					},
 					requestBody:        `{"type_id":"status","data":{"new_status":"started"}}`,
 					expectedStatusCode: http.StatusOK,
@@ -268,6 +285,8 @@ func Test_WebhookPostHandler(t *testing.T) {
 								return nil
 							},
 						},
+						BitriseAPI:        &testBitriseAPI{},
+						AppContactService: &testAppContactService{},
 					},
 					requestBody:        `{"type_id":"status","task_id":"96e72f92-6e4c-40d5-b829-48a1ea6440a1","data":{"new_status":"started"}}`,
 					expectedStatusCode: http.StatusOK,
@@ -297,6 +316,8 @@ func Test_WebhookPostHandler(t *testing.T) {
 								return nil
 							},
 						},
+						BitriseAPI:        &testBitriseAPI{},
+						AppContactService: &testAppContactService{},
 					},
 					requestBody:         `{"type_id":"status","data":{"new_status":"started"}}`,
 					expectedInternalErr: "SQL Error: SOME-SQL-ERROR",
@@ -325,12 +346,15 @@ func Test_WebhookPostHandler(t *testing.T) {
 								return errors.New("SOME-REDIS-ERROR")
 							},
 						},
+						BitriseAPI:        &testBitriseAPI{},
+						AppContactService: &testAppContactService{},
 					},
 					requestBody:         `{"type_id":"status","data":{"new_status":"started"}}`,
 					expectedInternalErr: "SOME-REDIS-ERROR",
 				})
 			})
 		})
+
 		t.Run("when status is 'finished'", func(t *testing.T) {
 			t.Run("ok - minimal", func(t *testing.T) {
 				performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
@@ -354,6 +378,21 @@ func Test_WebhookPostHandler(t *testing.T) {
 								return nil
 							},
 						},
+						BitriseAPI: &testBitriseAPI{
+							getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
+								return nil, nil
+							},
+						},
+						AppContactService: &testAppContactService{
+							findAllFn: func(app *models.App) ([]models.AppContact, error) {
+								return []models.AppContact{}, nil
+							},
+						},
+						Mailer: &testMailer{
+							sendEmailPublishFn: func(appVersion *models.AppVersion, contacts []models.AppContact, appDetails *bitrise.AppDetails, frontendURL string, success bool) error {
+								return nil
+							},
+						},
 					},
 					requestBody:        `{"type_id":"status","data":{"new_status":"finished"}}`,
 					expectedStatusCode: http.StatusOK,
@@ -367,6 +406,7 @@ func Test_WebhookPostHandler(t *testing.T) {
 						services.ContextKeyAuthorizedAppVersionID: uuid.NewV4(),
 					},
 					env: &env.AppEnv{
+						AddonFrontendHostURL: "http://ship.bitrise.io",
 						AppVersionService: &testAppVersionService{
 							findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
 								return &models.AppVersion{Record: models.Record{ID: testAppVersionID}}, nil
@@ -393,6 +433,30 @@ func Test_WebhookPostHandler(t *testing.T) {
 								return nil
 							},
 						},
+						BitriseAPI: &testBitriseAPI{
+							getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
+								return &bitrise.AppDetails{Title: "My awesome app"}, nil
+							},
+						},
+						AppContactService: &testAppContactService{
+							findAllFn: func(app *models.App) ([]models.AppContact, error) {
+								return []models.AppContact{
+									models.AppContact{Email: "the.address@we.send"},
+								}, nil
+							},
+						},
+						Mailer: &testMailer{
+							sendEmailPublishFn: func(appVersion *models.AppVersion, contacts []models.AppContact, appDetails *bitrise.AppDetails, frontendURL string, success bool) error {
+								require.Equal(t, appVersion.ID, testAppVersionID)
+								require.Equal(t, []models.AppContact{
+									models.AppContact{Email: "the.address@we.send"},
+								}, contacts)
+								require.Equal(t, "My awesome app", appDetails.Title)
+								require.Equal(t, "http://ship.bitrise.io", frontendURL)
+								require.True(t, success)
+								return nil
+							},
+						},
 					},
 					requestBody:        `{"type_id":"status","task_id":"96e72f92-6e4c-40d5-b829-48a1ea6440a1","data":{"new_status":"finished","exit_code":0,"generated_log_chunk_count":2}}`,
 					expectedStatusCode: http.StatusOK,
@@ -406,6 +470,7 @@ func Test_WebhookPostHandler(t *testing.T) {
 						services.ContextKeyAuthorizedAppVersionID: uuid.NewV4(),
 					},
 					env: &env.AppEnv{
+						AddonFrontendHostURL: "http://ship.bitrise.io",
 						AppVersionService: &testAppVersionService{
 							findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
 								return &models.AppVersion{Record: models.Record{ID: testAppVersionID}}, nil
@@ -432,6 +497,30 @@ func Test_WebhookPostHandler(t *testing.T) {
 								return nil
 							},
 						},
+						BitriseAPI: &testBitriseAPI{
+							getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
+								return &bitrise.AppDetails{Title: "My awesome app"}, nil
+							},
+						},
+						AppContactService: &testAppContactService{
+							findAllFn: func(app *models.App) ([]models.AppContact, error) {
+								return []models.AppContact{
+									models.AppContact{Email: "the.address@we.send"},
+								}, nil
+							},
+						},
+						Mailer: &testMailer{
+							sendEmailPublishFn: func(appVersion *models.AppVersion, contacts []models.AppContact, appDetails *bitrise.AppDetails, frontendURL string, success bool) error {
+								require.Equal(t, appVersion.ID, testAppVersionID)
+								require.Equal(t, []models.AppContact{
+									models.AppContact{Email: "the.address@we.send"},
+								}, contacts)
+								require.Equal(t, "My awesome app", appDetails.Title)
+								require.Equal(t, "http://ship.bitrise.io", frontendURL)
+								require.False(t, success)
+								return nil
+							},
+						},
 					},
 					requestBody:        `{"type_id":"status","task_id":"96e72f92-6e4c-40d5-b829-48a1ea6440a1","data":{"new_status":"finished","exit_code":-1,"generated_log_chunk_count":2}}`,
 					expectedStatusCode: http.StatusOK,
@@ -455,7 +544,9 @@ func Test_WebhookPostHandler(t *testing.T) {
 								return nil, errors.New("SOME-SQL-ERROR")
 							},
 						},
-						WorkerService: &testWorkerService{},
+						WorkerService:     &testWorkerService{},
+						BitriseAPI:        &testBitriseAPI{},
+						AppContactService: &testAppContactService{},
 					},
 					requestBody:         `{"type_id":"status","data":{"new_status":"finished"}}`,
 					expectedInternalErr: "SQL Error: SOME-SQL-ERROR",
@@ -484,6 +575,8 @@ func Test_WebhookPostHandler(t *testing.T) {
 								return nil
 							},
 						},
+						BitriseAPI:        &testBitriseAPI{},
+						AppContactService: &testAppContactService{},
 					},
 					requestBody:         `{"type_id":"status","data":{"new_status":"finished"}}`,
 					expectedInternalErr: "App has empty App Slug, App has to be preloaded",
@@ -512,6 +605,8 @@ func Test_WebhookPostHandler(t *testing.T) {
 								return errors.New("SOME-WORKER-ERROR")
 							},
 						},
+						BitriseAPI:        &testBitriseAPI{},
+						AppContactService: &testAppContactService{},
 					},
 					requestBody:         `{"type_id":"status","data":{"new_status":"finished"}}`,
 					expectedInternalErr: "Worker error: SOME-WORKER-ERROR",
@@ -537,6 +632,8 @@ func Test_WebhookPostHandler(t *testing.T) {
 						return nil
 					},
 				},
+				BitriseAPI:        &testBitriseAPI{},
+				AppContactService: &testAppContactService{},
 			},
 			requestBody:        `invalid JSON`,
 			expectedStatusCode: http.StatusBadRequest,
@@ -561,6 +658,8 @@ func Test_WebhookPostHandler(t *testing.T) {
 						return nil
 					},
 				},
+				BitriseAPI:        &testBitriseAPI{},
+				AppContactService: &testAppContactService{},
 			},
 			requestBody:         `{"type_id":"log"}`,
 			expectedInternalErr: "SQL Error: SOME-SQL-ERROR",
@@ -584,6 +683,8 @@ func Test_WebhookPostHandler(t *testing.T) {
 						return nil
 					},
 				},
+				BitriseAPI:        &testBitriseAPI{},
+				AppContactService: &testAppContactService{},
 			},
 			requestBody:         `{"type_id":"invalid hook type"}`,
 			expectedInternalErr: "Invalid type of webhook: invalid hook type",

@@ -47,10 +47,10 @@ func (m *SES) sendMail(r *Request, template string, data map[string]interface{})
 }
 
 // SendEmailConfirmation ...
-func (m *SES) SendEmailConfirmation(appTitle, confirmURL string, contact *models.AppContact) error {
-	notificationPreferences, err := contact.NotificationPreferences()
-	if err != nil {
-		return errors.WithStack(err)
+func (m *SES) SendEmailConfirmation(confirmURL string, contact *models.AppContact, appDetails *bitrise.AppDetails) error {
+	appIconURL := "https://bitrise-public-content-production.s3.amazonaws.com/emails/invitation-app-32x32.png"
+	if appDetails.AvatarURL != nil {
+		appIconURL = *appDetails.AvatarURL
 	}
 	nameForHey := getUsernameFromEmail(contact.Email)
 	var confirmationToken string
@@ -67,15 +67,13 @@ func (m *SES) SendEmailConfirmation(appTitle, confirmURL string, contact *models
 	},
 		"email/confirmation.html",
 		map[string]interface{}{
-			"Name":              func() string { return nameForHey },
-			"AppTitle":          func() string { return appTitle },
-			"NewVersion":        func() bool { return notificationPreferences.NewVersion },
-			"SuccessfulPublish": func() bool { return notificationPreferences.SuccessfulPublish },
-			"FailedPublish":     func() bool { return notificationPreferences.FailedPublish },
-			"URL": func() string {
-				return fmt.Sprintf("%s?token=%s", confirmURL, confirmationToken)
-			},
-		})
+			"CurrentTime": func() time.Time { return time.Now() },
+			"Name":        func() string { return nameForHey },
+			"AppTitle":    func() string { return appDetails.Title },
+			"AppIconURL":  func() string { return appIconURL },
+			"AppURL":      func() string { return fmt.Sprintf("%s?token=%s", confirmURL, confirmationToken) },
+		},
+	)
 }
 
 // SendEmailNewVersion ...
@@ -121,50 +119,54 @@ func (m *SES) SendEmailNewVersion(appVersion *models.AppVersion, contacts []mode
 }
 
 // SendEmailPublish ...
-func (m *SES) SendEmailPublish(targetEmail string, publishSucceeded bool) error {
-	return m.sendMail(&Request{
-		To:      []string{targetEmail},
-		From:    m.FromEmail,
-		Subject: "App publish notification on Ship.",
-	},
-		"email/publish.html",
-		map[string]interface{}{
-			"CurrentTime": func() string { return "2019-07-19 12:00:00 UTC" },
-			"Name":        func() string { return "test.user" },
-			"AppTitle":    func() string { return "Standup Timer" },
-			"AppIconURL": func() string {
-				return "https://bitrise-public-content-production.s3.amazonaws.com/emails/invitation-app-32x32.png"
-			},
-			"Version":          func() string { return "1.1.0" },
-			"BuildNumber":      func() string { return "28" },
-			"AppPlatform":      func() string { return "ios" },
-			"AppURL":           func() string { return "https://bitrise.io" },
-			"PublishSucceeded": func() bool { return publishSucceeded },
-			"PublishURL":       func() string { return "https://bitrise.io" },
-			"PublishTarget":    func() string { return "App Store Connect" },
-		})
-}
-
-// SendEmailNotifications ...
-func (m *SES) SendEmailNotifications(targetEmail string) error {
-	return m.sendMail(&Request{
-		To:      []string{targetEmail},
-		From:    m.FromEmail,
-		Subject: "Ship wants to send you notifications.",
-	},
-		"email/notifications.html",
-		map[string]interface{}{
-			"CurrentTime": func() string { return "2019-07-19 12:00:00 UTC" },
-			"Name":        func() string { return "test.user" },
-			"AppTitle":    func() string { return "Standup Timer" },
-			"AppIconURL": func() string {
-				return "https://bitrise-public-content-production.s3.amazonaws.com/emails/invitation-app-32x32.png"
-			},
-			"Version":     func() string { return "1.1.0" },
-			"BuildNumber": func() string { return "28" },
-			"AppPlatform": func() string { return "ios" },
-			"AppURL":      func() string { return "https://bitrise.io" },
-		})
+func (m *SES) SendEmailPublish(appVersion *models.AppVersion, contacts []models.AppContact, appDetails *bitrise.AppDetails, frontendBaseURL string, publishSucceeded bool) error {
+	artifactInfo, err := appVersion.ArtifactInfo()
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	appIconURL := "https://bitrise-public-content-production.s3.amazonaws.com/emails/invitation-app-32x32.png"
+	if appDetails.AvatarURL != nil {
+		appIconURL = *appDetails.AvatarURL
+	}
+	var publishTarget string
+	if appVersion.Platform == "ios" {
+		publishTarget = "App Store Connect"
+	} else if appVersion.Platform == "android" {
+		publishTarget = "Play Store"
+	}
+	for _, contact := range contacts {
+		notificationPreferences, err := contact.NotificationPreferences()
+		if err != nil {
+			return errors.WithStack(err)
+		}
+		if !notificationPreferences.NewVersion {
+			return nil
+		}
+		nameForHey := getUsernameFromEmail(contact.Email)
+		err = m.sendMail(&Request{
+			To:      []string{contact.Email},
+			From:    m.FromEmail,
+			Subject: "App publish notification on Ship.",
+		},
+			"email/publish.html",
+			map[string]interface{}{
+				"CurrentTime":      func() time.Time { return time.Now() },
+				"Name":             func() string { return nameForHey },
+				"AppTitle":         func() string { return appDetails.Title },
+				"AppIconURL":       func() string { return appIconURL },
+				"Version":          func() string { return artifactInfo.Version },
+				"BuildNumber":      func() string { return appVersion.BuildNumber },
+				"AppPlatform":      func() string { return appVersion.Platform },
+				"AppURL":           func() string { return fmt.Sprintf("%s/apps/%s", frontendBaseURL, appVersion.App.AppSlug) },
+				"PublishSucceeded": func() bool { return publishSucceeded },
+				"PublishURL":       func() string { return "https://bitrise.io" },
+				"PublishTarget":    func() string { return publishTarget },
+			})
+		if err != nil {
+			return errors.WithStack(err)
+		}
+	}
+	return nil
 }
 
 func getUsernameFromEmail(email string) string {
