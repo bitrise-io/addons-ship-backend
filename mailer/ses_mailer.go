@@ -84,7 +84,7 @@ func (m *SES) SendEmailNewVersion(appVersion *models.AppVersion, contacts []mode
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	appURL := "https://bitrise-public-content-production.s3.amazonaws.com/emails/invitation-app-32x32.png"
+	appIconURL := "https://bitrise-public-content-production.s3.amazonaws.com/emails/invitation-app-32x32.png"
 	if appDetails.AvatarURL != nil {
 		appURL = *appDetails.AvatarURL
 	}
