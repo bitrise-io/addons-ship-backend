@@ -14,6 +14,7 @@ import (
 	ctxpkg "github.com/bitrise-io/api-utils/context"
 	"github.com/bitrise-io/api-utils/httpresponse"
 	"github.com/bitrise-io/api-utils/providers"
+	"github.com/bitrise-io/go-utils/pointers"
 	"github.com/c2fo/testify/require"
 	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
@@ -80,6 +81,12 @@ func Test_AppVersionIosConfigGetHandler(t *testing.T) {
 					},
 					getCodeSigningIdentitiesFn: func(apiToken, appSlug string) ([]bitrise.CodeSigningIdentity, error) {
 						return []bitrise.CodeSigningIdentity{bitrise.CodeSigningIdentity{Slug: "code-signing-slug"}}, nil
+					},
+					getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
+						return []bitrise.ArtifactListElementResponseModel{}, nil
+					},
+					getArtifactFn: func(apiToken, appSlug, buildSlug, artifactSlug string) (*bitrise.ArtifactShowResponseItemModel, error) {
+						return nil, nil
 					},
 				},
 				AppSettingsService: &testAppSettingsService{
@@ -153,6 +160,17 @@ func Test_AppVersionIosConfigGetHandler(t *testing.T) {
 							},
 						}, nil
 					},
+					getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
+						return []bitrise.ArtifactListElementResponseModel{
+							bitrise.ArtifactListElementResponseModel{Title: "app.xcarchive.zip", Slug: "test-artifact-slug"},
+						}, nil
+					},
+					getArtifactFn: func(apiToken, appSlug, buildSlug, artifactSlug string) (*bitrise.ArtifactShowResponseItemModel, error) {
+						require.Equal(t, "test-app-slug", appSlug)
+						require.Equal(t, "test-api-token", apiToken)
+						require.Equal(t, "test-artifact-slug", artifactSlug)
+						return &bitrise.ArtifactShowResponseItemModel{DownloadPath: pointers.NewStringPtr("http://the-url-for-artifact.io")}, nil
+					},
 				},
 				AppSettingsService: &testAppSettingsService{
 					findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
@@ -214,6 +232,7 @@ func Test_AppVersionIosConfigGetHandler(t *testing.T) {
 					AppleUser:                "my.apple@email.com",
 					AppleAppSpecificPassword: "my-super-secret-pass",
 				},
+				Artifacts: []string{"http://the-url-for-artifact.io"},
 			},
 		})
 	})
@@ -664,6 +683,159 @@ func Test_AppVersionIosConfigGetHandler(t *testing.T) {
 			},
 			expectedStatusCode: http.StatusNotFound,
 			expectedResponse:   httpresponse.StandardErrorRespModel{Message: "Not Found"},
+		})
+	})
+
+	t.Run("when failed to fetch artifacts from API", func(t *testing.T) {
+		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppVersionID: uuid.NewV4(),
+			},
+			env: &env.AppEnv{
+				AppVersionService: &testAppVersionService{
+					findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
+						appVersion.ArtifactInfoData = json.RawMessage(`{}`)
+						appVersion.AppStoreInfoData = json.RawMessage(`{}`)
+						return appVersion, nil
+					},
+				},
+				AWS: &providers.AWSMock{
+					GeneratePresignedGETURLFn: func(path string, expiration time.Duration) (string, error) {
+						return "", nil
+					},
+				},
+				BitriseAPI: &testBitriseAPI{
+					getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
+						return &bitrise.AppDetails{}, nil
+					},
+					getProvisioningProfilesFn: func(apiToken, appSlug string) ([]bitrise.ProvisioningProfile, error) {
+						return []bitrise.ProvisioningProfile{bitrise.ProvisioningProfile{Slug: "prov-profile-slug"}}, nil
+					},
+					getCodeSigningIdentitiesFn: func(apiToken, appSlug string) ([]bitrise.CodeSigningIdentity, error) {
+						return []bitrise.CodeSigningIdentity{bitrise.CodeSigningIdentity{Slug: "code-signing-slug"}}, nil
+					},
+					getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
+						return []bitrise.ArtifactListElementResponseModel{}, errors.New("SOME-BITRISE-API-ERROR")
+					},
+					getArtifactFn: func(apiToken, appSlug, buildSlug, artifactSlug string) (*bitrise.ArtifactShowResponseItemModel, error) {
+						return nil, nil
+					},
+				},
+				AppSettingsService: &testAppSettingsService{
+					findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
+						appSettings.IosSettingsData = json.RawMessage(`{"selected_app_store_provisioning_profile":"prov-profile-slug","selected_code_signing_identity":"code-signing-slug"}`)
+						return appSettings, nil
+					},
+				},
+				ScreenshotService: &testScreenshotService{
+					findAllFn: func(appVersion *models.AppVersion) ([]models.Screenshot, error) {
+						return []models.Screenshot{}, nil
+					},
+				},
+			},
+			expectedInternalErr: "SOME-BITRISE-API-ERROR",
+		})
+	})
+
+	t.Run("when failed to fetch artifact details from API", func(t *testing.T) {
+		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppVersionID: uuid.NewV4(),
+			},
+			env: &env.AppEnv{
+				AppVersionService: &testAppVersionService{
+					findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
+						appVersion.ArtifactInfoData = json.RawMessage(`{}`)
+						appVersion.AppStoreInfoData = json.RawMessage(`{}`)
+						return appVersion, nil
+					},
+				},
+				AWS: &providers.AWSMock{
+					GeneratePresignedGETURLFn: func(path string, expiration time.Duration) (string, error) {
+						return "", nil
+					},
+				},
+				BitriseAPI: &testBitriseAPI{
+					getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
+						return &bitrise.AppDetails{}, nil
+					},
+					getProvisioningProfilesFn: func(apiToken, appSlug string) ([]bitrise.ProvisioningProfile, error) {
+						return []bitrise.ProvisioningProfile{bitrise.ProvisioningProfile{Slug: "prov-profile-slug"}}, nil
+					},
+					getCodeSigningIdentitiesFn: func(apiToken, appSlug string) ([]bitrise.CodeSigningIdentity, error) {
+						return []bitrise.CodeSigningIdentity{bitrise.CodeSigningIdentity{Slug: "code-signing-slug"}}, nil
+					},
+					getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
+						return []bitrise.ArtifactListElementResponseModel{bitrise.ArtifactListElementResponseModel{Title: "app.xcarchive.zip", Slug: "test-artifact-slug"}}, nil
+					},
+					getArtifactFn: func(apiToken, appSlug, buildSlug, artifactSlug string) (*bitrise.ArtifactShowResponseItemModel, error) {
+						return nil, errors.New("SOME-BITRISE-API-ERROR")
+					},
+				},
+				AppSettingsService: &testAppSettingsService{
+					findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
+						appSettings.IosSettingsData = json.RawMessage(`{"selected_app_store_provisioning_profile":"prov-profile-slug","selected_code_signing_identity":"code-signing-slug"}`)
+						return appSettings, nil
+					},
+				},
+				ScreenshotService: &testScreenshotService{
+					findAllFn: func(appVersion *models.AppVersion) ([]models.Screenshot, error) {
+						return []models.Screenshot{}, nil
+					},
+				},
+			},
+			expectedInternalErr: "SOME-BITRISE-API-ERROR",
+		})
+	})
+
+	t.Run("when failed to fetched artifact details doesn't contain download URL", func(t *testing.T) {
+		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppVersionID: uuid.NewV4(),
+			},
+			env: &env.AppEnv{
+				AppVersionService: &testAppVersionService{
+					findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
+						appVersion.ArtifactInfoData = json.RawMessage(`{}`)
+						appVersion.AppStoreInfoData = json.RawMessage(`{}`)
+						return appVersion, nil
+					},
+				},
+				AWS: &providers.AWSMock{
+					GeneratePresignedGETURLFn: func(path string, expiration time.Duration) (string, error) {
+						return "", nil
+					},
+				},
+				BitriseAPI: &testBitriseAPI{
+					getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
+						return &bitrise.AppDetails{}, nil
+					},
+					getProvisioningProfilesFn: func(apiToken, appSlug string) ([]bitrise.ProvisioningProfile, error) {
+						return []bitrise.ProvisioningProfile{bitrise.ProvisioningProfile{Slug: "prov-profile-slug"}}, nil
+					},
+					getCodeSigningIdentitiesFn: func(apiToken, appSlug string) ([]bitrise.CodeSigningIdentity, error) {
+						return []bitrise.CodeSigningIdentity{bitrise.CodeSigningIdentity{Slug: "code-signing-slug"}}, nil
+					},
+					getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
+						return []bitrise.ArtifactListElementResponseModel{bitrise.ArtifactListElementResponseModel{Title: "app.xcarchive.zip", Slug: "test-artifact-slug"}}, nil
+					},
+					getArtifactFn: func(apiToken, appSlug, buildSlug, artifactSlug string) (*bitrise.ArtifactShowResponseItemModel, error) {
+						return &bitrise.ArtifactShowResponseItemModel{Title: pointers.NewStringPtr("URLless artifact")}, nil
+					},
+				},
+				AppSettingsService: &testAppSettingsService{
+					findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
+						appSettings.IosSettingsData = json.RawMessage(`{"selected_app_store_provisioning_profile":"prov-profile-slug","selected_code_signing_identity":"code-signing-slug"}`)
+						return appSettings, nil
+					},
+				},
+				ScreenshotService: &testScreenshotService{
+					findAllFn: func(appVersion *models.AppVersion) ([]models.Screenshot, error) {
+						return []models.Screenshot{}, nil
+					},
+				},
+			},
+			expectedInternalErr: "Failed to get download URL for artifact",
 		})
 	})
 }

@@ -5,6 +5,7 @@ import "github.com/bitrise-io/addons-ship-backend/bitrise"
 type testBitriseAPI struct {
 	getArtifactDataFn          func(string, string, string) (*bitrise.ArtifactData, error)
 	getArtifactsFn             func(string, string, string) ([]bitrise.ArtifactListElementResponseModel, error)
+	getArtifactFn              func(string, string, string, string) (*bitrise.ArtifactShowResponseItemModel, error)
 	getArtifactPublicPageURLFn func(string, string, string, string) (string, error)
 	getAppDetailsFn            func(string, string) (*bitrise.AppDetails, error)
 	getProvisioningProfilesFn  func(string, string) ([]bitrise.ProvisioningProfile, error)
@@ -27,6 +28,13 @@ func (a *testBitriseAPI) GetArtifacts(authToken, appSlug, buildSlug string) ([]b
 		panic("You have to override GetArtifacts function in tests")
 	}
 	return a.getArtifactsFn(authToken, appSlug, buildSlug)
+}
+
+func (a *testBitriseAPI) GetArtifact(authToken, appSlug, buildSlug, artifactSlug string) (*bitrise.ArtifactShowResponseItemModel, error) {
+	if a.getArtifactFn == nil {
+		panic("You have to override BitriseAPI.GetArtifact function in tests")
+	}
+	return a.getArtifactFn(authToken, appSlug, buildSlug, artifactSlug)
 }
 
 func (a *testBitriseAPI) GetArtifactPublicInstallPageURL(authToken, appSlug, buildSlug, artifactSlug string) (string, error) {

@@ -86,6 +86,14 @@ func New(appEnv *env.AppEnv) *mux.Router {
 			handler: services.FeatureGraphicDeleteHandler, allowedMethods: []string{"DELETE", "OPTIONS"},
 		},
 		{
+			path: "/apps/{app-slug}/versions/{version-id}/android-config", middleware: services.AuthorizedAppVersionMiddleware(appEnv),
+			handler: services.AppVersionAndroidConfigGetHandler, allowedMethods: []string{"GET", "OPTIONS"},
+		},
+		{
+			path: "/apps/{app-slug}/versions/{version-id}/ios-config", middleware: services.AuthorizedAppVersionMiddleware(appEnv),
+			handler: services.AppVersionIosConfigGetHandler, allowedMethods: []string{"GET", "OPTIONS"},
+		},
+		{
 			path: "/apps/{app-slug}/settings", middleware: services.AuthorizedAppMiddleware(appEnv),
 			handler: services.AppSettingsGetHandler, allowedMethods: []string{"GET", "OPTIONS"},
 		},
