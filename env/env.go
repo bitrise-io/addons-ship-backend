@@ -30,6 +30,7 @@ type AppEnv struct {
 	Environment            string
 	AddonAccessToken       string
 	AddonHostURL           string
+	AddonFrontendHostURL   string
 	Logger                 *zap.Logger
 	AppService             dataservices.AppService
 	AppContactService      dataservices.AppContactService
@@ -69,6 +70,10 @@ func New(db *gorm.DB) (*AppEnv, error) {
 	env.AddonHostURL, ok = os.LookupEnv("ADDON_HOST_URL")
 	if !ok {
 		return nil, errors.New("No value set for env ADDON_HOST_URL")
+	}
+	env.AddonFrontendHostURL, ok = os.LookupEnv("ADDON_FRONTEND_HOST_URL")
+	if !ok {
+		return nil, errors.New("No value set for env ADDON_FRONTEND_HOST_URL")
 	}
 	env.Logger = logging.WithContext(nil)
 	env.AppService = &models.AppService{DB: db}

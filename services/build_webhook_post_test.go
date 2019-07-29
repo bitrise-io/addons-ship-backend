@@ -22,7 +22,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 	url := "/webhook"
 	handler := services.BuildWebhookHandler
 
-	behavesAsServiceCravingHandler(t, httpMethod, url, handler, []string{"AppService", "AppSettingsService", "AppVersionService", "BitriseAPI"}, ControllerTestCase{
+	behavesAsServiceCravingHandler(t, httpMethod, url, handler, []string{"AppService", "AppSettingsService", "AppVersionService", "BitriseAPI", "AppContactService"}, ControllerTestCase{
 		contextElements: map[ctxpkg.RequestContextKey]interface{}{
 			services.ContextKeyAuthorizedAppID: uuid.NewV4(),
 		},
@@ -32,6 +32,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 			AppVersionService:  &testAppVersionService{},
 			AppSettingsService: &testAppSettingsService{},
 			BitriseAPI:         &testBitriseAPI{},
+			AppContactService:  &testAppContactService{},
 		},
 	})
 
@@ -45,6 +46,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 			AppVersionService:  &testAppVersionService{},
 			AppSettingsService: &testAppSettingsService{},
 			BitriseAPI:         &testBitriseAPI{},
+			AppContactService:  &testAppContactService{},
 		},
 	})
 
@@ -78,6 +80,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 					},
 					AppVersionService: &testAppVersionService{},
 					BitriseAPI:        &testBitriseAPI{},
+					AppContactService: &testAppContactService{},
 				},
 				requestBody:        `{}`,
 				expectedStatusCode: http.StatusOK,
@@ -103,6 +106,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 					},
 					AppVersionService: &testAppVersionService{},
 					BitriseAPI:        &testBitriseAPI{},
+					AppContactService: &testAppContactService{},
 				},
 				requestBody:        `invalid JSON`,
 				expectedStatusCode: http.StatusBadRequest,
@@ -129,6 +133,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 					},
 					AppVersionService: &testAppVersionService{},
 					BitriseAPI:        &testBitriseAPI{},
+					AppContactService: &testAppContactService{},
 				},
 				requestBody:         `{}`,
 				expectedInternalErr: "SQL Error: SOME-SQL-ERROR",
@@ -154,6 +159,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 					},
 					AppVersionService: &testAppVersionService{},
 					BitriseAPI:        &testBitriseAPI{},
+					AppContactService: &testAppContactService{},
 				},
 				requestBody:        `{}`,
 				expectedStatusCode: http.StatusNotFound,
@@ -162,6 +168,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 		})
 
 		t.Run("when platform is ios", func(t *testing.T) {
+			testAppVersionID := uuid.FromStringOrNil("9f7b06d1-e736-42d3-94c3-c2bcfda0463c")
 			t.Run("ok - more complex - when ios workflow whitelist is 'all'", func(t *testing.T) {
 				performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
 					contextElements: map[ctxpkg.RequestContextKey]interface{}{
@@ -169,6 +176,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 					},
 					requestHeaders: map[string]string{"Bitrise-Event-Type": "build/finished"},
 					env: &env.AppEnv{
+						AddonFrontendHostURL: "https://ship.bitrise.io",
 						AppService: &testAppService{
 							findFn: func(app *models.App) (*models.App, error) {
 								return app, nil
@@ -195,6 +203,11 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								require.NoError(t, err)
 								require.Equal(t, "1.0", artifactData.Version)
 								require.Equal(t, []string{"iPhone", "iPod Touch", "iPad", "Unknown"}, artifactData.SupportedDeviceTypes)
+								appVersion.ID = testAppVersionID
+								appVersion.App = models.App{
+									APIToken: "test-api-token",
+									AppSlug:  "test-app-slug",
+								}
 								return appVersion, nil, nil
 							},
 						},
@@ -215,6 +228,29 @@ func Test_BuildWebhookHandler(t *testing.T) {
 										},
 									},
 								}, nil
+							},
+							getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
+								require.Equal(t, "test-api-token", apiToken)
+								require.Equal(t, "test-app-slug", appSlug)
+								return &bitrise.AppDetails{Title: "My awesome app"}, nil
+							},
+						},
+						AppContactService: &testAppContactService{
+							findAllFn: func(app *models.App) ([]models.AppContact, error) {
+								require.Equal(t, "test-app-slug", app.AppSlug)
+								return []models.AppContact{
+									models.AppContact{Email: "the.address@we.send"},
+								}, nil
+							},
+						},
+						Mailer: &testMailer{
+							sendEmailNewVersionFn: func(appVersion *models.AppVersion, contacts []models.AppContact, frontendBaseURL string, appDetails *bitrise.AppDetails) error {
+								require.Equal(t, testAppVersionID, appVersion.ID)
+								require.Equal(t, "My awesome app", appDetails.Title)
+								require.Len(t, contacts, 1)
+								require.Equal(t, "the.address@we.send", contacts[0].Email)
+								require.Equal(t, "https://ship.bitrise.io", frontendBaseURL)
+								return nil
 							},
 						},
 					},
@@ -274,6 +310,19 @@ func Test_BuildWebhookHandler(t *testing.T) {
 									},
 								}, nil
 							},
+							getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
+								return &bitrise.AppDetails{}, nil
+							},
+						},
+						AppContactService: &testAppContactService{
+							findAllFn: func(app *models.App) ([]models.AppContact, error) {
+								return []models.AppContact{}, nil
+							},
+						},
+						Mailer: &testMailer{
+							sendEmailNewVersionFn: func(appVersion *models.AppVersion, contacts []models.AppContact, frontendBaseURL string, appDetails *bitrise.AppDetails) error {
+								return nil
+							},
 						},
 					},
 					requestBody:        `{"build_slug":"test-build-slug","build_triggered_workflow":"ios-wf"}`,
@@ -300,6 +349,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 						},
 						AppVersionService: &testAppVersionService{},
 						BitriseAPI:        &testBitriseAPI{},
+						AppContactService: &testAppContactService{},
 					},
 					requestBody:         `{}`,
 					expectedInternalErr: "SQL Error: SOME-SQL-ERROR",
@@ -345,6 +395,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								return nil, errors.New("SOME-BITRISE-API-ERROR")
 							},
 						},
+						AppContactService: &testAppContactService{},
 					},
 					requestBody:         `{"build_slug":"test-build-slug","build_triggered_workflow":"ios-wf"}`,
 					expectedInternalErr: "SOME-BITRISE-API-ERROR",
@@ -390,6 +441,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								return []bitrise.ArtifactListElementResponseModel{}, nil
 							},
 						},
+						AppContactService: &testAppContactService{},
 					},
 					requestBody:         `{"build_slug":"test-build-slug","build_triggered_workflow":"ios-wf"}`,
 					expectedInternalErr: "No artifact found",
@@ -440,6 +492,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								}, nil
 							},
 						},
+						AppContactService: &testAppContactService{},
 					},
 					requestBody:         `{"build_slug":"test-build-slug","build_triggered_workflow":"ios-wf"}`,
 					expectedInternalErr: "No artifact meta data found for artifact",
@@ -493,6 +546,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								}, nil
 							},
 						},
+						AppContactService: &testAppContactService{},
 					},
 					requestBody:         `{"build_slug":"test-build-slug","build_triggered_workflow":"ios-wf"}`,
 					expectedInternalErr: "No artifact app info found for artifact",
@@ -548,6 +602,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								}, nil
 							},
 						},
+						AppContactService: &testAppContactService{},
 					},
 					requestBody:         `{"build_slug":"test-build-slug","build_triggered_workflow":"ios-wf"}`,
 					expectedInternalErr: "No artifact provisioning info found for artifact",
@@ -597,6 +652,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								}, nil
 							},
 						},
+						AppContactService: &testAppContactService{},
 					},
 					requestBody:        `{"build_slug":"test-build-slug"}`,
 					expectedStatusCode: http.StatusUnprocessableEntity,
@@ -649,6 +705,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								}, nil
 							},
 						},
+						AppContactService: &testAppContactService{},
 					},
 					requestBody:         `{"build_slug":"test-build-slug"}`,
 					expectedInternalErr: "SQL Error: SOME-SQL-ERROR",
@@ -656,7 +713,8 @@ func Test_BuildWebhookHandler(t *testing.T) {
 			})
 		})
 
-		t.Run("when platform is ios", func(t *testing.T) {
+		t.Run("when platform is android", func(t *testing.T) {
+			testAppVersionID := uuid.FromStringOrNil("9f7b06d1-e736-42d3-94c3-c2bcfda0463c")
 			t.Run("ok - more complex - when android workflow whitelist is 'all'", func(t *testing.T) {
 				performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
 					contextElements: map[ctxpkg.RequestContextKey]interface{}{
@@ -664,6 +722,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 					},
 					requestHeaders: map[string]string{"Bitrise-Event-Type": "build/finished"},
 					env: &env.AppEnv{
+						AddonFrontendHostURL: "https://ship.bitrise.io",
 						AppService: &testAppService{
 							findFn: func(app *models.App) (*models.App, error) {
 								return app, nil
@@ -686,6 +745,11 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								appInfo, err := appVersion.ArtifactInfo()
 								require.NoError(t, err)
 								require.Equal(t, models.ArtifactInfo{Version: "1.0", MinimumSDK: "1.23", PackageName: "myPackage"}, appInfo)
+								appVersion.ID = testAppVersionID
+								appVersion.App = models.App{
+									APIToken: "test-api-token",
+									AppSlug:  "test-app-slug",
+								}
 								return appVersion, nil, nil
 							},
 						},
@@ -703,6 +767,29 @@ func Test_BuildWebhookHandler(t *testing.T) {
 										},
 									},
 								}, nil
+							},
+							getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
+								require.Equal(t, "test-api-token", apiToken)
+								require.Equal(t, "test-app-slug", appSlug)
+								return &bitrise.AppDetails{Title: "My awesome app"}, nil
+							},
+						},
+						AppContactService: &testAppContactService{
+							findAllFn: func(app *models.App) ([]models.AppContact, error) {
+								require.Equal(t, "test-app-slug", app.AppSlug)
+								return []models.AppContact{
+									models.AppContact{Email: "the.address@we.send"},
+								}, nil
+							},
+						},
+						Mailer: &testMailer{
+							sendEmailNewVersionFn: func(appVersion *models.AppVersion, contacts []models.AppContact, frontendBaseURL string, appDetails *bitrise.AppDetails) error {
+								require.Equal(t, testAppVersionID, appVersion.ID)
+								require.Equal(t, "My awesome app", appDetails.Title)
+								require.Len(t, contacts, 1)
+								require.Equal(t, "the.address@we.send", contacts[0].Email)
+								require.Equal(t, "https://ship.bitrise.io", frontendBaseURL)
+								return nil
 							},
 						},
 					},
@@ -759,6 +846,19 @@ func Test_BuildWebhookHandler(t *testing.T) {
 									},
 								}, nil
 							},
+							getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
+								return &bitrise.AppDetails{}, nil
+							},
+						},
+						AppContactService: &testAppContactService{
+							findAllFn: func(app *models.App) ([]models.AppContact, error) {
+								return []models.AppContact{}, nil
+							},
+						},
+						Mailer: &testMailer{
+							sendEmailNewVersionFn: func(appVersion *models.AppVersion, contacts []models.AppContact, frontendBaseURL string, appDetails *bitrise.AppDetails) error {
+								return nil
+							},
 						},
 					},
 					requestBody:        `{"build_slug":"test-build-slug","build_triggered_workflow":"android-wf"}`,
@@ -805,6 +905,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								return nil, errors.New("SOME-BITRISE-API-ERROR")
 							},
 						},
+						AppContactService: &testAppContactService{},
 					},
 					requestBody:         `{"build_slug":"test-build-slug","build_triggered_workflow":"android-wf"}`,
 					expectedInternalErr: "SOME-BITRISE-API-ERROR",
@@ -850,6 +951,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								return []bitrise.ArtifactListElementResponseModel{}, nil
 							},
 						},
+						AppContactService: &testAppContactService{},
 					},
 					requestBody:         `{"build_slug":"test-build-slug"}`,
 					expectedInternalErr: "No artifact found",
@@ -900,6 +1002,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								}, nil
 							},
 						},
+						AppContactService: &testAppContactService{},
 					},
 					requestBody:         `{"build_slug":"test-build-slug"}`,
 					expectedInternalErr: "No artifact meta data found for artifact",
@@ -952,6 +1055,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								}, nil
 							},
 						},
+						AppContactService: &testAppContactService{},
 					},
 					requestBody:         `{"build_slug":"test-build-slug"}`,
 					expectedInternalErr: "No artifact app info found for artifact",
@@ -1002,6 +1106,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								}, nil
 							},
 						},
+						AppContactService: &testAppContactService{},
 					},
 					requestBody:        `{"build_slug":"test-build-slug"}`,
 					expectedStatusCode: http.StatusUnprocessableEntity,
@@ -1056,6 +1161,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								}, nil
 							},
 						},
+						AppContactService: &testAppContactService{},
 					},
 					requestBody:         `{"build_slug":"test-build-slug"}`,
 					expectedInternalErr: "SQL Error: SOME-SQL-ERROR",

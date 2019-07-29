@@ -47,6 +47,9 @@ func BuildWebhookHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request
 		if env.BitriseAPI == nil {
 			return errors.New("No Bitrise API Service defined for handler")
 		}
+		if env.AppContactService == nil {
+			return errors.New("No App Contact Service defined for handler")
+		}
 		var params BuildWebhookPayload
 		defer httprequest.BodyCloseWithErrorLog(r)
 		if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
@@ -66,9 +69,10 @@ func BuildWebhookHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request
 			return errors.Wrap(err, "SQL Error")
 		}
 
+		app := appSettings.App
 		if appSettings.IosWorkflow == "all" ||
 			(params.BuildTriggeredWorkflow != "" && strings.Contains(appSettings.IosWorkflow, params.BuildTriggeredWorkflow)) {
-			appVersion, err := prepareAppVersionForIosPlatform(env, w, r, appSettings.App.APIToken, appSettings.App.AppSlug, params.BuildSlug)
+			appVersion, err := prepareAppVersionForIosPlatform(env, w, r, app.APIToken, app.AppSlug, params.BuildSlug)
 			if err != nil {
 				return err
 			}
@@ -81,12 +85,16 @@ func BuildWebhookHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request
 			}
 			if err != nil {
 				return errors.Wrap(err, "SQL Error")
+			}
+
+			if err := sendNotification(env, appVersion); err != nil {
+				return errors.WithStack(err)
 			}
 		}
 
 		if appSettings.AndroidWorkflow == "all" ||
 			(params.BuildTriggeredWorkflow != "" && strings.Contains(appSettings.AndroidWorkflow, params.BuildTriggeredWorkflow)) {
-			appVersion, err := prepareAppVersionForAndroidPlatform(env, w, r, appSettings.App.APIToken, appSettings.App.AppSlug, params.BuildSlug)
+			appVersion, err := prepareAppVersionForAndroidPlatform(env, w, r, app.APIToken, app.AppSlug, params.BuildSlug)
 			if err != nil {
 				return err
 			}
@@ -99,6 +107,10 @@ func BuildWebhookHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request
 			}
 			if err != nil {
 				return errors.Wrap(err, "SQL Error")
+			}
+
+			if err := sendNotification(env, appVersion); err != nil {
+				return errors.WithStack(err)
 			}
 		}
 
@@ -106,4 +118,17 @@ func BuildWebhookHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request
 	default:
 		return errors.New("Invalid build event")
 	}
+}
+
+func sendNotification(env *env.AppEnv, appVersion *models.AppVersion) error {
+	app := appVersion.App
+	appContacts, err := env.AppContactService.FindAll(&app)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	appDetails, err := env.BitriseAPI.GetAppDetails(app.APIToken, app.AppSlug)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	return env.Mailer.SendEmailNewVersion(appVersion, appContacts, env.AddonFrontendHostURL, appDetails)
 }
