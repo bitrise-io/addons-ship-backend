@@ -61,7 +61,7 @@ func Test_ProvisionHandler(t *testing.T) {
 				},
 				BitriseAPI: &testBitriseAPI{},
 			},
-			requestBody:        `{"app_slug":"test-app-slug","bitrise_api_token":"test-bitrise-api-token","plan":"free"}`,
+			requestBody:        `{"app_slug":"test-app-slug","api_token":"test-bitrise-api-token","plan":"free"}`,
 			expectedStatusCode: http.StatusOK,
 			expectedResponse: services.ProvisionPostResponse{
 				Envs: []services.Env{
@@ -110,7 +110,7 @@ func Test_ProvisionHandler(t *testing.T) {
 					},
 				},
 			},
-			requestBody:        `{"app_slug":"test-app-slug","bitrise_api_token":"test-bitrise-api-token","plan":"free"}`,
+			requestBody:        `{"app_slug":"test-app-slug","api_token":"test-bitrise-api-token","plan":"free"}`,
 			expectedStatusCode: http.StatusOK,
 			expectedResponse: services.ProvisionPostResponse{
 				Envs: []services.Env{
@@ -200,7 +200,7 @@ func Test_ProvisionHandler(t *testing.T) {
 					},
 				},
 			},
-			requestBody:         `{"app_slug":"test-app-slug","bitrise_api_token":"test-bitrise-api-token","plan":"free"}`,
+			requestBody:         `{"app_slug":"test-app-slug","api_token":"test-bitrise-api-token","plan":"free"}`,
 			expectedInternalErr: "cipher: message authentication failed",
 		})
 
@@ -236,7 +236,7 @@ func Test_ProvisionHandler(t *testing.T) {
 					},
 				},
 			},
-			requestBody:         `{"app_slug":"test-app-slug","bitrise_api_token":"test-bitrise-api-token","plan":"free"}`,
+			requestBody:         `{"app_slug":"test-app-slug","api_token":"test-bitrise-api-token","plan":"free"}`,
 			expectedInternalErr: "SOME-BITRISE-API-ERROR",
 		})
 
