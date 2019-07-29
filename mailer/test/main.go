@@ -34,43 +34,41 @@ func main() {
 		fmt.Println("No TARGET_EMAIL env var defined")
 		os.Exit(1)
 	}
+	testAppVersion := &models.AppVersion{
+		ArtifactInfoData: json.RawMessage(`{"version":"1.1.0"}`),
+		BuildNumber:      "28",
+		Platform:         "ios",
+		App:              models.App{AppSlug: "test-app-slug-1"},
+	}
+	testAppContacts := []models.AppContact{models.AppContact{
+		Email: targetEmail,
+		NotificationPreferencesData: json.RawMessage(`{"new_version":true,"successful_publish":true,"failed_publish":true}`),
+		ConfirmationToken:           pointers.NewStringPtr("your-confirmation-token"),
+	}}
+	testAppDetails := &bitrise.AppDetails{Title: "Standup Timer"}
 	emailName := os.Getenv("MAIL_TO_SEND")
 	switch emailName {
 	case "confirmation":
-		err := ses.SendEmailConfirmation("Your test app", "http://here.you.can.confirm", &models.AppContact{
+		err := ses.SendEmailConfirmation("http://here.you.can.confirm", &models.AppContact{
 			Email: targetEmail,
 			NotificationPreferencesData: json.RawMessage(`{}`),
 			ConfirmationToken:           pointers.NewStringPtr("your-confirmation-token"),
-		})
+		}, testAppDetails)
 		if err != nil {
 			failEmailSend(err)
 		}
 	case "new_version":
-		err := ses.SendEmailNewVersion(&models.AppVersion{
-			ArtifactInfoData: json.RawMessage(`{"version":"1.1.0"}`),
-			BuildNumber:      "28",
-			Platform:         "ios",
-			App:              models.App{AppSlug: "test-app-slug-1"},
-		}, []models.AppContact{models.AppContact{
-			Email: targetEmail,
-			NotificationPreferencesData: json.RawMessage(`{"new_version":true}`),
-		}}, "http://bitrise.io",
-			&bitrise.AppDetails{Title: "Standup Timer"})
+		err := ses.SendEmailNewVersion(testAppVersion, testAppContacts, "http://bitrise.io", testAppDetails)
 		if err != nil {
 			failEmailSend(err)
 		}
 	case "publish_succeeded":
-		err := ses.SendEmailPublish(targetEmail, true)
+		err := ses.SendEmailPublish(testAppVersion, testAppContacts, testAppDetails, "http://bitrise.io", true)
 		if err != nil {
 			failEmailSend(err)
 		}
 	case "publish_failed":
-		err := ses.SendEmailPublish(targetEmail, false)
-		if err != nil {
-			failEmailSend(err)
-		}
-	case "notifications":
-		err := ses.SendEmailNotifications(targetEmail)
+		err := ses.SendEmailPublish(testAppVersion, testAppContacts, testAppDetails, "http://bitrise.io", false)
 		if err != nil {
 			failEmailSend(err)
 		}
