@@ -97,14 +97,11 @@ func prepareAppSettingsToUpdate(appSettingsToUpdate *models.AppSettings, params 
 		appSettingsToUpdate.AndroidSettingsData = androidSettings
 		updateWhiteList = append(updateWhiteList, "AndroidSettingsData")
 	}
-	if params.IosWorkflow != "" {
-		appSettingsToUpdate.IosWorkflow = params.IosWorkflow
-		updateWhiteList = append(updateWhiteList, "IosWorkflow")
-	}
-	if params.AndroidWorkflow != "" {
-		appSettingsToUpdate.AndroidWorkflow = params.AndroidWorkflow
-		updateWhiteList = append(updateWhiteList, "AndroidWorkflow")
-	}
+
+	appSettingsToUpdate.IosWorkflow = params.IosWorkflow
+	appSettingsToUpdate.AndroidWorkflow = params.AndroidWorkflow
+	updateWhiteList = append(updateWhiteList, "IosWorkflow", "AndroidWorkflow")
+
 	return appSettingsToUpdate, updateWhiteList, nil
 }
 
