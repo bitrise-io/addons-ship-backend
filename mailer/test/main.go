@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/bitrise-io/addons-ship-backend/bitrise"
 	"github.com/bitrise-io/addons-ship-backend/mailer"
 	"github.com/bitrise-io/addons-ship-backend/models"
 	"github.com/bitrise-io/api-utils/providers"
@@ -37,41 +38,44 @@ func main() {
 	switch emailName {
 	case "confirmation":
 		err := ses.SendEmailConfirmation("Your test app", "http://here.you.can.confirm", &models.AppContact{
-			Email:                       targetEmail,
+			Email: targetEmail,
 			NotificationPreferencesData: json.RawMessage(`{}`),
 			ConfirmationToken:           pointers.NewStringPtr("your-confirmation-token"),
 		})
 		if err != nil {
-			fmt.Printf("Failed to send email: %s\n", err)
-			os.Exit(1)
+			failEmailSend(err)
 		}
 	case "new_version":
-		err := ses.SendEmailNewVersion(targetEmail)
+		err := ses.SendEmailNewVersion(&models.AppVersion{
+			ArtifactInfoData: json.RawMessage(`{"version":"1.1.0"}`),
+			BuildNumber:      "28",
+			Platform:         "ios",
+			App:              models.App{AppSlug: "test-app-slug-1"},
+		}, []models.AppContact{models.AppContact{
+			Email: targetEmail,
+			NotificationPreferencesData: json.RawMessage(`{"new_version":true}`),
+		}}, "http://bitrise.io",
+			&bitrise.AppDetails{Title: "Standup Timer"})
 		if err != nil {
-			fmt.Printf("Failed to send email: %s\n", err)
-			os.Exit(1)
+			failEmailSend(err)
 		}
 	case "publish_succeeded":
 		err := ses.SendEmailPublish(targetEmail, true)
 		if err != nil {
-			fmt.Printf("Failed to send email: %s\n", err)
-			os.Exit(1)
+			failEmailSend(err)
 		}
 	case "publish_failed":
 		err := ses.SendEmailPublish(targetEmail, false)
 		if err != nil {
-			fmt.Printf("Failed to send email: %s\n", err)
-			os.Exit(1)
+			failEmailSend(err)
 		}
 	case "notifications":
 		err := ses.SendEmailNotifications(targetEmail)
 		if err != nil {
-			fmt.Printf("Failed to send email: %s\n", err)
-			os.Exit(1)
+			failEmailSend(err)
 		}
 	default:
-		fmt.Println("No MAIL_TO_SEND env var defined")
-		os.Exit(1)
+		failEmailSend(errors.New("No MAIL_TO_SEND env var defined"))
 	}
 }
 
@@ -98,4 +102,9 @@ func awsConfig() (providers.AWSConfig, error) {
 		AccessKeyID:     awsAccessKeyID,
 		SecretAccessKey: awsSecretAccessKey,
 	}, nil
+}
+
+func failEmailSend(err error) {
+	fmt.Printf("Failed to send email: %s\n", err)
+	os.Exit(1)
 }

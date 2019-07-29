@@ -3,6 +3,7 @@ package mailer
 import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ses"
+	"github.com/bitrise-io/addons-ship-backend/bitrise"
 	"github.com/bitrise-io/addons-ship-backend/models"
 	"github.com/bitrise-io/addons-ship-backend/templates"
 )
@@ -10,6 +11,7 @@ import (
 // Interface ...
 type Interface interface {
 	SendEmailConfirmation(appTitle, confirmURL string, contact *models.AppContact) error
+	SendEmailNewVersion(appVersion *models.AppVersion, contacts []models.AppContact, frontendBaseURL string, appDetails *bitrise.AppDetails) error
 }
 
 // Request ...
