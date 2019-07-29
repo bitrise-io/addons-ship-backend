@@ -66,6 +66,7 @@ func (a *API) doRequest(authToken, method, path string, requestPayload interface
 		return nil, errors.WithStack(err)
 	}
 	req.Header.Set("Bitrise-Addon-Auth-Token", authToken)
+	req.Header.Set("Content-Type", "application/json")
 	resp, err := a.Do(req)
 	if err != nil {
 		return nil, errors.WithStack(err)
