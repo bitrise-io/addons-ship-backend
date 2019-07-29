@@ -17,7 +17,7 @@ import (
 // ProvisionPostParams ...
 type ProvisionPostParams struct {
 	AppSlug         string `json:"app_slug"`
-	BitriseAPIToken string `json:"bitrise_api_token"`
+	BitriseAPIToken string `json:"api_token"`
 	Plan            string `json:"plan"`
 }
 
