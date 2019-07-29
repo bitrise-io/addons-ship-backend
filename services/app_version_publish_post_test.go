@@ -154,7 +154,8 @@ func Test_AppVersionPublishPostHandler(t *testing.T) {
 				services.ContextKeyAuthorizedAppVersionID: testAppVersionID,
 			},
 			env: &env.AppEnv{
-				AddonHostURL: "http://ship.addon.url",
+				AddonHostURL:     "http://ship.addon.url",
+				AddonAccessToken: "super-secret-token",
 				AppVersionService: &testAppVersionService{
 					findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
 						require.Equal(t, appVersion.ID, testAppVersionID)
@@ -177,9 +178,10 @@ func Test_AppVersionPublishPostHandler(t *testing.T) {
 						return &bitrise.ArtifactData{Slug: "test-artifact-slug"}, nil
 					},
 					triggerDENTaskFn: func(params bitrise.TaskParams) (*bitrise.TriggerResponse, error) {
-						require.Equal(t, `{"GIT_REPOSITORY_URL":"https://git_user:git_pwd@github.com/bitrise-io/addons-ship-bg-worker-task-android"}`, params.InlineEnvs)
+						require.Equal(t, `{"CONFIG_JSON_URL":"http://ship.addon.url/apps/test-app-slug/versions/de438ddc-98e5-4226-a5f4-fd2d53474879/config","GIT_REPOSITORY_URL":"https://git_user:git_pwd@github.com/bitrise-io/addons-ship-bg-worker-task-android"}`, params.InlineEnvs)
 						require.Equal(t, "http://ship.addon.url/task-webhook", params.WebhookURL)
 						require.Equal(t, "resign_android", params.Workflow)
+						require.Equal(t, `{"ADDON_SHIP_ACCESS_TOKEN":"super-secret-token"}`, params.Secrets)
 						return &bitrise.TriggerResponse{TaskIdentifier: testTaskIdentifier}, nil
 					},
 				},
