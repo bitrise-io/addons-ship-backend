@@ -54,7 +54,8 @@ type artifactListResponseModel struct {
 	Paging pagingResponseModel                `json:"paging"`
 }
 
-type artifactShowResponseItemModel struct {
+// ArtifactShowResponseItemModel ...
+type ArtifactShowResponseItemModel struct {
 	Title                *string         `json:"title"`
 	ArtifactType         *string         `json:"artifact_type"`
 	ArtifactMeta         json.RawMessage `json:"artifact_meta"`
@@ -66,7 +67,7 @@ type artifactShowResponseItemModel struct {
 }
 
 type artifactShowResponseModel struct {
-	Data artifactShowResponseItemModel `json:"data"`
+	Data ArtifactShowResponseItemModel `json:"data"`
 }
 
 // HasDebugDistributionType ...
