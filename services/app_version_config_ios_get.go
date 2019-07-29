@@ -119,6 +119,24 @@ func AppVersionIosConfigGetHandler(env *env.AppEnv, w http.ResponseWriter, r *ht
 	config.MetaData.AppleUser = iosSettings.AppleDeveloperAccountEmail
 	config.MetaData.AppleAppSpecificPassword = iosSettings.ApplSpecificPassword
 
+	artifacts, err := env.BitriseAPI.GetArtifacts(appVersion.App.APIToken, appVersion.App.AppSlug, appVersion.BuildSlug)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	for _, artifact := range artifacts {
+		if artifact.IsXCodeArchive() {
+			artifactData, err := env.BitriseAPI.GetArtifact(appVersion.App.APIToken, appVersion.App.AppSlug, appVersion.BuildSlug, artifact.Slug)
+			if err != nil {
+				return errors.WithStack(err)
+			}
+			if artifactData.DownloadPath == nil {
+				return errors.New("Failed to get download URL for artifact")
+			}
+			config.Artifacts = append(config.Artifacts, *artifactData.DownloadPath)
+		}
+	}
+
 	return httpresponse.RespondWithSuccess(w, config)
 }
 

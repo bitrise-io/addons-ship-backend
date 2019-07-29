@@ -58,6 +58,11 @@ func (a *APIDev) GetArtifacts(authToken, appSlug, buildSlug string) ([]ArtifactL
 	return artifacts, nil
 }
 
+// GetArtifact ...
+func (a *APIDev) GetArtifact(authToken, appSlug, buildSlug, artifactSlug string) (*ArtifactShowResponseItemModel, error) {
+	return &ArtifactShowResponseItemModel{}, nil
+}
+
 // GetArtifactPublicInstallPageURL ...
 func (a *APIDev) GetArtifactPublicInstallPageURL(authToken, appSlug, buildSlug, artifactSlug string) (string, error) {
 	return "http://don.t.go.there", nil

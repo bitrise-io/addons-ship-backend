@@ -11,14 +11,14 @@ import (
 	"github.com/pkg/errors"
 )
 
-// AppVersionConfigGetResponse ...
-type AppVersionConfigGetResponse struct {
+// AppVersionAndroidConfigGetResponse ...
+type AppVersionAndroidConfigGetResponse struct {
 	MetaData  MetaData `json:"meta_data"`
 	Artifacts []string `json:"artifacts"`
 }
 
-// AppVersionConfigGetHandler ...
-func AppVersionConfigGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request) error {
+// AppVersionAndroidConfigGetHandler ...
+func AppVersionAndroidConfigGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request) error {
 	authorizedAppVersionID, err := GetAuthorizedAppVersionIDFromContext(r.Context())
 	if err != nil {
 		return errors.WithStack(err)
@@ -43,7 +43,7 @@ func AppVersionConfigGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.
 		return errors.New("No Screenshot Service defined for handler")
 	}
 
-	config := AppVersionConfigGetResponse{MetaData: MetaData{}}
+	config := AppVersionAndroidConfigGetResponse{MetaData: MetaData{}}
 
 	appVersion, err := env.AppVersionService.Find(&models.AppVersion{Record: models.Record{ID: authorizedAppVersionID}})
 	if err != nil {
@@ -144,6 +144,22 @@ func AppVersionConfigGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.
 		return errors.WithStack(err)
 	}
 	config.MetaData.ListingInfo.Screenshots = scs
+
+	artifacts, err := env.BitriseAPI.GetArtifacts(appVersion.App.APIToken, appVersion.App.AppSlug, appVersion.BuildSlug)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	if len(artifacts) > 0 {
+		selectedArtifact, _, _, _ := selectAndroidArtifact(artifacts)
+		artifactData, err := env.BitriseAPI.GetArtifact(appVersion.App.APIToken, appVersion.App.AppSlug, appVersion.BuildSlug, selectedArtifact.Slug)
+		if err != nil {
+			return errors.WithStack(err)
+		}
+		if artifactData.DownloadPath == nil {
+			return errors.New("Failed to get download URL for artifact")
+		}
+		config.Artifacts = append(config.Artifacts, *artifactData.DownloadPath)
+	}
 
 	return httpresponse.RespondWithSuccess(w, config)
 }
