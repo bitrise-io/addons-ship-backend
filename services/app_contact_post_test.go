@@ -144,6 +144,32 @@ func Test_AppContactPostHandler(t *testing.T) {
 		})
 	})
 
+	t.Run("when failed to create app contact, because provided email is invalid", func(t *testing.T) {
+		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppID: uuid.NewV4(),
+			},
+			env: &env.AppEnv{
+				AppContactService: &testAppContactService{
+					findFn: func(*models.AppContact) (*models.AppContact, error) {
+						return nil, gorm.ErrRecordNotFound
+					},
+					createFn: func(contact *models.AppContact) (*models.AppContact, []error, error) {
+						return nil, []error{errors.New("Wrong email format")}, nil
+					},
+				},
+				BitriseAPI: &testBitriseAPI{},
+				Mailer:     &testMailer{},
+			},
+			requestBody:        `{"email":"not valid email"}`,
+			expectedStatusCode: http.StatusUnprocessableEntity,
+			expectedResponse: httpresponse.ValidationErrorRespModel{
+				Message: "Unprocessable Entity",
+				Errors:  []string{"Wrong email format"},
+			},
+		})
+	})
+
 	t.Run("when error happens at creating new app contact", func(t *testing.T) {
 		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
 			contextElements: map[ctxpkg.RequestContextKey]interface{}{

@@ -56,12 +56,15 @@ func AppContactPostHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Reque
 		return errors.WithStack(err)
 	}
 	confirmationToken := crypto.SecureRandomHash(24)
-	appContact, _, err = env.AppContactService.Create(&models.AppContact{
+	appContact, verrs, err := env.AppContactService.Create(&models.AppContact{
 		AppID: authorizedAppID,
 		Email: params.Email,
 		NotificationPreferencesData: notificationPreferences,
 		ConfirmationToken:           &confirmationToken,
 	})
+	if len(verrs) > 0 {
+		return httpresponse.RespondWithUnprocessableEntity(w, verrs)
+	}
 	if err != nil {
 		return errors.Wrap(err, "SQL Error")
 	}
