@@ -63,7 +63,7 @@ func ProvisionHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request) e
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		err = env.BitriseAPI.RegisterWebhook(app.BitriseAPIToken, app.AppSlug, secret, fmt.Sprintf("%s/webhook", env.AddonHostURL))
+		err = env.BitriseAPI.RegisterWebhook(params.BitriseAPIToken, params.AppSlug, secret, fmt.Sprintf("%s/webhook", env.AddonHostURL))
 		if err != nil {
 			return errors.WithStack(err)
 		}
