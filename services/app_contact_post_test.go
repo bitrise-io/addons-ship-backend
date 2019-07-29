@@ -74,9 +74,9 @@ func Test_AppContactPostHandler(t *testing.T) {
 			env: &env.AppEnv{
 				EmailConfirmLandingURL: "http://ship.bitrise.io/confirm_email",
 				AppContactService: &testAppContactService{
-					createFn: func(contact *models.AppContact) (*models.AppContact, error) {
+					createFn: func(contact *models.AppContact) (*models.AppContact, []error, error) {
 						contact.App = &models.App{BitriseAPIToken: "test-api-token", AppSlug: "test-app-slug"}
-						return contact, nil
+						return contact, nil, nil
 					},
 					findFn: func(*models.AppContact) (*models.AppContact, error) {
 						return nil, gorm.ErrRecordNotFound
@@ -154,8 +154,8 @@ func Test_AppContactPostHandler(t *testing.T) {
 					findFn: func(*models.AppContact) (*models.AppContact, error) {
 						return nil, gorm.ErrRecordNotFound
 					},
-					createFn: func(contact *models.AppContact) (*models.AppContact, error) {
-						return nil, errors.New("SOME-SQL-ERROR")
+					createFn: func(contact *models.AppContact) (*models.AppContact, []error, error) {
+						return nil, nil, errors.New("SOME-SQL-ERROR")
 					},
 				},
 				BitriseAPI: &testBitriseAPI{},
@@ -176,9 +176,9 @@ func Test_AppContactPostHandler(t *testing.T) {
 					findFn: func(*models.AppContact) (*models.AppContact, error) {
 						return nil, gorm.ErrRecordNotFound
 					},
-					createFn: func(contact *models.AppContact) (*models.AppContact, error) {
+					createFn: func(contact *models.AppContact) (*models.AppContact, []error, error) {
 						contact.App = &models.App{BitriseAPIToken: "test-api-token", AppSlug: "test-app-slug"}
-						return contact, nil
+						return contact, nil, nil
 					},
 				},
 				BitriseAPI: &testBitriseAPI{
@@ -203,9 +203,9 @@ func Test_AppContactPostHandler(t *testing.T) {
 					findFn: func(*models.AppContact) (*models.AppContact, error) {
 						return nil, gorm.ErrRecordNotFound
 					},
-					createFn: func(contact *models.AppContact) (*models.AppContact, error) {
+					createFn: func(contact *models.AppContact) (*models.AppContact, []error, error) {
 						contact.App = &models.App{BitriseAPIToken: "test-api-token", AppSlug: "test-app-slug"}
-						return contact, nil
+						return contact, nil, nil
 					},
 				},
 				BitriseAPI: &testBitriseAPI{

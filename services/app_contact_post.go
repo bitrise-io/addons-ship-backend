@@ -56,7 +56,7 @@ func AppContactPostHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Reque
 		return errors.WithStack(err)
 	}
 	confirmationToken := crypto.SecureRandomHash(24)
-	appContact, err = env.AppContactService.Create(&models.AppContact{
+	appContact, _, err = env.AppContactService.Create(&models.AppContact{
 		AppID: authorizedAppID,
 		Email: params.Email,
 		NotificationPreferencesData: notificationPreferences,

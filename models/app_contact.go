@@ -2,8 +2,11 @@ package models
 
 import (
 	"encoding/json"
+	"regexp"
 	"time"
 
+	"github.com/jinzhu/gorm"
+	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -36,6 +39,27 @@ func (a *AppContact) BeforeCreate() error {
 		a.NotificationPreferencesData = json.RawMessage(`{}`)
 	}
 
+	return nil
+}
+
+// BeforeSave ...
+func (a *AppContact) BeforeSave(scope *gorm.Scope) error {
+	err := a.validate(scope)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	return nil
+}
+
+func (a *AppContact) validate(scope *gorm.Scope) error {
+	var err error
+	re := regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
+	if !re.MatchString(a.Email) {
+		err = scope.DB().AddError(NewValidationError("email: Wrong format"))
+	}
+	if err != nil {
+		return errors.New("Validation failed")
+	}
 	return nil
 }
 

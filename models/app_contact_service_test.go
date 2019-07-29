@@ -19,14 +19,28 @@ func Test_AppContactService_Create(t *testing.T) {
 	dbCloseCallbackMethod := prepareDB(t)
 	defer dbCloseCallbackMethod()
 
-	appContactService := models.AppContactService{DB: dataservices.GetDB()}
-	testAppContact := &models.AppContact{Email: "an-email@addr.ess"}
+	t.Run("ok", func(t *testing.T) {
+		appContactService := models.AppContactService{DB: dataservices.GetDB()}
+		testAppContact := &models.AppContact{Email: "an-email@addr.ess"}
 
-	createdAppContact, err := appContactService.Create(testAppContact)
-	require.NoError(t, err)
-	require.False(t, createdAppContact.ID.String() == "")
-	require.False(t, createdAppContact.CreatedAt.String() == "")
-	require.False(t, createdAppContact.UpdatedAt.String() == "")
+		createdAppContact, verrs, err := appContactService.Create(testAppContact)
+		require.NoError(t, err)
+		require.Empty(t, verrs)
+		require.False(t, createdAppContact.ID.String() == "")
+		require.False(t, createdAppContact.CreatedAt.String() == "")
+		require.False(t, createdAppContact.UpdatedAt.String() == "")
+	})
+
+	t.Run("when email is not valid", func(t *testing.T) {
+		appContactService := models.AppContactService{DB: dataservices.GetDB()}
+		testAppContact := &models.AppContact{Email: "not a valid email"}
+
+		createdAppContact, verrs, err := appContactService.Create(testAppContact)
+		require.NoError(t, err)
+		require.Len(t, verrs, 1)
+		require.EqualError(t, verrs[0], "email: Wrong format")
+		require.Nil(t, createdAppContact)
+	})
 }
 
 func Test_AppContactService_Find(t *testing.T) {

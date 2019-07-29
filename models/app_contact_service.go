@@ -11,12 +11,16 @@ type AppContactService struct {
 }
 
 // Create ...
-func (s *AppContactService) Create(appContact *AppContact) (*AppContact, error) {
+func (s *AppContactService) Create(appContact *AppContact) (*AppContact, []error, error) {
 	result := s.DB.Create(appContact)
-	if result.Error != nil {
-		return nil, result.Error
+	verrs := ValidationErrors(result.GetErrors())
+	if len(verrs) > 0 {
+		return nil, verrs, nil
 	}
-	return appContact, s.DB.Where("id = ?", appContact.ID).Preload("App").First(appContact).Error
+	if result.Error != nil {
+		return nil, nil, result.Error
+	}
+	return appContact, nil, s.DB.Where("id = ?", appContact.ID).Preload("App").First(appContact).Error
 }
 
 // Find ...
