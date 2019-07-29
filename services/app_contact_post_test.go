@@ -75,7 +75,7 @@ func Test_AppContactPostHandler(t *testing.T) {
 				EmailConfirmLandingURL: "http://ship.bitrise.io/confirm_email",
 				AppContactService: &testAppContactService{
 					createFn: func(contact *models.AppContact) (*models.AppContact, error) {
-						contact.App = &models.App{APIToken: "test-api-token", AppSlug: "test-app-slug"}
+						contact.App = &models.App{BitriseAPIToken: "test-api-token", AppSlug: "test-app-slug"}
 						return contact, nil
 					},
 					findFn: func(*models.AppContact) (*models.AppContact, error) {
@@ -100,8 +100,8 @@ func Test_AppContactPostHandler(t *testing.T) {
 							NotificationPreferencesData: json.RawMessage(`{"new_version":true,"successful_publish":false,"failed_publish":false}`),
 							AppID: uuid.FromStringOrNil("548bde58-2707-4c28-9474-4f35ba0176cb"),
 							App: &models.App{
-								APIToken: "test-api-token",
-								AppSlug:  "test-app-slug",
+								BitriseAPIToken: "test-api-token",
+								AppSlug:         "test-app-slug",
 							},
 						}, contact)
 						return nil
@@ -115,9 +115,9 @@ func Test_AppContactPostHandler(t *testing.T) {
 					Email: "someones@email.addr",
 					NotificationPreferencesData: json.RawMessage(`{"new_version":true,"successful_publish":false,"failed_publish":false}`),
 					App: &models.App{
-						Record:   models.Record{ID: uuid.FromStringOrNil("548bde58-2707-4c28-9474-4f35ba0176cb")},
-						APIToken: "test-api-token",
-						AppSlug:  "test-app-slug",
+						Record:          models.Record{ID: uuid.FromStringOrNil("548bde58-2707-4c28-9474-4f35ba0176cb")},
+						BitriseAPIToken: "test-api-token",
+						AppSlug:         "test-app-slug",
 					},
 				},
 			},
@@ -177,7 +177,7 @@ func Test_AppContactPostHandler(t *testing.T) {
 						return nil, gorm.ErrRecordNotFound
 					},
 					createFn: func(contact *models.AppContact) (*models.AppContact, error) {
-						contact.App = &models.App{APIToken: "test-api-token", AppSlug: "test-app-slug"}
+						contact.App = &models.App{BitriseAPIToken: "test-api-token", AppSlug: "test-app-slug"}
 						return contact, nil
 					},
 				},
@@ -204,7 +204,7 @@ func Test_AppContactPostHandler(t *testing.T) {
 						return nil, gorm.ErrRecordNotFound
 					},
 					createFn: func(contact *models.AppContact) (*models.AppContact, error) {
-						contact.App = &models.App{APIToken: "test-api-token", AppSlug: "test-app-slug"}
+						contact.App = &models.App{BitriseAPIToken: "test-api-token", AppSlug: "test-app-slug"}
 						return contact, nil
 					},
 				},

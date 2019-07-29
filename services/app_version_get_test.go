@@ -112,13 +112,18 @@ func Test_AppVersionGetHandler(t *testing.T) {
 								AppStoreInfoData: json.RawMessage(`{"short_description":"Some shorter description"}`),
 								App: models.App{
 									BitriseAPIToken: "test-api-token",
+									AppSlug:         "test-app-slug",
 								},
+								BuildSlug:        "test-build-slug",
 								ArtifactInfoData: json.RawMessage(`{"version":"v1.0","distribution_type":"app-store","size":1024,"minimum_os":"11.1"}`),
 							}, nil
 						},
 					},
 					BitriseAPI: &testBitriseAPI{
-						getArtifactsFn: func(string, string, string) ([]bitrise.ArtifactListElementResponseModel, error) {
+						getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
+							require.Equal(t, "test-api-token", apiToken)
+							require.Equal(t, "test-app-slug", appSlug)
+							require.Equal(t, "test-build-slug", buildSlug)
 							return []bitrise.ArtifactListElementResponseModel{
 								bitrise.ArtifactListElementResponseModel{
 									Title: "my-awesome-app.ipa",
@@ -132,10 +137,15 @@ func Test_AppVersionGetHandler(t *testing.T) {
 								},
 							}, nil
 						},
-						getArtifactPublicPageURLFn: func(string, string, string, string) (string, error) {
+						getArtifactPublicPageURLFn: func(apiToken, appSlug, buildSlug, artifactSlug string) (string, error) {
+							require.Equal(t, "test-api-token", apiToken)
+							require.Equal(t, "test-app-slug", appSlug)
+							require.Equal(t, "test-build-slug", buildSlug)
 							return "http://don.t.go.there", nil
 						},
-						getAppDetailsFn: func(string, string) (*bitrise.AppDetails, error) {
+						getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
+							require.Equal(t, "test-api-token", apiToken)
+							require.Equal(t, "test-app-slug", appSlug)
 							return &bitrise.AppDetails{
 								Title:       "The Adventures of Stealy",
 								AvatarURL:   pointers.NewStringPtr("https://bit.ly/1LixVJu"),
@@ -148,7 +158,8 @@ func Test_AppVersionGetHandler(t *testing.T) {
 				expectedResponse: services.AppVersionGetResponse{
 					Data: services.AppVersionGetResponseData{
 						AppVersion: &models.AppVersion{
-							Platform: "ios",
+							Platform:  "ios",
+							BuildSlug: "test-build-slug",
 						},
 						MinimumOS:        "11.1",
 						Size:             1024,
@@ -181,13 +192,18 @@ func Test_AppVersionGetHandler(t *testing.T) {
 								AppStoreInfoData: json.RawMessage(`{"short_description":"Some shorter description"}`),
 								App: models.App{
 									BitriseAPIToken: "test-api-token",
+									AppSlug:         "test-app-slug",
 								},
+								BuildSlug:        "test-build-slug",
 								ArtifactInfoData: json.RawMessage(`{"version":"v1.0","minimum_os":"11.1"}`),
 							}, nil
 						},
 					},
 					BitriseAPI: &testBitriseAPI{
-						getArtifactsFn: func(string, string, string) ([]bitrise.ArtifactListElementResponseModel, error) {
+						getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
+							require.Equal(t, "test-api-token", apiToken)
+							require.Equal(t, "test-app-slug", appSlug)
+							require.Equal(t, "test-build-slug", buildSlug)
 							return []bitrise.ArtifactListElementResponseModel{
 								bitrise.ArtifactListElementResponseModel{
 									Title: "XCode10.xcarchive.zip",
@@ -197,10 +213,15 @@ func Test_AppVersionGetHandler(t *testing.T) {
 								},
 							}, nil
 						},
-						getArtifactPublicPageURLFn: func(string, string, string, string) (string, error) {
+						getArtifactPublicPageURLFn: func(apiToken, appSlug, buildSlug, artifactSlug string) (string, error) {
+							require.Equal(t, "test-api-token", apiToken)
+							require.Equal(t, "test-app-slug", appSlug)
+							require.Equal(t, "test-build-slug", buildSlug)
 							return "http://don.t.go.there", nil
 						},
-						getAppDetailsFn: func(string, string) (*bitrise.AppDetails, error) {
+						getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
+							require.Equal(t, "test-api-token", apiToken)
+							require.Equal(t, "test-app-slug", appSlug)
 							return &bitrise.AppDetails{
 								Title:       "The Adventures of Stealy",
 								AvatarURL:   pointers.NewStringPtr("https://bit.ly/1LixVJu"),
@@ -213,7 +234,8 @@ func Test_AppVersionGetHandler(t *testing.T) {
 				expectedResponse: services.AppVersionGetResponse{
 					Data: services.AppVersionGetResponseData{
 						AppVersion: &models.AppVersion{
-							Platform: "ios",
+							Platform:  "ios",
+							BuildSlug: "test-build-slug",
 						},
 						Version:   "v1.0",
 						MinimumOS: "11.1",

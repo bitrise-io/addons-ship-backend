@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/bitrise-io/addons-ship-backend/bitrise"
-
 	"github.com/bitrise-io/addons-ship-backend/env"
 	"github.com/bitrise-io/addons-ship-backend/models"
 	"github.com/bitrise-io/api-utils/httpresponse"
@@ -49,7 +48,7 @@ func AppContactConfirmPatchHandler(env *env.AppEnv, w http.ResponseWriter, r *ht
 		return errors.Wrap(err, "SQL Error")
 	}
 
-	appDetails, err := env.BitriseAPI.GetAppDetails(appContact.App.APIToken, appContact.App.AppSlug)
+	appDetails, err := env.BitriseAPI.GetAppDetails(appContact.App.BitriseAPIToken, appContact.App.AppSlug)
 	if err != nil {
 		return errors.WithStack(err)
 	}
