@@ -51,6 +51,12 @@ func WebhookPostHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request)
 	if env.WorkerService == nil {
 		return errors.New("No Worker Service defined for handler")
 	}
+	if env.BitriseAPI == nil {
+		return errors.New("No Bitrise API Service defined for handler")
+	}
+	if env.AppContactService == nil {
+		return errors.New("No App Contact Service defined for handler")
+	}
 
 	var params WebhookPayload
 	defer httprequest.BodyCloseWithErrorLog(r)

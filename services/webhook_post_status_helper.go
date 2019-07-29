@@ -56,10 +56,10 @@ func webhookPostStatusHelper(env *env.AppEnv, w http.ResponseWriter, r *http.Req
 		if err != nil {
 			return errors.Wrap(err, "Worker error")
 		}
-		// err = sendTaskFinishNotification(&event.AppVersion, env, data.ExitCode)
-		// if err != nil {
-		// 	return errors.WithStack(err)
-		// }
+		err = sendTaskFinishNotification(&event.AppVersion, env, data.ExitCode)
+		if err != nil {
+			return errors.WithStack(err)
+		}
 		return httpresponse.RespondWithSuccess(w, httpresponse.StandardErrorRespModel{Message: "ok"})
 	default:
 		return errors.Errorf("Invalid status of incoming webhook: %s", data.NewStatus)
@@ -84,7 +84,7 @@ func sendTaskFinishNotification(appVersion *models.AppVersion, env *env.AppEnv, 
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	appDetais, err := env.BitriseAPI.GetAppDetails(appVersion.App.APIToken, appVersion.App.AppSlug)
+	appDetais, err := env.BitriseAPI.GetAppDetails(appVersion.App.BitriseAPIToken, appVersion.App.AppSlug)
 	if err != nil {
 		return errors.WithStack(err)
 	}
