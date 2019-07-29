@@ -65,7 +65,7 @@ func AppContactPostHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Reque
 	if err != nil {
 		return errors.Wrap(err, "SQL Error")
 	}
-	appDetails, err := env.BitriseAPI.GetAppDetails(appContact.App.APIToken, appContact.App.AppSlug)
+	appDetails, err := env.BitriseAPI.GetAppDetails(appContact.App.BitriseAPIToken, appContact.App.AppSlug)
 	if err != nil {
 		return errors.WithStack(err)
 	}

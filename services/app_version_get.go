@@ -64,7 +64,7 @@ func AppVersionGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Reques
 		return errors.New("No Bitrise API Service defined for handler")
 	}
 
-	artifacts, err := env.BitriseAPI.GetArtifacts(appVersion.App.APIToken, appVersion.App.AppSlug, appVersion.BuildSlug)
+	artifacts, err := env.BitriseAPI.GetArtifacts(appVersion.App.BitriseAPIToken, appVersion.App.AppSlug, appVersion.BuildSlug)
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -105,7 +105,7 @@ func newArtifactVersionGetResponse(appVersion *models.AppVersion, env *env.AppEn
 		}
 	}
 
-	appDetails, err := env.BitriseAPI.GetAppDetails(appVersion.App.APIToken, appVersion.App.AppSlug)
+	appDetails, err := env.BitriseAPI.GetAppDetails(appVersion.App.BitriseAPIToken, appVersion.App.AppSlug)
 	if err != nil {
 		return AppVersionGetResponseData{}, errors.WithStack(err)
 	}

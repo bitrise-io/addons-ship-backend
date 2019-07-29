@@ -5,15 +5,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/c2fo/testify/require"
-	"github.com/jinzhu/gorm"
-	"github.com/pkg/errors"
-
 	"github.com/bitrise-io/addons-ship-backend/bitrise"
 	"github.com/bitrise-io/addons-ship-backend/env"
 	"github.com/bitrise-io/addons-ship-backend/models"
 	"github.com/bitrise-io/addons-ship-backend/services"
 	ctxpkg "github.com/bitrise-io/api-utils/context"
+	"github.com/c2fo/testify/require"
+	"github.com/jinzhu/gorm"
+	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -39,6 +38,8 @@ func Test_AppContactConfirmPatchHandler(t *testing.T) {
 			AppContactService: &testAppContactService{},
 		},
 	})
+
+	testApp := models.App{AppSlug: "an-app-slug", BitriseAPIToken: "test-api-token", Plan: "gold"}
 
 	t.Run("ok - minimal", func(t *testing.T) {
 		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
@@ -72,7 +73,6 @@ func Test_AppContactConfirmPatchHandler(t *testing.T) {
 	})
 
 	t.Run("ok - more complex", func(t *testing.T) {
-		testApp := models.App{AppSlug: "an-app-slug", APIToken: "test-api-token", Plan: "gold"}
 		testAppDetails := bitrise.AppDetails{Title: "Supe Duper App"}
 
 		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
@@ -151,7 +151,7 @@ func Test_AppContactConfirmPatchHandler(t *testing.T) {
 				},
 				AppContactService: &testAppContactService{
 					findFn: func(appContact *models.AppContact) (*models.AppContact, error) {
-						return &models.AppContact{App: &models.App{AppSlug: "an-app-slug", APIToken: "some-token"}}, nil
+						return &models.AppContact{App: &testApp}, nil
 					},
 					updateFn: func(appContact *models.AppContact, whitelist []string) error {
 						return errors.New("SOME-SQL-ERROR")
@@ -175,7 +175,7 @@ func Test_AppContactConfirmPatchHandler(t *testing.T) {
 				},
 				AppContactService: &testAppContactService{
 					findFn: func(appContact *models.AppContact) (*models.AppContact, error) {
-						return &models.AppContact{App: &models.App{AppSlug: "an-app-slug", APIToken: "some-token"}}, nil
+						return &models.AppContact{App: &testApp}, nil
 					},
 					updateFn: func(appContact *models.AppContact, whitelist []string) error {
 						appContact.ConfirmedAt = time.Time{}

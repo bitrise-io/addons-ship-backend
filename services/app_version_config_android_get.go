@@ -73,7 +73,7 @@ func AppVersionAndroidConfigGetHandler(env *env.AppEnv, w http.ResponseWriter, r
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	appData, err := env.BitriseAPI.GetAppDetails(appVersion.App.APIToken, appVersion.App.AppSlug)
+	appData, err := env.BitriseAPI.GetAppDetails(appVersion.App.BitriseAPIToken, appVersion.App.AppSlug)
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -97,7 +97,7 @@ func AppVersionAndroidConfigGetHandler(env *env.AppEnv, w http.ResponseWriter, r
 	config.MetaData.Track = androidSettings.Track
 
 	var selectedServiceAccount bitrise.GenericProjectFile
-	serviceAccounts, err := env.BitriseAPI.GetServiceAccountFiles(appVersion.App.APIToken, appVersion.App.AppSlug)
+	serviceAccounts, err := env.BitriseAPI.GetServiceAccountFiles(appVersion.App.BitriseAPIToken, appVersion.App.AppSlug)
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -113,7 +113,7 @@ func AppVersionAndroidConfigGetHandler(env *env.AppEnv, w http.ResponseWriter, r
 	config.MetaData.ServiceAccountJSON = selectedServiceAccount.DownloadURL
 
 	var selectedAndroidKeystore bitrise.AndroidKeystoreFile
-	androidKeystoreFiles, err := env.BitriseAPI.GetAndroidKeystoreFiles(appVersion.App.APIToken, appVersion.App.AppSlug)
+	androidKeystoreFiles, err := env.BitriseAPI.GetAndroidKeystoreFiles(appVersion.App.BitriseAPIToken, appVersion.App.AppSlug)
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -145,13 +145,13 @@ func AppVersionAndroidConfigGetHandler(env *env.AppEnv, w http.ResponseWriter, r
 	}
 	config.MetaData.ListingInfo.Screenshots = scs
 
-	artifacts, err := env.BitriseAPI.GetArtifacts(appVersion.App.APIToken, appVersion.App.AppSlug, appVersion.BuildSlug)
+	artifacts, err := env.BitriseAPI.GetArtifacts(appVersion.App.BitriseAPIToken, appVersion.App.AppSlug, appVersion.BuildSlug)
 	if err != nil {
 		return errors.WithStack(err)
 	}
 	if len(artifacts) > 0 {
 		selectedArtifact, _, _, _ := selectAndroidArtifact(artifacts)
-		artifactData, err := env.BitriseAPI.GetArtifact(appVersion.App.APIToken, appVersion.App.AppSlug, appVersion.BuildSlug, selectedArtifact.Slug)
+		artifactData, err := env.BitriseAPI.GetArtifact(appVersion.App.BitriseAPIToken, appVersion.App.AppSlug, appVersion.BuildSlug, selectedArtifact.Slug)
 		if err != nil {
 			return errors.WithStack(err)
 		}
