@@ -304,7 +304,7 @@ func (a *API) RegisterWebhook(authToken, appSlug, secret, callbackURL string) er
 	}
 
 	defer httpresponse.BodyCloseWithErrorLog(resp)
-	if resp.StatusCode != http.StatusCreated {
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		return errors.Errorf("Failed to register webhook: status: %d", resp.StatusCode)
 	}
 	return nil
