@@ -55,6 +55,7 @@ func Test_ProvisionHandler(t *testing.T) {
 				AppService: &testAppService{
 					findFn: func(app *models.App) (*models.App, error) {
 						require.Equal(t, "test-app-slug", app.AppSlug)
+						require.Equal(t, "test-bitrise-api-token", app.BitriseAPIToken)
 						return app, nil
 					},
 				},
@@ -104,7 +105,7 @@ func Test_ProvisionHandler(t *testing.T) {
 					registerWebhookFn: func(authToken, appSlug, secret, callbackURL string) error {
 						require.Equal(t, "test-app-slug", appSlug)
 						require.Equal(t, "my-super-secret", secret)
-						require.Equal(t, "test-api-token", authToken)
+						require.Equal(t, "test-bitrise-api-token", authToken)
 						return nil
 					},
 				},

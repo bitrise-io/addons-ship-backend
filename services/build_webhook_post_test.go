@@ -187,8 +187,8 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								return &models.AppSettings{
 									IosWorkflow: "all",
 									App: &models.App{
-										APIToken: "test-api-token",
-										AppSlug:  "test-app-slug",
+										BitriseAPIToken: "test-api-token",
+										AppSlug:         "test-app-slug",
 									},
 								}, nil
 							},
@@ -205,8 +205,8 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								require.Equal(t, []string{"iPhone", "iPod Touch", "iPad", "Unknown"}, artifactData.SupportedDeviceTypes)
 								appVersion.ID = testAppVersionID
 								appVersion.App = models.App{
-									APIToken: "test-api-token",
-									AppSlug:  "test-app-slug",
+									BitriseAPIToken: "test-api-token",
+									AppSlug:         "test-app-slug",
 								}
 								return appVersion, nil, nil
 							},
@@ -276,8 +276,8 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								return &models.AppSettings{
 									IosWorkflow: "ios-wf,ios-wf2",
 									App: &models.App{
-										APIToken: "test-api-token",
-										AppSlug:  "test-app-slug",
+										BitriseAPIToken: "test-api-token",
+										AppSlug:         "test-app-slug",
 									},
 								}, nil
 							},
@@ -373,8 +373,8 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								return &models.AppSettings{
 									IosWorkflow: "ios-wf,ios-wf2",
 									App: &models.App{
-										APIToken: "test-api-token",
-										AppSlug:  "test-app-slug",
+										BitriseAPIToken: "test-api-token",
+										AppSlug:         "test-app-slug",
 									},
 								}, nil
 							},
@@ -419,8 +419,8 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								return &models.AppSettings{
 									IosWorkflow: "ios-wf,ios-wf2",
 									App: &models.App{
-										APIToken: "test-api-token",
-										AppSlug:  "test-app-slug",
+										BitriseAPIToken: "test-api-token",
+										AppSlug:         "test-app-slug",
 									},
 								}, nil
 							},
@@ -465,8 +465,8 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								return &models.AppSettings{
 									IosWorkflow: "ios-wf,ios-wf2",
 									App: &models.App{
-										APIToken: "test-api-token",
-										AppSlug:  "test-app-slug",
+										BitriseAPIToken: "test-api-token",
+										AppSlug:         "test-app-slug",
 									},
 								}, nil
 							},
@@ -516,8 +516,8 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								return &models.AppSettings{
 									IosWorkflow: "ios-wf,ios-wf2",
 									App: &models.App{
-										APIToken: "test-api-token",
-										AppSlug:  "test-app-slug",
+										BitriseAPIToken: "test-api-token",
+										AppSlug:         "test-app-slug",
 									},
 								}, nil
 							},
@@ -570,8 +570,8 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								return &models.AppSettings{
 									IosWorkflow: "ios-wf,ios-wf2",
 									App: &models.App{
-										APIToken: "test-api-token",
-										AppSlug:  "test-app-slug",
+										BitriseAPIToken: "test-api-token",
+										AppSlug:         "test-app-slug",
 									},
 								}, nil
 							},
@@ -626,8 +626,8 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								return &models.AppSettings{
 									IosWorkflow: "all",
 									App: &models.App{
-										APIToken: "test-api-token",
-										AppSlug:  "test-app-slug",
+										BitriseAPIToken: "test-api-token",
+										AppSlug:         "test-app-slug",
 									},
 								}, nil
 							},
@@ -679,8 +679,8 @@ func Test_BuildWebhookHandler(t *testing.T) {
 							findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
 								return &models.AppSettings{IosWorkflow: "all",
 									App: &models.App{
-										APIToken: "test-api-token",
-										AppSlug:  "test-app-slug",
+										BitriseAPIToken: "test-api-token",
+										AppSlug:         "test-app-slug",
 									},
 								}, nil
 							},
@@ -730,8 +730,8 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								return &models.AppSettings{
 									IosWorkflow: "all",
 									App: &models.App{
-										APIToken: "test-api-token",
-										AppSlug:  "test-app-slug",
+										BitriseAPIToken: "test-api-token",
+										AppSlug:         "test-app-slug",
 									},
 								}, nil
 							},
@@ -748,8 +748,8 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								require.Equal(t, []string{"iPhone", "iPod Touch", "iPad", "Unknown"}, artifactData.SupportedDeviceTypes)
 								appVersion.ID = testAppVersionID
 								appVersion.App = models.App{
-									APIToken: "test-api-token",
-									AppSlug:  "test-app-slug",
+									BitriseAPIToken: "test-api-token",
+									AppSlug:         "test-app-slug",
 								}
 								return appVersion, nil, nil
 							},
@@ -817,8 +817,8 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								return &models.AppSettings{
 									IosWorkflow: "all",
 									App: &models.App{
-										APIToken: "test-api-token",
-										AppSlug:  "test-app-slug",
+										BitriseAPIToken: "test-api-token",
+										AppSlug:         "test-app-slug",
 									},
 								}, nil
 							},
@@ -835,8 +835,8 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								require.Equal(t, []string{"iPhone", "iPod Touch", "iPad", "Unknown"}, artifactData.SupportedDeviceTypes)
 								appVersion.ID = testAppVersionID
 								appVersion.App = models.App{
-									APIToken: "test-api-token",
-									AppSlug:  "test-app-slug",
+									BitriseAPIToken: "test-api-token",
+									AppSlug:         "test-app-slug",
 								}
 								return appVersion, nil, nil
 							},
@@ -907,8 +907,8 @@ func Test_BuildWebhookHandler(t *testing.T) {
 							findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
 								return &models.AppSettings{AndroidWorkflow: "all",
 									App: &models.App{
-										APIToken: "test-api-token",
-										AppSlug:  "test-app-slug",
+										BitriseAPIToken: "test-api-token",
+										AppSlug:         "test-app-slug",
 									},
 								}, nil
 							},
@@ -922,8 +922,8 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								require.Equal(t, models.ArtifactInfo{Version: "1.0", MinimumSDK: "1.23", PackageName: "myPackage"}, appInfo)
 								appVersion.ID = testAppVersionID
 								appVersion.App = models.App{
-									APIToken: "test-api-token",
-									AppSlug:  "test-app-slug",
+									BitriseAPIToken: "test-api-token",
+									AppSlug:         "test-app-slug",
 								}
 								return appVersion, nil, nil
 							},
@@ -990,8 +990,8 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								return &models.AppSettings{
 									AndroidWorkflow: "android-wf,android-wf2",
 									App: &models.App{
-										APIToken: "test-api-token",
-										AppSlug:  "test-app-slug",
+										BitriseAPIToken: "test-api-token",
+										AppSlug:         "test-app-slug",
 									},
 								}, nil
 							},
@@ -1058,8 +1058,8 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								return &models.AppSettings{
 									AndroidWorkflow: "android-wf,android-wf2",
 									App: &models.App{
-										APIToken: "test-api-token",
-										AppSlug:  "test-app-slug",
+										BitriseAPIToken: "test-api-token",
+										AppSlug:         "test-app-slug",
 									},
 								}, nil
 							},
@@ -1104,8 +1104,8 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								return &models.AppSettings{
 									AndroidWorkflow: "all",
 									App: &models.App{
-										APIToken: "test-api-token",
-										AppSlug:  "test-app-slug",
+										BitriseAPIToken: "test-api-token",
+										AppSlug:         "test-app-slug",
 									},
 								}, nil
 							},
@@ -1150,8 +1150,8 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								return &models.AppSettings{
 									AndroidWorkflow: "all",
 									App: &models.App{
-										APIToken: "test-api-token",
-										AppSlug:  "test-app-slug",
+										BitriseAPIToken: "test-api-token",
+										AppSlug:         "test-app-slug",
 									},
 								}, nil
 							},
@@ -1201,8 +1201,8 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								return &models.AppSettings{
 									AndroidWorkflow: "all",
 									App: &models.App{
-										APIToken: "test-api-token",
-										AppSlug:  "test-app-slug",
+										BitriseAPIToken: "test-api-token",
+										AppSlug:         "test-app-slug",
 									},
 								}, nil
 							},
@@ -1254,8 +1254,8 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								return &models.AppSettings{
 									AndroidWorkflow: "all",
 									App: &models.App{
-										APIToken: "test-api-token",
-										AppSlug:  "test-app-slug",
+										BitriseAPIToken: "test-api-token",
+										AppSlug:         "test-app-slug",
 									},
 								}, nil
 							},
@@ -1309,8 +1309,8 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								return &models.AppSettings{
 									AndroidWorkflow: "all",
 									App: &models.App{
-										APIToken: "test-api-token",
-										AppSlug:  "test-app-slug",
+										BitriseAPIToken: "test-api-token",
+										AppSlug:         "test-app-slug",
 									},
 								}, nil
 							},
@@ -1360,8 +1360,8 @@ func Test_BuildWebhookHandler(t *testing.T) {
 							findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
 								return &models.AppSettings{AndroidWorkflow: "all",
 									App: &models.App{
-										APIToken: "test-api-token",
-										AppSlug:  "test-app-slug",
+										BitriseAPIToken: "test-api-token",
+										AppSlug:         "test-app-slug",
 									},
 								}, nil
 							},
@@ -1375,8 +1375,8 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								require.Equal(t, models.ArtifactInfo{Version: "1.0", MinimumSDK: "1.23", PackageName: "myPackage"}, appInfo)
 								appVersion.ID = testAppVersionID
 								appVersion.App = models.App{
-									APIToken: "test-api-token",
-									AppSlug:  "test-app-slug",
+									BitriseAPIToken: "test-api-token",
+									AppSlug:         "test-app-slug",
 								}
 								return appVersion, nil, nil
 							},
@@ -1441,8 +1441,8 @@ func Test_BuildWebhookHandler(t *testing.T) {
 							findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
 								return &models.AppSettings{AndroidWorkflow: "all",
 									App: &models.App{
-										APIToken: "test-api-token",
-										AppSlug:  "test-app-slug",
+										BitriseAPIToken: "test-api-token",
+										AppSlug:         "test-app-slug",
 									},
 								}, nil
 							},
@@ -1456,8 +1456,8 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								require.Equal(t, models.ArtifactInfo{Version: "1.0", MinimumSDK: "1.23", PackageName: "myPackage"}, appInfo)
 								appVersion.ID = testAppVersionID
 								appVersion.App = models.App{
-									APIToken: "test-api-token",
-									AppSlug:  "test-app-slug",
+									BitriseAPIToken: "test-api-token",
+									AppSlug:         "test-app-slug",
 								}
 								return appVersion, nil, nil
 							},

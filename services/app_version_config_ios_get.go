@@ -82,7 +82,7 @@ func AppVersionIosConfigGetHandler(env *env.AppEnv, w http.ResponseWriter, r *ht
 	}
 
 	var selectedProvisioningProfile bitrise.ProvisioningProfile
-	provisioningProfiles, err := env.BitriseAPI.GetProvisioningProfiles(appVersion.App.APIToken, appVersion.App.AppSlug)
+	provisioningProfiles, err := env.BitriseAPI.GetProvisioningProfiles(appVersion.App.BitriseAPIToken, appVersion.App.AppSlug)
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -98,7 +98,7 @@ func AppVersionIosConfigGetHandler(env *env.AppEnv, w http.ResponseWriter, r *ht
 	config.MetaData.Signing.AppStoreProfileURL = selectedProvisioningProfile.DownloadURL
 
 	var selectedCodeSigningID bitrise.CodeSigningIdentity
-	codeSigningIDs, err := env.BitriseAPI.GetCodeSigningIdentities(appVersion.App.APIToken, appVersion.App.AppSlug)
+	codeSigningIDs, err := env.BitriseAPI.GetCodeSigningIdentities(appVersion.App.BitriseAPIToken, appVersion.App.AppSlug)
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -119,14 +119,14 @@ func AppVersionIosConfigGetHandler(env *env.AppEnv, w http.ResponseWriter, r *ht
 	config.MetaData.AppleUser = iosSettings.AppleDeveloperAccountEmail
 	config.MetaData.AppleAppSpecificPassword = iosSettings.ApplSpecificPassword
 
-	artifacts, err := env.BitriseAPI.GetArtifacts(appVersion.App.APIToken, appVersion.App.AppSlug, appVersion.BuildSlug)
+	artifacts, err := env.BitriseAPI.GetArtifacts(appVersion.App.BitriseAPIToken, appVersion.App.AppSlug, appVersion.BuildSlug)
 	if err != nil {
 		return errors.WithStack(err)
 	}
 
 	for _, artifact := range artifacts {
 		if artifact.IsXCodeArchive() {
-			artifactData, err := env.BitriseAPI.GetArtifact(appVersion.App.APIToken, appVersion.App.AppSlug, appVersion.BuildSlug, artifact.Slug)
+			artifactData, err := env.BitriseAPI.GetArtifact(appVersion.App.BitriseAPIToken, appVersion.App.AppSlug, appVersion.BuildSlug, artifact.Slug)
 			if err != nil {
 				return errors.WithStack(err)
 			}

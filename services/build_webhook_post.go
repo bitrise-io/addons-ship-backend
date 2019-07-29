@@ -72,7 +72,7 @@ func BuildWebhookHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request
 		app := appSettings.App
 		if appSettings.IosWorkflow == "all" ||
 			(params.BuildTriggeredWorkflow != "" && strings.Contains(appSettings.IosWorkflow, params.BuildTriggeredWorkflow)) {
-			appVersion, err := prepareAppVersionForIosPlatform(env, w, r, app.APIToken, app.AppSlug, params.BuildSlug)
+			appVersion, err := prepareAppVersionForIosPlatform(env, w, r, app.BitriseAPIToken, app.AppSlug, params.BuildSlug)
 			if err != nil {
 				return err
 			}
@@ -94,7 +94,7 @@ func BuildWebhookHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request
 
 		if appSettings.AndroidWorkflow == "all" ||
 			(params.BuildTriggeredWorkflow != "" && strings.Contains(appSettings.AndroidWorkflow, params.BuildTriggeredWorkflow)) {
-			appVersion, err := prepareAppVersionForAndroidPlatform(env, w, r, app.APIToken, app.AppSlug, params.BuildSlug)
+			appVersion, err := prepareAppVersionForAndroidPlatform(env, w, r, app.BitriseAPIToken, app.AppSlug, params.BuildSlug)
 			if err != nil {
 				return err
 			}
@@ -126,7 +126,7 @@ func sendNotification(env *env.AppEnv, appVersion *models.AppVersion) error {
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	appDetails, err := env.BitriseAPI.GetAppDetails(app.APIToken, app.AppSlug)
+	appDetails, err := env.BitriseAPI.GetAppDetails(app.BitriseAPIToken, app.AppSlug)
 	if err != nil {
 		return errors.WithStack(err)
 	}

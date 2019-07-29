@@ -126,7 +126,7 @@ func Test_AppVersionIosConfigGetHandler(t *testing.T) {
 							`,"support_url":"http://we-will-help.you","marketing_url":"http://purchase-the.app"` +
 							`,"keywords":"awesome,awesomeapp,awesomeness"` +
 							`}`)
-						appVersion.App = models.App{AppSlug: "test-app-slug", APIToken: "test-api-token"}
+						appVersion.App = models.App{AppSlug: "test-app-slug", BitriseAPIToken: "test-api-token"}
 						appVersion.AppID = testAppID
 						return appVersion, nil
 					},
