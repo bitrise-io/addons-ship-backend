@@ -10,8 +10,9 @@ import (
 
 // Interface ...
 type Interface interface {
-	SendEmailConfirmation(appTitle, confirmURL string, contact *models.AppContact) error
+	SendEmailConfirmation(confirmURL string, contact *models.AppContact, appDetails *bitrise.AppDetails) error
 	SendEmailNewVersion(appVersion *models.AppVersion, contacts []models.AppContact, frontendBaseURL string, appDetails *bitrise.AppDetails) error
+	SendEmailPublish(appVersion *models.AppVersion, contacts []models.AppContact, appDetails *bitrise.AppDetails, frontendBaseURL string, publishSucceeded bool) error
 }
 
 // Request ...

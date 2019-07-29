@@ -56,6 +56,10 @@ func webhookPostStatusHelper(env *env.AppEnv, w http.ResponseWriter, r *http.Req
 		if err != nil {
 			return errors.Wrap(err, "Worker error")
 		}
+		err = sendTaskFinishNotification(&event.AppVersion, env, data.ExitCode)
+		if err != nil {
+			return errors.WithStack(err)
+		}
 		return httpresponse.RespondWithSuccess(w, httpresponse.StandardErrorRespModel{Message: "ok"})
 	default:
 		return errors.Errorf("Invalid status of incoming webhook: %s", data.NewStatus)
@@ -73,4 +77,16 @@ func parseStatusData(data interface{}) (StatusData, error) {
 		return StatusData{}, err
 	}
 	return statusData, nil
+}
+
+func sendTaskFinishNotification(appVersion *models.AppVersion, env *env.AppEnv, exitCode int) error {
+	contacts, err := env.AppContactService.FindAll(&appVersion.App)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	appDetais, err := env.BitriseAPI.GetAppDetails(appVersion.App.APIToken, appVersion.App.AppSlug)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	return env.Mailer.SendEmailPublish(appVersion, contacts, appDetais, env.AddonFrontendHostURL, exitCode == 0)
 }
