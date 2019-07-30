@@ -53,7 +53,7 @@ func (a *AppContact) BeforeSave(scope *gorm.Scope) error {
 func (a *AppContact) validate(scope *gorm.Scope) error {
 	var err error
 	ev := EmailVerifier{Email: a.Email}
-	if ev.Verify() {
+	if !ev.Verify() {
 		err = scope.DB().AddError(NewValidationError("email: Wrong format"))
 	}
 	if err != nil {
