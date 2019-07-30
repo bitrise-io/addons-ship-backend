@@ -3,14 +3,14 @@ package services_test
 import "github.com/bitrise-io/addons-ship-backend/models"
 
 type testAppContactService struct {
-	createFn  func(*models.AppContact) (*models.AppContact, error)
+	createFn  func(*models.AppContact) (*models.AppContact, []error, error)
 	findFn    func(*models.AppContact) (*models.AppContact, error)
 	findAllFn func(app *models.App) ([]models.AppContact, error)
 	updateFn  func(*models.AppContact, []string) error
 	deleteFn  func(*models.AppContact) error
 }
 
-func (a *testAppContactService) Create(appContact *models.AppContact) (*models.AppContact, error) {
+func (a *testAppContactService) Create(appContact *models.AppContact) (*models.AppContact, []error, error) {
 	if a.createFn != nil {
 		return a.createFn(appContact)
 	}
