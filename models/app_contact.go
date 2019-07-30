@@ -2,7 +2,6 @@ package models
 
 import (
 	"encoding/json"
-	"regexp"
 	"time"
 
 	"github.com/jinzhu/gorm"
@@ -53,8 +52,8 @@ func (a *AppContact) BeforeSave(scope *gorm.Scope) error {
 
 func (a *AppContact) validate(scope *gorm.Scope) error {
 	var err error
-	re := regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
-	if !re.MatchString(a.Email) {
+	ev := EmailVerifier{Email: a.Email}
+	if ev.Verify() {
 		err = scope.DB().AddError(NewValidationError("email: Wrong format"))
 	}
 	if err != nil {
