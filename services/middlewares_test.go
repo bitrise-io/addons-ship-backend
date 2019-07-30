@@ -9,6 +9,7 @@ import (
 	"github.com/bitrise-io/addons-ship-backend/services"
 	"github.com/bitrise-io/api-utils/middleware"
 	"github.com/bitrise-io/api-utils/providers"
+	"github.com/bitrise-io/go-crypto/crypto"
 	"github.com/bitrise-io/go-utils/envutil"
 	"github.com/c2fo/testify/require"
 	"github.com/satori/go.uuid"
@@ -219,4 +220,36 @@ func Test_AuthorizedAppContactMiddleware(t *testing.T) {
 			},
 		}),
 	})
+}
+
+func Test_AuthorizedBuildWebhookMiddleware(t *testing.T) {
+	revokeFn, err := envutil.RevokableSetenv("APP_WEBHOOK_SECRET_ENCRYPT_KEY", "06042e86a7bd421c642c8c3e4ab13840")
+	require.NoError(t, err)
+	middleware.PerformTest(t, "POST", "/...", middleware.TestCase{
+		RequestHeaders: map[string]string{
+			"Bitrise-App-Id":         "test_app_slug",
+			"Bitrise-Hook-Signature": "sha256=0d86929661b1c7b216ca6a7ef4abe740ee6dc07d4afc2f21d78c888235d88713",
+		},
+		ExpectedStatus: http.StatusOK,
+		ExpectedResponse: map[string]interface{}{
+			"message": "Success",
+		},
+		Middleware: services.AuthorizedBuildWebhookMiddleware(&env.AppEnv{
+			AppService: &testAppService{
+				findFn: func(app *models.App) (*models.App, error) {
+					app.ID = uuid.NewV4()
+					iv, err := crypto.GenerateIV()
+					require.NoError(t, err)
+					encryptedSecret, err := crypto.AES256GCMCipher("my-super-secret", iv, "06042e86a7bd421c642c8c3e4ab13840")
+					require.NoError(t, err)
+
+					app.EncryptedSecret = encryptedSecret
+					app.EncryptedSecretIV = iv
+					return app, nil
+				},
+			},
+		}),
+		RequestBody: map[string]string{"app_slug": "test-app-slug"},
+	})
+	require.NoError(t, revokeFn())
 }

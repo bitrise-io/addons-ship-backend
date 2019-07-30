@@ -62,6 +62,12 @@ func createAuthorizeForAppContactAccessMiddleware(env *env.AppEnv) func(http.Han
 	}
 }
 
+func createAuthorizeForBuildWebhookMiddleware(env *env.AppEnv) func(http.Handler) http.Handler {
+	return func(h http.Handler) http.Handler {
+		return AuthorizeBuildWebhookForAppAccessFunc(env, h)
+	}
+}
+
 // CommonMiddleware ...
 func CommonMiddleware(appEnv *env.AppEnv) alice.Chain {
 	baseMiddleware := middleware.CommonMiddleware()
@@ -126,5 +132,12 @@ func AuthorizeForAppContactEmailConfirmationHandling(appEnv *env.AppEnv) alice.C
 func AuthorizedAppContactMiddleware(appEnv *env.AppEnv) alice.Chain {
 	return AuthorizedAppMiddleware(appEnv).Append(
 		createAuthorizeForAppContactAccessMiddleware(appEnv),
+	)
+}
+
+// AuthorizedBuildWebhookMiddleware ...
+func AuthorizedBuildWebhookMiddleware(appEnv *env.AppEnv) alice.Chain {
+	return CommonMiddleware(appEnv).Append(
+		createAuthorizeForBuildWebhookMiddleware(appEnv),
 	)
 }
