@@ -74,14 +74,10 @@ func selectIosArtifact(artifacts []bitrise.ArtifactListElementResponseModel) (*b
 		if artifact.IsIPA() {
 			if artifact.HasAppStoreDistributionType() {
 				publishEnabled = true
-				selectedArtifact = &artifact
 			}
 			if artifact.HasDebugDistributionType() {
 				publicInstallPageEnabled = true
 				publicInstallPageArtifactSlug = artifact.Slug
-				if selectedArtifact == nil {
-					selectedArtifact = &artifact
-				}
 			}
 		}
 		if artifact.IsXCodeArchive() {
