@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/bitrise-io/addons-ship-backend/bitrise"
 	"github.com/bitrise-io/addons-ship-backend/dataservices"
@@ -12,6 +13,7 @@ import (
 	"github.com/bitrise-io/addons-ship-backend/redis"
 	"github.com/bitrise-io/api-utils/logging"
 	"github.com/bitrise-io/api-utils/providers"
+	"github.com/bitrise-io/api-utils/security"
 	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
@@ -49,6 +51,7 @@ type AppEnv struct {
 	WorkerService          dataservices.WorkerService
 	Mailer                 mailer.Interface
 	EmailConfirmLandingURL string
+	SsoTokenVerifier       security.SsoTokenVerifierInterface
 }
 
 // New ...
@@ -123,6 +126,11 @@ func New(db *gorm.DB) (*AppEnv, error) {
 	if !ok {
 		return nil, errors.New("No value set for env EMAIL_CONFIRM_LANDING_URL")
 	}
+	addonSSOSecret, ok := os.LookupEnv("ADDON_SSO_SECRET_TOKEN")
+	if !ok {
+		return nil, errors.New("No value set for env ADDON_ACCESS_TOKEN")
+	}
+	env.SsoTokenVerifier = &security.SsoTokenVerifier{SsoSecret: addonSSOSecret, ValidTimeInterval: 5 * time.Minute}
 
 	return env, nil
 }

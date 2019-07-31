@@ -9,10 +9,12 @@ import (
 	"github.com/bitrise-io/addons-ship-backend/services"
 	"github.com/bitrise-io/api-utils/middleware"
 	"github.com/bitrise-io/api-utils/providers"
+	"github.com/bitrise-io/api-utils/security"
 	"github.com/bitrise-io/go-crypto/crypto"
 	"github.com/bitrise-io/go-utils/envutil"
 	"github.com/c2fo/testify/require"
 	"github.com/satori/go.uuid"
+	"go.uber.org/zap"
 )
 
 func Test_AuthenticateForProvisioning(t *testing.T) {
@@ -252,4 +254,30 @@ func Test_AuthorizedBuildWebhookMiddleware(t *testing.T) {
 		RequestBody: map[string]string{"app_slug": "test-app-slug"},
 	})
 	require.NoError(t, revokeFn())
+}
+
+func Test_AuthenticatedForLoginMiddleware(t *testing.T) {
+	testLogger, err := zap.NewDevelopment()
+	require.NoError(t, err)
+	middleware.PerformTest(t, "POST", "/...", middleware.TestCase{
+		Middleware: services.AuthenticatedForLoginMiddleware(&env.AppEnv{
+			Logger: testLogger,
+			AppService: &testAppService{
+				findFn: func(app *models.App) (*models.App, error) {
+					app.ID = uuid.NewV4()
+					return app, nil
+				},
+			},
+			SsoTokenVerifier: &security.SsoTokenVerifierMock{
+				VerifyFn: func(timestamp, ssoToken, appSlug string) (bool, error) {
+					return true, nil
+				},
+			},
+		}),
+		RequestBody:    map[string]string{"app_slug": "test-app-slug"},
+		ExpectedStatus: http.StatusOK,
+		ExpectedResponse: map[string]interface{}{
+			"message": "Success",
+		},
+	})
 }

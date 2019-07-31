@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -17,11 +18,12 @@ import (
 )
 
 type ControllerTestCase struct {
-	requestBody         string
-	requestHeaders      map[string]string
-	expectedStatusCode  int
-	expectedResponse    interface{}
-	expectedInternalErr string
+	requestBody              string
+	requestHeaders           map[string]string
+	expectedStatusCode       int
+	expectedResponse         interface{}
+	expectedResponseLocation string
+	expectedInternalErr      string
 
 	contextElements map[ctxpkg.RequestContextKey]interface{}
 
@@ -60,6 +62,12 @@ func performControllerTest(t *testing.T,
 			require.Equal(t, tc.expectedStatusCode, rr.Code,
 				"Expected body: %#v | Got body: %s", tc.expectedResponse, rr.Body.String())
 		}
+	}
+
+	if tc.expectedResponseLocation != "" {
+		redirectLocationURL, err := rr.Result().Location()
+		require.NoError(t, err)
+		require.Equal(t, tc.expectedResponseLocation, redirectLocationURL.String())
 	}
 
 	if tc.expectedResponse != nil {
@@ -158,26 +166,36 @@ func (h *testAuthHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 type AuthenticationTestCase struct {
-	desc            string
-	requestHeaders  map[string]string
-	env             *env.AppEnv
-	authHandlerFunc func(*env.AppEnv, http.Handler) http.Handler
+	desc              string
+	requestHeaders    map[string]string
+	requestFormValues map[string]string
+	env               *env.AppEnv
+	authHandlerFunc   func(*env.AppEnv, http.Handler) http.Handler
 
 	expectedStatusCode int
 	expectedBody       string
 }
 
 func performAuthenticationTest(t *testing.T,
-	httpMethod, url string,
+	httpMethod, testURL string,
 	tc AuthenticationTestCase,
 ) {
 	t.Helper()
 
-	req, err := http.NewRequest(httpMethod, url, nil)
+	req, err := http.NewRequest(httpMethod, testURL, nil)
 	require.NoError(t, err)
 
 	for key, value := range tc.requestHeaders {
 		req.Header.Set(key, value)
+	}
+	if tc.requestFormValues != nil {
+		for key, value := range tc.requestFormValues {
+			if req.URL.RawQuery == "" {
+				req.URL.RawQuery = fmt.Sprintf("%s=%s", key, value)
+			} else {
+				req.URL.RawQuery = fmt.Sprintf("%s&%s=%s", req.URL.RawQuery, key, value)
+			}
+		}
 	}
 
 	rr := httptest.NewRecorder()
