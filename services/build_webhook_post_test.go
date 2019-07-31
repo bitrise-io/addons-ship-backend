@@ -227,6 +227,16 @@ func Test_BuildWebhookHandler(t *testing.T) {
 											ProvisioningInfo: bitrise.ProvisioningInfo{DistributionType: "app-store"},
 										},
 									},
+									bitrise.ArtifactListElementResponseModel{
+										Title: "my-ios-artifact.xcarchive.zip",
+										ArtifactMeta: &bitrise.ArtifactMeta{
+											AppInfo: bitrise.AppInfo{
+												Version:          "1.0",
+												DeviceFamilyList: []int{1, 2, 12},
+											},
+											ProvisioningInfo: bitrise.ProvisioningInfo{DistributionType: "app-store"},
+										},
+									},
 								}, nil
 							},
 							getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
@@ -304,6 +314,16 @@ func Test_BuildWebhookHandler(t *testing.T) {
 										ArtifactMeta: &bitrise.ArtifactMeta{
 											AppInfo: bitrise.AppInfo{
 												Version: "1.0",
+											},
+											ProvisioningInfo: bitrise.ProvisioningInfo{DistributionType: "app-store"},
+										},
+									},
+									bitrise.ArtifactListElementResponseModel{
+										Title: "my-ios-artifact.xcarchive.zip",
+										ArtifactMeta: &bitrise.ArtifactMeta{
+											AppInfo: bitrise.AppInfo{
+												Version:          "1.0",
+												DeviceFamilyList: []int{1, 2, 12},
 											},
 											ProvisioningInfo: bitrise.ProvisioningInfo{DistributionType: "app-store"},
 										},
@@ -543,6 +563,13 @@ func Test_BuildWebhookHandler(t *testing.T) {
 											ProvisioningInfo: bitrise.ProvisioningInfo{DistributionType: "app-store"},
 										},
 									},
+									bitrise.ArtifactListElementResponseModel{
+										Title: "my-ios-artifact.xcarchive.zip",
+										ArtifactMeta: &bitrise.ArtifactMeta{
+											AppInfo:          bitrise.AppInfo{},
+											ProvisioningInfo: bitrise.ProvisioningInfo{DistributionType: "app-store"},
+										},
+									},
 								}, nil
 							},
 						},
@@ -649,6 +676,15 @@ func Test_BuildWebhookHandler(t *testing.T) {
 											ProvisioningInfo: bitrise.ProvisioningInfo{DistributionType: "app-store"},
 										},
 									},
+									bitrise.ArtifactListElementResponseModel{
+										Title: "my-ios-artifact.xcarchive.zip",
+										ArtifactMeta: &bitrise.ArtifactMeta{
+											AppInfo: bitrise.AppInfo{
+												Version: "1.0",
+											},
+											ProvisioningInfo: bitrise.ProvisioningInfo{DistributionType: "app-store"},
+										},
+									},
 								}, nil
 							},
 						},
@@ -695,6 +731,15 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								return []bitrise.ArtifactListElementResponseModel{
 									bitrise.ArtifactListElementResponseModel{
 										Title: "my-ios-artifact.ipa",
+										ArtifactMeta: &bitrise.ArtifactMeta{
+											AppInfo: bitrise.AppInfo{
+												Version: "1.0",
+											},
+											ProvisioningInfo: bitrise.ProvisioningInfo{DistributionType: "app-store"},
+										},
+									},
+									bitrise.ArtifactListElementResponseModel{
+										Title: "my-ios-artifact.xcarchive.zip",
 										ArtifactMeta: &bitrise.ArtifactMeta{
 											AppInfo: bitrise.AppInfo{
 												Version: "1.0",
@@ -762,6 +807,16 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								return []bitrise.ArtifactListElementResponseModel{
 									bitrise.ArtifactListElementResponseModel{
 										Title: "my-ios-artifact.ipa",
+										ArtifactMeta: &bitrise.ArtifactMeta{
+											AppInfo: bitrise.AppInfo{
+												Version:          "1.0",
+												DeviceFamilyList: []int{1, 2, 12},
+											},
+											ProvisioningInfo: bitrise.ProvisioningInfo{DistributionType: "app-store"},
+										},
+									},
+									bitrise.ArtifactListElementResponseModel{
+										Title: "my-ios-artifact.xcarchive.zip",
 										ArtifactMeta: &bitrise.ArtifactMeta{
 											AppInfo: bitrise.AppInfo{
 												Version:          "1.0",
@@ -849,6 +904,16 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								return []bitrise.ArtifactListElementResponseModel{
 									bitrise.ArtifactListElementResponseModel{
 										Title: "my-ios-artifact.ipa",
+										ArtifactMeta: &bitrise.ArtifactMeta{
+											AppInfo: bitrise.AppInfo{
+												Version:          "1.0",
+												DeviceFamilyList: []int{1, 2, 12},
+											},
+											ProvisioningInfo: bitrise.ProvisioningInfo{DistributionType: "app-store"},
+										},
+									},
+									bitrise.ArtifactListElementResponseModel{
+										Title: "my-ios-artifact.xcarchive.zip",
 										ArtifactMeta: &bitrise.ArtifactMeta{
 											AppInfo: bitrise.AppInfo{
 												Version:          "1.0",
