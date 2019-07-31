@@ -5,19 +5,18 @@ go 1.12
 require (
 	github.com/GeertJohan/go.rice v1.0.0
 	github.com/aws/aws-sdk-go v1.19.34
-	github.com/bitrise-io/addons-firebase-testlab v0.0.0-20190722140423-bab80401ab44
 	github.com/bitrise-io/api-utils v0.0.0-20190731115401-7974d3427746
 	github.com/bitrise-io/go-crypto v0.0.0-20190716130036-2cb4b060f33a
 	github.com/bitrise-io/go-utils v0.0.0-20190507082533-8898129615c9
 	github.com/c2fo/testify v0.0.0-20150827203832-fba96363964a
 	github.com/daaku/go.zipexe v1.0.1 // indirect
 	github.com/go-yaml/yaml v2.1.0+incompatible
-	github.com/gobuffalo/envy v1.7.0 // indirect
 	github.com/gocraft/work v0.5.1
 	github.com/gomodule/redigo v2.0.0+incompatible
 	github.com/gorilla/mux v1.7.1 // indirect
 	github.com/jinzhu/gorm v1.9.8
 	github.com/justinas/alice v0.0.0-20171023064455-03f45bd4b7da
+	github.com/kr/pretty v0.1.0 // indirect
 	github.com/lib/pq v1.1.0
 	github.com/opentracing/opentracing-go v1.1.0 // indirect
 	github.com/philhofer/fwd v1.0.0 // indirect
@@ -26,6 +25,7 @@ require (
 	github.com/robfig/cron v1.2.0 // indirect
 	github.com/rs/cors v1.6.0 // indirect
 	github.com/satori/go.uuid v1.2.0
+	github.com/stretchr/testify v1.3.0 // indirect
 	github.com/tinylib/msgp v1.1.0 // indirect
 	go.uber.org/atomic v1.4.0 // indirect
 	go.uber.org/multierr v1.1.0 // indirect
