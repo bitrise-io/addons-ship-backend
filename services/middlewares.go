@@ -68,6 +68,12 @@ func createAuthorizeForBuildWebhookMiddleware(env *env.AppEnv) func(http.Handler
 	}
 }
 
+func createAuthenticatedForLoginMiddleware(env *env.AppEnv) func(http.Handler) http.Handler {
+	return func(h http.Handler) http.Handler {
+		return AuthenticateWithSSOTokenHandlerFunc(env, h)
+	}
+}
+
 // CommonMiddleware ...
 func CommonMiddleware(appEnv *env.AppEnv) alice.Chain {
 	baseMiddleware := middleware.CommonMiddleware()
@@ -139,5 +145,12 @@ func AuthorizedAppContactMiddleware(appEnv *env.AppEnv) alice.Chain {
 func AuthorizedBuildWebhookMiddleware(appEnv *env.AppEnv) alice.Chain {
 	return CommonMiddleware(appEnv).Append(
 		createAuthorizeForBuildWebhookMiddleware(appEnv),
+	)
+}
+
+// AuthenticatedForLoginMiddleware ...
+func AuthenticatedForLoginMiddleware(appEnv *env.AppEnv) alice.Chain {
+	return CommonMiddleware(appEnv).Append(
+		createAuthenticatedForLoginMiddleware(appEnv),
 	)
 }
