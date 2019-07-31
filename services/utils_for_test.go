@@ -18,11 +18,12 @@ import (
 )
 
 type ControllerTestCase struct {
-	requestBody         string
-	requestHeaders      map[string]string
-	expectedStatusCode  int
-	expectedResponse    interface{}
-	expectedInternalErr string
+	requestBody              string
+	requestHeaders           map[string]string
+	expectedStatusCode       int
+	expectedResponse         interface{}
+	expectedResponseLocation string
+	expectedInternalErr      string
 
 	contextElements map[ctxpkg.RequestContextKey]interface{}
 
@@ -61,6 +62,12 @@ func performControllerTest(t *testing.T,
 			require.Equal(t, tc.expectedStatusCode, rr.Code,
 				"Expected body: %#v | Got body: %s", tc.expectedResponse, rr.Body.String())
 		}
+	}
+
+	if tc.expectedResponseLocation != "" {
+		redirectLocationURL, err := rr.Result().Location()
+		require.NoError(t, err)
+		require.Equal(t, tc.expectedResponseLocation, redirectLocationURL.String())
 	}
 
 	if tc.expectedResponse != nil {
