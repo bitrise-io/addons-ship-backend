@@ -1,13 +1,20 @@
 package services_test
 
 import (
+	"fmt"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/bitrise-io/addons-ship-backend/env"
+	"github.com/bitrise-io/addons-ship-backend/models"
 	"github.com/bitrise-io/addons-ship-backend/services"
+	"github.com/bitrise-io/api-utils/security"
 	"github.com/bitrise-io/go-utils/envutil"
 	"github.com/c2fo/testify/require"
+	"github.com/jinzhu/gorm"
+	"github.com/pkg/errors"
+	"go.uber.org/zap"
 )
 
 func Test_AuthenticateWithAddonAccessTokenHandlerFunc(t *testing.T) {
@@ -121,4 +128,197 @@ func Test_AuthenticateWithDENSecretHandlerFunc(t *testing.T) {
 			require.NoError(t, revokeFn())
 		})
 	}
+}
+
+func Test_AuthenticateWithSSOTokenHandlerFunc(t *testing.T) {
+	reqTimestamp := fmt.Sprintf("%d", time.Now().Unix())
+	testLogger, err := zap.NewDevelopment()
+	require.NoError(t, err)
+
+	t.Run("ok", func(t *testing.T) {
+		performAuthenticationTest(t, "POST", "...", AuthenticationTestCase{
+			requestFormValues: map[string]string{
+				"timestamp": reqTimestamp,
+				"token":     "sha256-request-sso-token",
+				"app_slug":  "test-app-slug",
+			},
+			env: &env.AppEnv{
+				Logger: testLogger,
+				SsoTokenVerifier: &security.SsoTokenVerifierMock{
+					VerifyFn: func(timestamp, ssoToken, appSlug string) (bool, error) {
+						require.Equal(t, reqTimestamp, timestamp)
+						require.Equal(t, "sha256-request-sso-token", ssoToken)
+						require.Equal(t, "test-app-slug", appSlug)
+						return true, nil
+					},
+				},
+				AppService: &testAppService{
+					findFn: func(app *models.App) (*models.App, error) {
+						require.Equal(t, "test-app-slug", app.AppSlug)
+						return app, nil
+					},
+				},
+			},
+			authHandlerFunc:    services.AuthenticateWithSSOTokenHandlerFunc,
+			expectedStatusCode: http.StatusOK,
+			expectedBody:       `{"message":"ok"}` + "\n",
+		})
+	})
+
+	t.Run("when app service is not provided", func(t *testing.T) {
+		performAuthenticationTest(t, "POST", "...", AuthenticationTestCase{
+			requestFormValues: map[string]string{
+				"timestamp": reqTimestamp,
+				"token":     "sha256-request-sso-token",
+				"app_slug":  "test-app-slug",
+			},
+			env: &env.AppEnv{
+				Logger: testLogger,
+				SsoTokenVerifier: &security.SsoTokenVerifierMock{
+					VerifyFn: func(timestamp, ssoToken, appSlug string) (bool, error) {
+						return true, nil
+					},
+				},
+				AppService: nil,
+			},
+			authHandlerFunc:    services.AuthenticateWithSSOTokenHandlerFunc,
+			expectedStatusCode: http.StatusInternalServerError,
+			expectedBody:       `{"message":"Internal Server Error"}` + "\n",
+		})
+	})
+
+	t.Run("when sso verifies is not defined", func(t *testing.T) {
+		performAuthenticationTest(t, "POST", "...", AuthenticationTestCase{
+			requestFormValues: map[string]string{
+				"timestamp": reqTimestamp,
+				"token":     "sha256-request-sso-token",
+				"app_slug":  "test-app-slug",
+			},
+			env: &env.AppEnv{
+				Logger:           testLogger,
+				SsoTokenVerifier: nil,
+				AppService: &testAppService{
+					findFn: func(app *models.App) (*models.App, error) {
+						return app, nil
+					},
+				},
+			},
+			authHandlerFunc:    services.AuthenticateWithSSOTokenHandlerFunc,
+			expectedStatusCode: http.StatusInternalServerError,
+			expectedBody:       `{"message":"Internal Server Error"}` + "\n",
+		})
+	})
+
+	t.Run("when error happened at verification", func(t *testing.T) {
+		performAuthenticationTest(t, "POST", "...", AuthenticationTestCase{
+			requestFormValues: map[string]string{
+				"timestamp": reqTimestamp,
+				"token":     "sha256-request-sso-token",
+				"app_slug":  "test-app-slug",
+			},
+			env: &env.AppEnv{
+				Logger: testLogger,
+				SsoTokenVerifier: &security.SsoTokenVerifierMock{
+					VerifyFn: func(timestamp, ssoToken, appSlug string) (bool, error) {
+						return false, errors.New("SOME-VERIFICATION-ERROR")
+					},
+				},
+				AppService: &testAppService{
+					findFn: func(app *models.App) (*models.App, error) {
+						return app, nil
+					},
+				},
+			},
+			authHandlerFunc:    services.AuthenticateWithSSOTokenHandlerFunc,
+			expectedStatusCode: http.StatusInternalServerError,
+			expectedBody:       `{"message":"Internal Server Error"}` + "\n",
+		})
+	})
+
+	t.Run("when verification returns false", func(t *testing.T) {
+		performAuthenticationTest(t, "POST", "...", AuthenticationTestCase{
+			requestFormValues: map[string]string{
+				"timestamp": reqTimestamp,
+				"token":     "sha256-request-sso-token",
+				"app_slug":  "test-app-slug",
+			},
+			env: &env.AppEnv{
+				Logger: testLogger,
+				SsoTokenVerifier: &security.SsoTokenVerifierMock{
+					VerifyFn: func(timestamp, ssoToken, appSlug string) (bool, error) {
+						return false, nil
+					},
+				},
+				AppService: &testAppService{
+					findFn: func(app *models.App) (*models.App, error) {
+						require.Equal(t, "test-app-slug", app.AppSlug)
+						return app, nil
+					},
+				},
+			},
+			authHandlerFunc:    services.AuthenticateWithSSOTokenHandlerFunc,
+			expectedStatusCode: http.StatusNotFound,
+			expectedBody:       `{"message":"Not Found"}` + "\n",
+		})
+	})
+
+	t.Run("when app cannot be found", func(t *testing.T) {
+		performAuthenticationTest(t, "POST", "...", AuthenticationTestCase{
+			requestFormValues: map[string]string{
+				"timestamp": reqTimestamp,
+				"token":     "sha256-request-sso-token",
+				"app_slug":  "test-app-slug",
+			},
+			env: &env.AppEnv{
+				Logger: testLogger,
+				SsoTokenVerifier: &security.SsoTokenVerifierMock{
+					VerifyFn: func(timestamp, ssoToken, appSlug string) (bool, error) {
+						require.Equal(t, reqTimestamp, timestamp)
+						require.Equal(t, "sha256-request-sso-token", ssoToken)
+						require.Equal(t, "test-app-slug", appSlug)
+						return true, nil
+					},
+				},
+				AppService: &testAppService{
+					findFn: func(app *models.App) (*models.App, error) {
+						require.Equal(t, "test-app-slug", app.AppSlug)
+						return app, gorm.ErrRecordNotFound
+					},
+				},
+			},
+			authHandlerFunc:    services.AuthenticateWithSSOTokenHandlerFunc,
+			expectedStatusCode: http.StatusNotFound,
+			expectedBody:       `{"message":"Not Found"}` + "\n",
+		})
+	})
+
+	t.Run("when error happens at finding app", func(t *testing.T) {
+		performAuthenticationTest(t, "POST", "...", AuthenticationTestCase{
+			requestFormValues: map[string]string{
+				"timestamp": reqTimestamp,
+				"token":     "sha256-request-sso-token",
+				"app_slug":  "test-app-slug",
+			},
+			env: &env.AppEnv{
+				Logger: testLogger,
+				SsoTokenVerifier: &security.SsoTokenVerifierMock{
+					VerifyFn: func(timestamp, ssoToken, appSlug string) (bool, error) {
+						require.Equal(t, reqTimestamp, timestamp)
+						require.Equal(t, "sha256-request-sso-token", ssoToken)
+						require.Equal(t, "test-app-slug", appSlug)
+						return true, nil
+					},
+				},
+				AppService: &testAppService{
+					findFn: func(app *models.App) (*models.App, error) {
+						require.Equal(t, "test-app-slug", app.AppSlug)
+						return app, errors.New("SOME-SQL-ERROR")
+					},
+				},
+			},
+			authHandlerFunc:    services.AuthenticateWithSSOTokenHandlerFunc,
+			expectedStatusCode: http.StatusInternalServerError,
+			expectedBody:       `{"message":"Internal Server Error"}` + "\n",
+		})
+	})
 }

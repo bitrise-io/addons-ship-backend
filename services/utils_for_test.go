@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -158,26 +159,36 @@ func (h *testAuthHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 type AuthenticationTestCase struct {
-	desc            string
-	requestHeaders  map[string]string
-	env             *env.AppEnv
-	authHandlerFunc func(*env.AppEnv, http.Handler) http.Handler
+	desc              string
+	requestHeaders    map[string]string
+	requestFormValues map[string]string
+	env               *env.AppEnv
+	authHandlerFunc   func(*env.AppEnv, http.Handler) http.Handler
 
 	expectedStatusCode int
 	expectedBody       string
 }
 
 func performAuthenticationTest(t *testing.T,
-	httpMethod, url string,
+	httpMethod, testURL string,
 	tc AuthenticationTestCase,
 ) {
 	t.Helper()
 
-	req, err := http.NewRequest(httpMethod, url, nil)
+	req, err := http.NewRequest(httpMethod, testURL, nil)
 	require.NoError(t, err)
 
 	for key, value := range tc.requestHeaders {
 		req.Header.Set(key, value)
+	}
+	if tc.requestFormValues != nil {
+		for key, value := range tc.requestFormValues {
+			if req.URL.RawQuery == "" {
+				req.URL.RawQuery = fmt.Sprintf("%s=%s", key, value)
+			} else {
+				req.URL.RawQuery = fmt.Sprintf("%s&%s=%s", req.URL.RawQuery, key, value)
+			}
+		}
 	}
 
 	rr := httptest.NewRecorder()

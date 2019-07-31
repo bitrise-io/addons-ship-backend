@@ -5,8 +5,11 @@ import (
 	"os"
 
 	"github.com/bitrise-io/addons-ship-backend/env"
+	"github.com/bitrise-io/addons-ship-backend/models"
 	"github.com/bitrise-io/api-utils/httpresponse"
+	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
+	"go.uber.org/zap"
 )
 
 // AuthenticateWithAddonAccessTokenHandlerFunc ...
@@ -52,5 +55,53 @@ func AuthenticateWithDENSecretHandlerFunc(env *env.AppEnv, h http.Handler) http.
 		}
 
 		h.ServeHTTP(w, r)
+	})
+}
+
+// AuthenticateWithSSOTokenHandlerFunc ...
+func AuthenticateWithSSOTokenHandlerFunc(env *env.AppEnv, h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if env.AppService == nil {
+			httpresponse.RespondWithInternalServerError(w, errors.New("No App Service defined for handler"))
+			return
+		}
+		if env.SsoTokenVerifier == nil {
+			httpresponse.RespondWithInternalServerError(w, errors.New("No SSO Token Verifier defined for handler"))
+			return
+		}
+
+		timestamp := r.FormValue("timestamp")
+		token := r.FormValue("token")
+		appSlug := r.FormValue("app_slug")
+
+		logger := env.Logger
+		logger.Info("Login form data",
+			zap.String("timestamp", timestamp),
+			zap.String("token", token),
+			zap.String("app_slug", appSlug),
+		)
+
+		valid, err := env.SsoTokenVerifier.Verify(timestamp, token, appSlug)
+		if err != nil {
+			httpresponse.RespondWithInternalServerError(w, errors.WithStack(err))
+			return
+		}
+		if !valid {
+			httpresponse.RespondWithNotFoundErrorNoErr(w)
+			return
+		}
+
+		app, err := env.AppService.Find(&models.App{AppSlug: appSlug})
+		switch {
+		case errors.Cause(err) == gorm.ErrRecordNotFound:
+			httpresponse.RespondWithNotFoundErrorNoErr(w)
+			return
+		case err != nil:
+			httpresponse.RespondWithInternalServerError(w, errors.Wrap(err, "SQL Error"))
+			return
+		}
+
+		ctx := ContextWithAuthorizedAppID(r.Context(), app.ID)
+		h.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
