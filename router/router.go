@@ -138,7 +138,7 @@ func New(appEnv *env.AppEnv) *mux.Router {
 			handler: services.LoginPostHandler, allowedMethods: []string{"POST", "OPTIONS"},
 		},
 		{
-			path: `/resources/{rest:[a-zA-Z0-9=\-\/]+}`, middleware: services.CommonMiddleware(appEnv),
+			path: `/resources/{rest:[a-zA-Z0-9=\-\/]+}`, middleware: services.AuthorizedAppResourceMiddleware(appEnv),
 			handler: services.ResourcesHandler, allowedMethods: []string{"GET", "OPTIONS"},
 		},
 	} {
