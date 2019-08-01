@@ -14,6 +14,12 @@ func createAuthorizeForAppAccessMiddleware(env *env.AppEnv) func(http.Handler) h
 	}
 }
 
+func createAuthorizeForAddonAPIAccessHandlerFunc(env *env.AppEnv) func(http.Handler) http.Handler {
+	return func(h http.Handler) http.Handler {
+		return AuthorizeForAddonAPIAccessHandlerFunc(env, h)
+	}
+}
+
 func createAuthorizeForAppVersionAccessMiddleware(env *env.AppEnv) func(http.Handler) http.Handler {
 	return func(h http.Handler) http.Handler {
 		return AuthorizeForAppVersionAccessHandlerFunc(env, h)
@@ -102,6 +108,13 @@ func AuthenticateForDeprovisioning(appEnv *env.AppEnv) alice.Chain {
 func AuthorizedAppMiddleware(appEnv *env.AppEnv) alice.Chain {
 	return CommonMiddleware(appEnv).Append(
 		createAuthorizeForAppAccessMiddleware(appEnv),
+	)
+}
+
+// AuthorizedAppResourceMiddleware ...
+func AuthorizedAppResourceMiddleware(appEnv *env.AppEnv) alice.Chain {
+	return CommonMiddleware(appEnv).Append(
+		createAuthorizeForAddonAPIAccessHandlerFunc(appEnv),
 	)
 }
 
