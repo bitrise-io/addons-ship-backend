@@ -3,26 +3,28 @@ default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 workflows:
   resign_ios:
     steps:
+      - authenticate-with-github-oauth@0.9.2:
+          inputs:
+            - access_token: '$NET_RC_PASSWORD'
+            - username: '$NET_RC_USERNAME'
+      - git::https://github.com/bitrise-io/addons-ship-bg-worker-task-ios.git@develop:
+          inputs:
+            - apple_user: '$APPLE_USER'
+            - apple_app_specific_password: '$APPLE_APP_SPECIFIC_PASSWORD'
+    before_run:
+      - _resign_ios
+      - _ship_get_metadata
+  _resign_ios:
+    steps:
       - certificate-and-profile-installer@1.10.1: {}
       - script@1.1.5:
           inputs:
             - content: |-
                 #!/usr/bin/env bash
-                # fail if any commands fails
-                set -e
-                # debug log
-                set -x
+                set -ex
 
                 brew install jq
           title: Install jq
-      # - script:
-      #     title: Auth to Bitrise API
-      #     inputs:
-      #       - content: |
-      #           #!/usr/bin/env bash
-      #           set -ex
-
-      #           curl -H "Authorization: ${BITRISE_ACCESS_TOKEN}" https://api.bitrise.io/v0.1/me
       - script:
           title: Get artifact from the build
           inputs:
@@ -38,13 +40,28 @@ workflows:
             - archive_url: '$BITRISE_DOWNLOAD_URL'
       - export-xcarchive@1.0.1:
           inputs:
-            - archive_path: unarchived/Xcode-10_default.xcarchive
+            - archive_path: unarchived/Bitrise Ship.xcarchive
             - upload_bitcode: 'no'
             - compile_bitcode: 'no'
             - export_method: app-store
-      - deploy-to-bitrise-io:
+  _ship_get_metadata:
+    steps:
+      - generic-file-storage@0.9.1: {}
+      - set-env-var@0.9.1:
           inputs:
-            - notify_user_groups: none
+            - value: '$GENERIC_FILE_STORAGE/filestructure'
+            - destination_keys: BITRISE_METADATA_FILE_STRUCTURE
+          title: Set BITRISE_METADATA_FILE_STRUCTURE environment variable
+      - set-env-var@0.9.1:
+          inputs:
+            - value: '$GENERIC_FILE_STORAGE/Akos_ShipAddinTesting_admin.p8'
+            - destination_keys: PRIVATE_KEY_PATH
+          title: Set PRIVATE_KEY_PATH environment variable
+      - resource-archive@2.0.1:
+          inputs:
+            - extract_to_path: '$GENERIC_FILE_STORAGE'
+            - archive_url: '$BITRISEIO_FILE_STRUCTURE_URL'
+          title: Downlod BITRISEIO_FILE_STRUCTURE_URL
   resign_android:
     title: Re-sign Android artifact and deploy to store
     steps:
