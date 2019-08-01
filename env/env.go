@@ -2,6 +2,7 @@ package env
 
 import (
 	"fmt"
+	"net/url"
 	"os"
 	"strconv"
 	"time"
@@ -52,6 +53,7 @@ type AppEnv struct {
 	Mailer                 mailer.Interface
 	EmailConfirmLandingURL string
 	SsoTokenVerifier       security.SsoTokenVerifierInterface
+	BitriseAPIRootURL      *url.URL
 }
 
 // New ...
@@ -128,9 +130,19 @@ func New(db *gorm.DB) (*AppEnv, error) {
 	}
 	addonSSOSecret, ok := os.LookupEnv("ADDON_SSO_SECRET_TOKEN")
 	if !ok {
-		return nil, errors.New("No value set for env ADDON_ACCESS_TOKEN")
+		return nil, errors.New("No value set for env ADDON_SSO_SECRET_TOKEN")
 	}
 	env.SsoTokenVerifier = &security.SsoTokenVerifier{SsoSecret: addonSSOSecret, ValidTimeInterval: 5 * time.Minute}
+
+	apiURLStr, ok := os.LookupEnv("BITRISE_API_ROOT_URL")
+	if !ok {
+		return nil, errors.New("No value set for env BITRISE_API_ROOT_URL")
+	}
+	apiURL, err := url.Parse(apiURLStr)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	env.BitriseAPIRootURL = apiURL
 
 	return env, nil
 }
