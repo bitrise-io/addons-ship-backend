@@ -81,6 +81,25 @@ func Test_AuthorizedAppMiddleware(t *testing.T) {
 	})
 }
 
+func Test_AuthorizedAppResourceMiddleware(t *testing.T) {
+	middleware.PerformTest(t, "GET", "/...", middleware.TestCase{
+		RequestHeaders: map[string]string{
+			"Authorization": "token ADDON_AUTH_TOKEN",
+		},
+		ExpectedStatus: http.StatusOK,
+		ExpectedResponse: map[string]interface{}{
+			"message": "Success",
+		},
+		Middleware: services.AuthorizedAppResourceMiddleware(&env.AppEnv{
+			AppService: &testAppService{
+				findFn: func(app *models.App) (*models.App, error) {
+					return app, nil
+				},
+			},
+		}),
+	})
+}
+
 func Test_AuthorizedAppVersionMiddleware(t *testing.T) {
 	middleware.PerformTest(t, "GET", "/...", middleware.TestCase{
 		RequestHeaders: map[string]string{

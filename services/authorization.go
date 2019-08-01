@@ -91,6 +91,36 @@ func AuthorizeForAppAccessHandlerFunc(env *env.AppEnv, h http.Handler) http.Hand
 	})
 }
 
+// AuthorizeForAddonAPIAccessHandlerFunc ...
+func AuthorizeForAddonAPIAccessHandlerFunc(env *env.AppEnv, h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		authToken, err := httprequest.AuthTokenFromHeader(r.Header)
+		if err != nil {
+			httpresponse.RespondWithUnauthorizedNoErr(w)
+			return
+		}
+
+		if env.AppService == nil {
+			httpresponse.RespondWithInternalServerError(w, errors.New("No App Service provided"))
+			return
+		}
+
+		app, err := env.AppService.Find(&models.App{APIToken: authToken})
+		switch {
+		case errors.Cause(err) == gorm.ErrRecordNotFound:
+			httpresponse.RespondWithNotFoundErrorNoErr(w)
+			return
+		case err != nil:
+			httpresponse.RespondWithInternalServerError(w, errors.WithStack(err))
+			return
+		}
+
+		// Access granted
+		ctx := ContextWithAuthorizedAppID(r.Context(), app.ID)
+		h.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
 // AuthorizeForAppVersionAccessHandlerFunc ...
 func AuthorizeForAppVersionAccessHandlerFunc(env *env.AppEnv, h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

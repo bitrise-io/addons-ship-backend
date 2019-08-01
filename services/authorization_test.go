@@ -404,6 +404,129 @@ func Test_AuthorizeForAppAccessHandlerFunc(t *testing.T) {
 	})
 }
 
+func Test_AuthorizeForAddonAPIAccessHandlerFunc(t *testing.T) {
+	authHandler := &handlers.TestAuthHandler{
+		ContextElementList: map[string]ctxpkg.RequestContextKey{
+			"authorizedAppID": services.ContextKeyAuthorizedAppID,
+		},
+	}
+	httpMethod := "GET"
+	url := "/apps/test_app_slug"
+
+	t.Run("ok", func(t *testing.T) {
+		handler := services.AuthorizeForAddonAPIAccessHandlerFunc(&env.AppEnv{
+			AppService: &testAppService{
+				findFn: func(app *models.App) (*models.App, error) {
+					require.Equal(t, app.APIToken, "test-auth-token")
+					return &models.App{
+						Record:   models.Record{ID: uuid.FromStringOrNil("211afc15-127a-40f9-8cbe-1dadc1f86cdf")},
+						AppSlug:  "test_app_slug",
+						APIToken: "test-auth-token",
+					}, nil
+				},
+			},
+		}, authHandler)
+		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppID: uuid.FromStringOrNil("211afc15-127a-40f9-8cbe-1dadc1f86cdf"),
+			},
+			requestHeaders: map[string]string{
+				"Authorization": "token test-auth-token",
+			},
+			expectedStatusCode: http.StatusOK,
+			expectedResponse: map[string]interface{}{
+				"authorizedAppID": "211afc15-127a-40f9-8cbe-1dadc1f86cdf",
+			},
+		})
+	})
+
+	t.Run("when no auth token provided in header", func(t *testing.T) {
+		handler := services.AuthorizeForAddonAPIAccessHandlerFunc(&env.AppEnv{
+			AppService: &testAppService{
+				findFn: func(app *models.App) (*models.App, error) {
+					require.Equal(t, app.APIToken, "test-auth-token")
+					return &models.App{
+						Record:   models.Record{ID: uuid.FromStringOrNil("211afc15-127a-40f9-8cbe-1dadc1f86cdf")},
+						AppSlug:  "test_app_slug",
+						APIToken: "test-auth-token",
+					}, nil
+				},
+			},
+		}, authHandler)
+		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppID: uuid.FromStringOrNil("211afc15-127a-40f9-8cbe-1dadc1f86cdf"),
+			},
+			expectedStatusCode: http.StatusUnauthorized,
+			expectedResponse: map[string]interface{}{
+				"message": "Unauthorized",
+			},
+		})
+	})
+
+	t.Run("when no app service provided in app env", func(t *testing.T) {
+		handler := services.AuthorizeForAddonAPIAccessHandlerFunc(&env.AppEnv{}, authHandler)
+		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppID: uuid.FromStringOrNil("211afc15-127a-40f9-8cbe-1dadc1f86cdf"),
+			},
+			requestHeaders: map[string]string{
+				"Authorization": "token test-auth-token",
+			},
+			expectedStatusCode: http.StatusInternalServerError,
+			expectedResponse: map[string]interface{}{
+				"message": "Internal Server Error",
+			},
+		})
+	})
+
+	t.Run("when app no found in database", func(t *testing.T) {
+		handler := services.AuthorizeForAddonAPIAccessHandlerFunc(&env.AppEnv{
+			AppService: &testAppService{
+				findFn: func(app *models.App) (*models.App, error) {
+					require.Equal(t, app.APIToken, "test-auth-token")
+					return &models.App{}, gorm.ErrRecordNotFound
+				},
+			},
+		}, authHandler)
+		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppID: uuid.FromStringOrNil("211afc15-127a-40f9-8cbe-1dadc1f86cdf"),
+			},
+			requestHeaders: map[string]string{
+				"Authorization": "token test-auth-token",
+			},
+			expectedStatusCode: http.StatusNotFound,
+			expectedResponse: map[string]interface{}{
+				"message": "Not Found",
+			},
+		})
+	})
+
+	t.Run("when unexpected error happens at database query", func(t *testing.T) {
+		handler := services.AuthorizeForAddonAPIAccessHandlerFunc(&env.AppEnv{
+			AppService: &testAppService{
+				findFn: func(app *models.App) (*models.App, error) {
+					require.Equal(t, app.APIToken, "test-auth-token")
+					return &models.App{}, errors.New("SOME-SQL-ERROR")
+				},
+			},
+		}, authHandler)
+		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppID: uuid.FromStringOrNil("211afc15-127a-40f9-8cbe-1dadc1f86cdf"),
+			},
+			requestHeaders: map[string]string{
+				"Authorization": "token test-auth-token",
+			},
+			expectedStatusCode: http.StatusInternalServerError,
+			expectedResponse: map[string]interface{}{
+				"message": "Internal Server Error",
+			},
+		})
+	})
+}
+
 func Test_AuthorizeForAppVersionAccessHandlerFunc(t *testing.T) {
 	authHandler := &handlers.TestAuthHandler{
 		ContextElementList: map[string]ctxpkg.RequestContextKey{
