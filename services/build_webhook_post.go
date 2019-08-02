@@ -87,7 +87,7 @@ func BuildWebhookHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request
 				return errors.Wrap(err, "SQL Error")
 			}
 
-			if err := sendNotification(env, appVersion); err != nil {
+			if err := sendNotification(env, appVersion, app); err != nil {
 				return errors.WithStack(err)
 			}
 		}
@@ -109,7 +109,7 @@ func BuildWebhookHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request
 				return errors.Wrap(err, "SQL Error")
 			}
 
-			if err := sendNotification(env, appVersion); err != nil {
+			if err := sendNotification(env, appVersion, app); err != nil {
 				return errors.WithStack(err)
 			}
 		}
@@ -120,9 +120,8 @@ func BuildWebhookHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request
 	}
 }
 
-func sendNotification(env *env.AppEnv, appVersion *models.AppVersion) error {
-	app := appVersion.App
-	appContacts, err := env.AppContactService.FindAll(&app)
+func sendNotification(env *env.AppEnv, appVersion *models.AppVersion, app *models.App) error {
+	appContacts, err := env.AppContactService.FindAll(app)
 	if err != nil {
 		return errors.WithStack(err)
 	}
