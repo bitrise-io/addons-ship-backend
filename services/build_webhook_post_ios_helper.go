@@ -2,6 +2,7 @@ package services
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"reflect"
 
@@ -22,6 +23,8 @@ func prepareAppVersionForIosPlatform(env *env.AppEnv, w http.ResponseWriter,
 	if selectedArtifact == nil {
 		return nil, errors.New("No artifact found")
 	}
+
+	fmt.Println("%+v", selectedArtifact)
 
 	if selectedArtifact.ArtifactMeta == nil {
 		return nil, errors.New("No artifact meta data found for artifact")
@@ -82,9 +85,7 @@ func selectIosArtifact(artifacts []bitrise.ArtifactListElementResponseModel) (*b
 		}
 		if artifact.IsXCodeArchive() {
 			publishEnabled = true
-			if selectedArtifact == nil {
-				selectedArtifact = &artifact
-			}
+			selectedArtifact = &artifact
 		}
 	}
 	return selectedArtifact, publishEnabled, publicInstallPageEnabled, publicInstallPageArtifactSlug
