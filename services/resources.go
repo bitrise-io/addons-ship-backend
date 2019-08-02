@@ -28,12 +28,14 @@ func ResourcesHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request) e
 	}
 	path := "/" + bitriseAPIVersion + strings.Replace(r.URL.Path, "/resources", "", -1)
 	r.Header.Del("Authorization")
+
 	proxyHandler := proxy.NewSingleEndpointSameHostReverseProxyHandler(&url.URL{
 		Scheme: env.BitriseAPIRootURL.Scheme,
 		Host:   env.BitriseAPIRootURL.Host,
 		Path:   path,
 	}, &r.Body, map[string]string{"Content-Type": "application/json", "Bitrise-Addon-Auth-Token": app.BitriseAPIToken})
 	proxyHandler.ServeHTTP(w, r)
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	return nil
 }
