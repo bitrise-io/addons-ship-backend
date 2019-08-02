@@ -19,7 +19,7 @@ func prepareAppVersionForIosPlatform(env *env.AppEnv, w http.ResponseWriter,
 	}
 
 	selectedArtifact, _, _, _ := selectIosArtifact(artifacts)
-	if selectedArtifact == nil {
+	if selectedArtifact == nil || reflect.DeepEqual(*selectedArtifact, bitrise.ArtifactListElementResponseModel{}) {
 		return nil, errors.New("No artifact found")
 	}
 
@@ -30,9 +30,9 @@ func prepareAppVersionForIosPlatform(env *env.AppEnv, w http.ResponseWriter,
 	if reflect.DeepEqual(selectedArtifact.ArtifactMeta.AppInfo, bitrise.AppInfo{}) {
 		return nil, errors.New("No artifact app info found for artifact")
 	}
-	if reflect.DeepEqual(selectedArtifact.ArtifactMeta.ProvisioningInfo, bitrise.ProvisioningInfo{}) {
-		return nil, errors.New("No artifact provisioning info found for artifact")
-	}
+	// if reflect.DeepEqual(selectedArtifact.ArtifactMeta.ProvisioningInfo, bitrise.ProvisioningInfo{}) {
+	// 	return nil, errors.New("No artifact provisioning info found for artifact")
+	// }
 
 	var supportedDeviceTypes []string
 	for _, familyID := range selectedArtifact.ArtifactMeta.AppInfo.DeviceFamilyList {
@@ -50,8 +50,8 @@ func prepareAppVersionForIosPlatform(env *env.AppEnv, w http.ResponseWriter,
 		MinimumOS:            selectedArtifact.ArtifactMeta.AppInfo.MinimumOS,
 		BundleID:             selectedArtifact.ArtifactMeta.AppInfo.BundleID,
 		SupportedDeviceTypes: supportedDeviceTypes,
-		ExpireDate:           selectedArtifact.ArtifactMeta.ProvisioningInfo.ExpireDate,
-		DistributionType:     selectedArtifact.ArtifactMeta.ProvisioningInfo.DistributionType,
+		// ExpireDate:           selectedArtifact.ArtifactMeta.ProvisioningInfo.ExpireDate,
+		// DistributionType:     selectedArtifact.ArtifactMeta.ProvisioningInfo.DistributionType,
 	}
 	artifactInfoData, err := json.Marshal(artifactInfo)
 	if err != nil {
@@ -69,7 +69,7 @@ func selectIosArtifact(artifacts []bitrise.ArtifactListElementResponseModel) (*b
 	publishEnabled := false
 	publicInstallPageEnabled := false
 	publicInstallPageArtifactSlug := ""
-	var selectedArtifact *bitrise.ArtifactListElementResponseModel
+	var selectedArtifact bitrise.ArtifactListElementResponseModel
 	for _, artifact := range artifacts {
 		if artifact.IsIPA() {
 			if artifact.HasAppStoreDistributionType() {
@@ -82,10 +82,8 @@ func selectIosArtifact(artifacts []bitrise.ArtifactListElementResponseModel) (*b
 		}
 		if artifact.IsXCodeArchive() {
 			publishEnabled = true
-			if selectedArtifact == nil {
-				selectedArtifact = &artifact
-			}
+			selectedArtifact = artifact
 		}
 	}
-	return selectedArtifact, publishEnabled, publicInstallPageEnabled, publicInstallPageArtifactSlug
+	return &selectedArtifact, publishEnabled, publicInstallPageEnabled, publicInstallPageArtifactSlug
 }

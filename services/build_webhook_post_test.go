@@ -50,12 +50,12 @@ func Test_BuildWebhookHandler(t *testing.T) {
 		},
 	})
 
-	t.Run("when build event type is started", func(t *testing.T) {
+	t.Run("when build event type is triggered", func(t *testing.T) {
 		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
 			contextElements: map[ctxpkg.RequestContextKey]interface{}{
 				services.ContextKeyAuthorizedAppID: uuid.NewV4(),
 			},
-			requestHeaders:     map[string]string{"Bitrise-Event-Type": "build/started"},
+			requestHeaders:     map[string]string{"Bitrise-Event-Type": "build/triggered"},
 			expectedStatusCode: http.StatusOK,
 		})
 	})
@@ -580,61 +580,61 @@ func Test_BuildWebhookHandler(t *testing.T) {
 				})
 			})
 
-			t.Run("when selected artifact has no provision info", func(t *testing.T) {
-				performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
-					contextElements: map[ctxpkg.RequestContextKey]interface{}{
-						services.ContextKeyAuthorizedAppID: uuid.NewV4(),
-					},
-					requestHeaders: map[string]string{"Bitrise-Event-Type": "build/finished"},
-					env: &env.AppEnv{
-						AppService: &testAppService{
-							findFn: func(app *models.App) (*models.App, error) {
-								return app, nil
-							},
-						},
-						AppSettingsService: &testAppSettingsService{
-							findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
-								return &models.AppSettings{
-									IosWorkflow: "ios-wf,ios-wf2",
-									App: &models.App{
-										BitriseAPIToken: "test-api-token",
-										AppSlug:         "test-app-slug",
-									},
-								}, nil
-							},
-						},
-						AppVersionService: &testAppVersionService{
-							createFn: func(appVersion *models.AppVersion) (*models.AppVersion, []error, error) {
-								require.Equal(t, "ios", appVersion.Platform)
-								require.Equal(t, "test-build-slug", appVersion.BuildSlug)
-								require.NotEqual(t, time.Time{}, appVersion.LastUpdate)
-								artifactData, err := appVersion.ArtifactInfo()
-								require.NoError(t, err)
-								require.Equal(t, "1.0", artifactData.Version)
-								return appVersion, nil, nil
-							},
-						},
-						BitriseAPI: &testBitriseAPI{
-							getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
-								return []bitrise.ArtifactListElementResponseModel{
-									bitrise.ArtifactListElementResponseModel{
-										Title: "my-xcarchive.zip",
-										ArtifactMeta: &bitrise.ArtifactMeta{
-											AppInfo: bitrise.AppInfo{
-												Version: "1.0",
-											},
-											ProvisioningInfo: bitrise.ProvisioningInfo{},
-										},
-									},
-								}, nil
-							},
-						},
-						AppContactService: &testAppContactService{},
-					},
-					requestBody:         `{"build_slug":"test-build-slug","build_triggered_workflow":"ios-wf"}`,
-					expectedInternalErr: "No artifact provisioning info found for artifact",
-				})
-			})
+			// t.Run("when selected artifact has no provision info", func(t *testing.T) {
+			// 	performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+			// 		contextElements: map[ctxpkg.RequestContextKey]interface{}{
+			// 			services.ContextKeyAuthorizedAppID: uuid.NewV4(),
+			// 		},
+			// 		requestHeaders: map[string]string{"Bitrise-Event-Type": "build/finished"},
+			// 		env: &env.AppEnv{
+			// 			AppService: &testAppService{
+			// 				findFn: func(app *models.App) (*models.App, error) {
+			// 					return app, nil
+			// 				},
+			// 			},
+			// 			AppSettingsService: &testAppSettingsService{
+			// 				findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
+			// 					return &models.AppSettings{
+			// 						IosWorkflow: "ios-wf,ios-wf2",
+			// 						App: &models.App{
+			// 							BitriseAPIToken: "test-api-token",
+			// 							AppSlug:         "test-app-slug",
+			// 						},
+			// 					}, nil
+			// 				},
+			// 			},
+			// 			AppVersionService: &testAppVersionService{
+			// 				createFn: func(appVersion *models.AppVersion) (*models.AppVersion, []error, error) {
+			// 					require.Equal(t, "ios", appVersion.Platform)
+			// 					require.Equal(t, "test-build-slug", appVersion.BuildSlug)
+			// 					require.NotEqual(t, time.Time{}, appVersion.LastUpdate)
+			// 					artifactData, err := appVersion.ArtifactInfo()
+			// 					require.NoError(t, err)
+			// 					require.Equal(t, "1.0", artifactData.Version)
+			// 					return appVersion, nil, nil
+			// 				},
+			// 			},
+			// 			BitriseAPI: &testBitriseAPI{
+			// 				getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
+			// 					return []bitrise.ArtifactListElementResponseModel{
+			// 						bitrise.ArtifactListElementResponseModel{
+			// 							Title: "my-xcarchive.zip",
+			// 							ArtifactMeta: &bitrise.ArtifactMeta{
+			// 								AppInfo: bitrise.AppInfo{
+			// 									Version: "1.0",
+			// 								},
+			// 								ProvisioningInfo: bitrise.ProvisioningInfo{},
+			// 							},
+			// 						},
+			// 					}, nil
+			// 				},
+			// 			},
+			// 			AppContactService: &testAppContactService{},
+			// 		},
+			// 		requestBody:         `{"build_slug":"test-build-slug","build_triggered_workflow":"ios-wf"}`,
+			// 		expectedInternalErr: "No artifact provisioning info found for artifact",
+			// 	})
+			// })
 
 			t.Run("when validation error is retrieved when creating new ios version", func(t *testing.T) {
 				performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
