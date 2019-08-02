@@ -1,6 +1,7 @@
 package services
 
 import (
+	"fmt"
 	"net/http"
 	"net/url"
 	"strings"
@@ -31,6 +32,12 @@ func ResourcesHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request) e
 	env.Logger.Warn("Bitrise API URL", zap.String("url", env.BitriseAPIRootURL.String()))
 	env.Logger.Warn("Bitrise API path", zap.String("path", path))
 	env.Logger.Warn("App from database", zap.Any("app", app))
+	defer func() {
+		err := env.Logger.Sync()
+		if err != nil {
+			fmt.Printf("Failed to sync logger: %#v", err)
+		}
+	}()
 	proxyHandler := proxy.NewSingleEndpointSameHostReverseProxyHandler(&url.URL{
 		Scheme: env.BitriseAPIRootURL.Scheme,
 		Host:   env.BitriseAPIRootURL.Host,
