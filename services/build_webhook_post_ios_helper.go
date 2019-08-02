@@ -24,8 +24,6 @@ func prepareAppVersionForIosPlatform(env *env.AppEnv, w http.ResponseWriter,
 		return nil, errors.New("No artifact found")
 	}
 
-	fmt.Printf("%+v\n", selectedArtifact)
-
 	if selectedArtifact.ArtifactMeta == nil {
 		return nil, errors.New("No artifact meta data found for artifact")
 	}
@@ -73,8 +71,11 @@ func selectIosArtifact(artifacts []bitrise.ArtifactListElementResponseModel) (*b
 	publicInstallPageEnabled := false
 	publicInstallPageArtifactSlug := ""
 	var selectedArtifact *bitrise.ArtifactListElementResponseModel
+	fmt.Printf("%+v", selectedArtifact)
 	for _, artifact := range artifacts {
+		fmt.Printf("artifact element: %+v", artifact)
 		if artifact.IsIPA() {
+			fmt.Printf("hit IPA if: %+v", artifact)
 			if artifact.HasAppStoreDistributionType() {
 				publishEnabled = true
 			}
@@ -84,9 +85,11 @@ func selectIosArtifact(artifacts []bitrise.ArtifactListElementResponseModel) (*b
 			}
 		}
 		if artifact.IsXCodeArchive() {
+			fmt.Printf("hit xcarchive if: %+v", artifact)
 			publishEnabled = true
 			selectedArtifact = &artifact
 		}
+		fmt.Printf("selected: %+v", selectedArtifact)
 	}
 	return selectedArtifact, publishEnabled, publicInstallPageEnabled, publicInstallPageArtifactSlug
 }
