@@ -304,7 +304,7 @@ func (a *API) RegisterWebhook(authToken, appSlug, secret, callbackURL string) er
 		return errors.WithStack(err)
 	}
 
-	req, err := http.NewRequest("POST", a.url+"/apps/%s/outgoing-webhooks", bytes.NewBuffer(payloadBytes))
+	req, err := http.NewRequest("POST", fmt.Sprintf("%s/apps/%s/outgoing-webhooks", a.url, appSlug), bytes.NewBuffer(payloadBytes))
 	if err != nil {
 		return errors.WithStack(err)
 	}
