@@ -322,7 +322,7 @@ func (a *API) RegisterWebhook(authToken, appSlug, secret, callbackURL string) er
 		log.Fatal(err)
 	}
 	fmt.Println("Reg webhook response", string(bodyBytes))
-	if resp.StatusCode < 200 || resp.StatusCode > 299 {
+	if resp.StatusCode != http.StatusCreated {
 		return errors.Errorf("Failed to register webhook: status: %d", resp.StatusCode)
 	}
 	return nil
