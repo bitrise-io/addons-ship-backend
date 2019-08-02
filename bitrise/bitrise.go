@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -317,11 +315,6 @@ func (a *API) RegisterWebhook(authToken, appSlug, secret, callbackURL string) er
 	}
 
 	defer httpresponse.BodyCloseWithErrorLog(resp)
-	bodyBytes, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println("Reg webhook response", string(bodyBytes))
 	if resp.StatusCode != http.StatusCreated {
 		return errors.Errorf("Failed to register webhook: status: %d", resp.StatusCode)
 	}
