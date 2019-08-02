@@ -19,7 +19,7 @@ func prepareAppVersionForIosPlatform(env *env.AppEnv, w http.ResponseWriter,
 	}
 
 	selectedArtifact, _, _, _ := selectIosArtifact(artifacts)
-	if selectedArtifact == nil {
+	if selectedArtifact == nil || reflect.DeepEqual(*selectedArtifact, bitrise.ArtifactListElementResponseModel{}) {
 		return nil, errors.New("No artifact found")
 	}
 
