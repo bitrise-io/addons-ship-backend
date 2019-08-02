@@ -2,7 +2,6 @@ package services
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"reflect"
 
@@ -71,11 +70,8 @@ func selectIosArtifact(artifacts []bitrise.ArtifactListElementResponseModel) (*b
 	publicInstallPageEnabled := false
 	publicInstallPageArtifactSlug := ""
 	var selectedArtifact bitrise.ArtifactListElementResponseModel
-	fmt.Printf("%+v", selectedArtifact)
 	for _, artifact := range artifacts {
-		fmt.Printf("artifact element: %+v", artifact)
 		if artifact.IsIPA() {
-			fmt.Printf("hit IPA if: %+v", artifact)
 			if artifact.HasAppStoreDistributionType() {
 				publishEnabled = true
 			}
@@ -85,11 +81,9 @@ func selectIosArtifact(artifacts []bitrise.ArtifactListElementResponseModel) (*b
 			}
 		}
 		if artifact.IsXCodeArchive() {
-			fmt.Printf("hit xcarchive if: %+v", artifact)
 			publishEnabled = true
 			selectedArtifact = artifact
 		}
-		fmt.Printf("selected: %+v", selectedArtifact)
 	}
 	return &selectedArtifact, publishEnabled, publicInstallPageEnabled, publicInstallPageArtifactSlug
 }
