@@ -9,6 +9,7 @@ import (
 	"github.com/bitrise-io/addons-ship-backend/models"
 	"github.com/bitrise-io/api-utils/proxy"
 	"github.com/pkg/errors"
+	"go.uber.org/zap"
 )
 
 var bitriseAPIVersion = "v0.1"
@@ -27,6 +28,9 @@ func ResourcesHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request) e
 		return errors.Wrap(err, "SQL Error")
 	}
 	path := "/" + bitriseAPIVersion + strings.Replace(r.URL.Path, "/resources", "", -1)
+	env.Logger.Warn("Bitrise API URL", zap.String("url", env.BitriseAPIRootURL.String()))
+	env.Logger.Warn("Bitrise API path", zap.String("path", path))
+	env.Logger.Warn("App from database", zap.Any("app", app))
 	proxyHandler := proxy.NewSingleEndpointSameHostReverseProxyHandler(&url.URL{
 		Scheme: env.BitriseAPIRootURL.Scheme,
 		Host:   env.BitriseAPIRootURL.Host,
