@@ -24,7 +24,7 @@ func prepareAppVersionForIosPlatform(env *env.AppEnv, w http.ResponseWriter,
 		return nil, errors.New("No artifact found")
 	}
 
-	fmt.Println("%+v", selectedArtifact)
+	fmt.Printf("%+v\n", selectedArtifact)
 
 	if selectedArtifact.ArtifactMeta == nil {
 		return nil, errors.New("No artifact meta data found for artifact")
