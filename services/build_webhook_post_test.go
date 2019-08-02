@@ -50,12 +50,12 @@ func Test_BuildWebhookHandler(t *testing.T) {
 		},
 	})
 
-	t.Run("when build event type is started", func(t *testing.T) {
+	t.Run("when build event type is triggered", func(t *testing.T) {
 		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
 			contextElements: map[ctxpkg.RequestContextKey]interface{}{
 				services.ContextKeyAuthorizedAppID: uuid.NewV4(),
 			},
-			requestHeaders:     map[string]string{"Bitrise-Event-Type": "build/started"},
+			requestHeaders:     map[string]string{"Bitrise-Event-Type": "build/triggered"},
 			expectedStatusCode: http.StatusOK,
 		})
 	})

@@ -32,7 +32,7 @@ func BuildWebhookHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request
 	}
 
 	switch r.Header.Get("Bitrise-Event-Type") {
-	case "build/started":
+	case "build/triggered":
 		return httpresponse.RespondWithSuccess(w, nil)
 	case "build/finished":
 		if env.AppService == nil {
