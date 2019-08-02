@@ -70,7 +70,7 @@ func selectIosArtifact(artifacts []bitrise.ArtifactListElementResponseModel) (*b
 	publishEnabled := false
 	publicInstallPageEnabled := false
 	publicInstallPageArtifactSlug := ""
-	var selectedArtifact *bitrise.ArtifactListElementResponseModel
+	var selectedArtifact bitrise.ArtifactListElementResponseModel
 	fmt.Printf("%+v", selectedArtifact)
 	for _, artifact := range artifacts {
 		fmt.Printf("artifact element: %+v", artifact)
@@ -87,9 +87,9 @@ func selectIosArtifact(artifacts []bitrise.ArtifactListElementResponseModel) (*b
 		if artifact.IsXCodeArchive() {
 			fmt.Printf("hit xcarchive if: %+v", artifact)
 			publishEnabled = true
-			selectedArtifact = &artifact
+			selectedArtifact = artifact
 		}
 		fmt.Printf("selected: %+v", selectedArtifact)
 	}
-	return selectedArtifact, publishEnabled, publicInstallPageEnabled, publicInstallPageArtifactSlug
+	return &selectedArtifact, publishEnabled, publicInstallPageEnabled, publicInstallPageArtifactSlug
 }
