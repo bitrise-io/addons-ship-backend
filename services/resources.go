@@ -1,7 +1,6 @@
 package services
 
 import (
-	"fmt"
 	"net/http"
 	"net/url"
 	"strings"
@@ -36,7 +35,6 @@ func ResourcesHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request) e
 		Path:   path,
 	}, &r.Body, map[string]string{"Content-Type": "application/json", "Bitrise-Addon-Auth-Token": app.BitriseAPIToken})
 	proxyHandler.ServeHTTP(w, r)
-	fmt.Println("ORIGIN: ", w.Header().Get("Access-Control-Allow-Origin"))
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	return nil
