@@ -295,12 +295,23 @@ func (a *API) TriggerDENTask(params TaskParams) (*TriggerResponse, error) {
 
 // RegisterWebhook ...
 func (a *API) RegisterWebhook(authToken, appSlug, secret, callbackURL string) error {
-	requestBody := map[string]interface{}{
+	payloadBytes, err := json.Marshal(map[string]interface{}{
 		"events": []string{"build"},
 		"secret": secret,
 		"url":    callbackURL,
+	})
+	if err != nil {
+		return errors.WithStack(err)
 	}
-	resp, err := a.doRequest(authToken, "POST", fmt.Sprintf("/apps/%s/outgoing-webhooks", appSlug), requestBody)
+
+	req, err := http.NewRequest("POST", fmt.Sprintf("%s/%s", a.url, "/apps/%s/outgoing-webhooks"), bytes.NewBuffer(payloadBytes))
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	req.Header.Set("Bitrise-Addon-Auth-Token", authToken)
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := a.Do(req)
 	if err != nil {
 		return errors.WithStack(err)
 	}
