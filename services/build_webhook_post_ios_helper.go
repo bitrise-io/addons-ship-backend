@@ -31,9 +31,9 @@ func prepareAppVersionForIosPlatform(env *env.AppEnv, w http.ResponseWriter,
 	if reflect.DeepEqual(selectedArtifact.ArtifactMeta.AppInfo, bitrise.AppInfo{}) {
 		return nil, errors.New("No artifact app info found for artifact")
 	}
-	if reflect.DeepEqual(selectedArtifact.ArtifactMeta.ProvisioningInfo, bitrise.ProvisioningInfo{}) {
-		return nil, errors.New("No artifact provisioning info found for artifact")
-	}
+	// if reflect.DeepEqual(selectedArtifact.ArtifactMeta.ProvisioningInfo, bitrise.ProvisioningInfo{}) {
+	// 	return nil, errors.New("No artifact provisioning info found for artifact")
+	// }
 
 	var supportedDeviceTypes []string
 	for _, familyID := range selectedArtifact.ArtifactMeta.AppInfo.DeviceFamilyList {
@@ -51,8 +51,8 @@ func prepareAppVersionForIosPlatform(env *env.AppEnv, w http.ResponseWriter,
 		MinimumOS:            selectedArtifact.ArtifactMeta.AppInfo.MinimumOS,
 		BundleID:             selectedArtifact.ArtifactMeta.AppInfo.BundleID,
 		SupportedDeviceTypes: supportedDeviceTypes,
-		ExpireDate:           selectedArtifact.ArtifactMeta.ProvisioningInfo.ExpireDate,
-		DistributionType:     selectedArtifact.ArtifactMeta.ProvisioningInfo.DistributionType,
+		// ExpireDate:           selectedArtifact.ArtifactMeta.ProvisioningInfo.ExpireDate,
+		// DistributionType:     selectedArtifact.ArtifactMeta.ProvisioningInfo.DistributionType,
 	}
 	artifactInfoData, err := json.Marshal(artifactInfo)
 	if err != nil {
