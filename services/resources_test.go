@@ -12,7 +12,6 @@ import (
 	"github.com/c2fo/testify/require"
 	"github.com/jinzhu/gorm"
 	uuid "github.com/satori/go.uuid"
-	"go.uber.org/zap"
 )
 
 func Test_ResourcesHandler(t *testing.T) {
@@ -35,9 +34,6 @@ func Test_ResourcesHandler(t *testing.T) {
 		},
 	})
 
-	testLogger, err := zap.NewDevelopment()
-	require.NoError(t, err)
-
 	t.Run("ok", func(t *testing.T) {
 		testURL := "/resources/apps/test-app-slug"
 		testAPIURL, err := url.Parse("http://api.bitrise.io")
@@ -47,7 +43,6 @@ func Test_ResourcesHandler(t *testing.T) {
 				services.ContextKeyAuthorizedAppID: uuid.NewV4(),
 			},
 			env: &env.AppEnv{
-				Logger:            testLogger,
 				BitriseAPIRootURL: testAPIURL,
 				AppService: &testAppService{
 					findFn: func(app *models.App) (*models.App, error) {
@@ -69,7 +64,6 @@ func Test_ResourcesHandler(t *testing.T) {
 				services.ContextKeyAuthorizedAppID: uuid.NewV4(),
 			},
 			env: &env.AppEnv{
-				Logger:            testLogger,
 				BitriseAPIRootURL: testAPIURL,
 				AppService: &testAppService{
 					findFn: func(app *models.App) (*models.App, error) {
