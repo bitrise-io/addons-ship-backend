@@ -20,7 +20,7 @@ type BuildWebhookPayload struct {
 	AppSlug                string `json:"app_slug"`
 	BuildSlug              string `json:"build_slug"`
 	BuildNumber            int    `json:"build_number"`
-	BuildStatus            string `json:"build_status"`
+	BuildStatus            int    `json:"build_status"`
 	BuildTriggeredWorkflow string `json:"build_triggered_workflow"`
 }
 
