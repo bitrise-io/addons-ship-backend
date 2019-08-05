@@ -19,8 +19,12 @@ func prepareAppVersionForAndroidPlatform(env *env.AppEnv, w http.ResponseWriter,
 	}
 
 	selectedArtifact, _, _, _ := selectAndroidArtifact(artifacts)
-	if selectedArtifact == nil {
-		return nil, errors.New("No artifact found")
+	if selectedArtifact == nil || reflect.DeepEqual(*selectedArtifact, bitrise.ArtifactListElementResponseModel{}) {
+		splitAPKs := checkForSplitAPKs(artifacts)
+		if len(splitAPKs) == 0 {
+			return nil, errors.New("No artifact found")
+		}
+		selectedArtifact = &splitAPKs[0]
 	}
 
 	if selectedArtifact.ArtifactMeta == nil {
@@ -52,18 +56,37 @@ func selectAndroidArtifact(artifacts []bitrise.ArtifactListElementResponseModel)
 	publishEnabled := false
 	publicInstallPageEnabled := false
 	publicInstallPageArtifactSlug := ""
-	var selectedArtifact *bitrise.ArtifactListElementResponseModel
+	var selectedArtifact bitrise.ArtifactListElementResponseModel
 	for _, artifact := range artifacts {
 		if artifact.IsAAB() {
 			publishEnabled = true
-			selectedArtifact = &artifact
+			selectedArtifact = artifact
 		}
 		if artifact.IsUniversalAPK() {
 			publicInstallPageEnabled = true
 			publicInstallPageArtifactSlug = artifact.Slug
-			selectedArtifact = &artifact
+			selectedArtifact = artifact
 		}
-		// TODO: check the split APK condition
 	}
-	return selectedArtifact, publishEnabled, publicInstallPageEnabled, publicInstallPageArtifactSlug
+	return &selectedArtifact, publishEnabled, publicInstallPageEnabled, publicInstallPageArtifactSlug
+}
+
+func checkForSplitAPKs(artifacts []bitrise.ArtifactListElementResponseModel) []bitrise.ArtifactListElementResponseModel {
+	selectedArtifacts := map[string][]bitrise.ArtifactListElementResponseModel{}
+	maxNumber := 0
+	maxNumberKey := ""
+	for _, artifact := range artifacts {
+		if artifact.ArtifactMeta != nil {
+			key := artifact.ArtifactMeta.AppInfo.AppName + artifact.ArtifactMeta.AppInfo.PackageName + artifact.ArtifactMeta.AppInfo.VersionName
+			selectedArtifacts[key] = append(selectedArtifacts[key], artifact)
+			if len(selectedArtifacts[key]) > maxNumber {
+				maxNumber = len(selectedArtifacts[key])
+				maxNumberKey = key
+			}
+		}
+	}
+	if maxNumber > 1 {
+		return selectedArtifacts[maxNumberKey]
+	}
+	return []bitrise.ArtifactListElementResponseModel{}
 }

@@ -11,6 +11,7 @@ var debugDistributionTypes = [...]string{"development", "ad-hoc"}
 
 // AppInfo ...
 type AppInfo struct {
+	AppName           string `json:"app_name"`
 	MinimumOS         string `json:"min_OS_version"`
 	MinimumSDKVersion string `json:"min_sdk_version"`
 	BundleID          string `json:"bundle_id"`

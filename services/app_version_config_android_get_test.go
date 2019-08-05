@@ -112,7 +112,7 @@ func Test_AppVersionAndroidConfigGetHandler(t *testing.T) {
 				},
 			},
 			expectedStatusCode: http.StatusOK,
-			expectedResponse:   services.AppVersionAndroidConfigGetResponse{},
+			expectedResponse:   services.AppVersionAndroidConfigGetResponse{Artifacts: []string{}},
 		})
 	})
 
