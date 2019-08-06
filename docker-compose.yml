@@ -43,6 +43,7 @@ services:
       MAIL_TO_SEND: $MAIL_TO_SEND
       TARGET_EMAIL: $TARGET_EMAIL
       ADDON_FRONTEND_HOST_URL: $ADDON_FRONTEND_HOST_URL
+      GITHUB_TOKEN: $GITHUB_TOKEN
   worker:
     build: .
     volumes:
