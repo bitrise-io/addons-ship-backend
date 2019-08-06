@@ -10,6 +10,7 @@ services:
     build: .
     volumes:
       - .:/bitrise/src
+      - ./go-dep-cache:$GOPATH/pkg/mod
     command: gin --immediate --appPort=3003
     ports:
       - '3003:3003'
