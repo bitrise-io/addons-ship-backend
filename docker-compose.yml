@@ -7,7 +7,10 @@ services:
   redis:
     image: redis
   app:
-    build: .
+    build:
+      context: .
+      args:
+        - 'GITHUB_TOKEN=$GITHUB_TOKEN'
     volumes:
       - .:/bitrise/src
       - ./go-dep-cache:$GOPATH/pkg/mod
@@ -43,7 +46,6 @@ services:
       MAIL_TO_SEND: $MAIL_TO_SEND
       TARGET_EMAIL: $TARGET_EMAIL
       ADDON_FRONTEND_HOST_URL: $ADDON_FRONTEND_HOST_URL
-      GITHUB_TOKEN: $GITHUB_TOKEN
   worker:
     build: .
     volumes:
