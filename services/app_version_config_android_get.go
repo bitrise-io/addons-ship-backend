@@ -2,6 +2,7 @@ package services
 
 import (
 	"net/http"
+	"reflect"
 
 	"github.com/bitrise-io/addons-ship-backend/bitrise"
 	"github.com/bitrise-io/addons-ship-backend/env"
@@ -149,17 +150,12 @@ func AppVersionAndroidConfigGetHandler(env *env.AppEnv, w http.ResponseWriter, r
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	if len(artifacts) > 0 {
-		selectedArtifact, _, _, _ := selectAndroidArtifact(artifacts)
-		artifactData, err := env.BitriseAPI.GetArtifact(appVersion.App.BitriseAPIToken, appVersion.App.AppSlug, appVersion.BuildSlug, selectedArtifact.Slug)
-		if err != nil {
-			return errors.WithStack(err)
-		}
-		if artifactData.DownloadPath == nil {
-			return errors.New("Failed to get download URL for artifact")
-		}
-		config.Artifacts = append(config.Artifacts, *artifactData.DownloadPath)
+
+	artifactList, err := newArtifactResponse(env, appVersion.App.BitriseAPIToken, appVersion.App.AppSlug, appVersion.BuildSlug, artifacts)
+	if err != nil {
+		return errors.WithStack(err)
 	}
+	config.Artifacts = artifactList
 
 	return httpresponse.RespondWithSuccess(w, config)
 }
@@ -185,6 +181,37 @@ func newScreenshotsResponse(screenshotData []models.Screenshot, env *env.AppEnv)
 		}
 	}
 	return scs, nil
+}
+
+func newArtifactResponse(env *env.AppEnv, apiToken, appSlug, buildSlug string, artifacts []bitrise.ArtifactListElementResponseModel) ([]string, error) {
+	artifactURLs := []string{}
+	selectedArtifact, _, _, _ := selectAndroidArtifact(artifacts)
+	if selectedArtifact != nil && !reflect.DeepEqual(*selectedArtifact, bitrise.ArtifactListElementResponseModel{}) {
+		artifactData, err := env.BitriseAPI.GetArtifact(apiToken, appSlug, buildSlug, selectedArtifact.Slug)
+		if err != nil {
+			return []string{}, errors.WithStack(err)
+		}
+		if artifactData.DownloadPath == nil {
+			return []string{}, errors.New("Failed to get download URL for artifact")
+		}
+		artifactURLs = append(artifactURLs, *artifactData.DownloadPath)
+		return artifactURLs, nil
+	}
+	splitAPKs := checkForSplitAPKs(artifacts)
+	if len(splitAPKs) == 0 {
+		return []string{}, nil
+	}
+	for _, artifact := range splitAPKs {
+		artifactData, err := env.BitriseAPI.GetArtifact(apiToken, appSlug, buildSlug, artifact.Slug)
+		if err != nil {
+			return []string{}, errors.WithStack(err)
+		}
+		if artifactData.DownloadPath == nil {
+			return []string{}, errors.New("Failed to get download URL for artifact")
+		}
+		artifactURLs = append(artifactURLs, *artifactData.DownloadPath)
+	}
+	return artifactURLs, nil
 }
 
 // Screenshots ...

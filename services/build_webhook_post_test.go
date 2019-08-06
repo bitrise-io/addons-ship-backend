@@ -1106,6 +1106,99 @@ func Test_BuildWebhookHandler(t *testing.T) {
 				})
 			})
 
+			t.Run("ok - more complex - when there are split APKs", func(t *testing.T) {
+				performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+					contextElements: map[ctxpkg.RequestContextKey]interface{}{
+						services.ContextKeyAuthorizedAppID: uuid.NewV4(),
+					},
+					requestHeaders: map[string]string{"Bitrise-Event-Type": "build/finished"},
+					env: &env.AppEnv{
+						AddonFrontendHostURL: "https://ship.bitrise.io",
+						AppService: &testAppService{
+							findFn: func(app *models.App) (*models.App, error) {
+								return app, nil
+							},
+						},
+						AppSettingsService: &testAppSettingsService{
+							findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
+								return &models.AppSettings{AndroidWorkflow: "all",
+									App: &models.App{
+										BitriseAPIToken: "test-api-token",
+										AppSlug:         "test-app-slug",
+									},
+								}, nil
+							},
+						},
+						AppVersionService: &testAppVersionService{
+							createFn: func(appVersion *models.AppVersion) (*models.AppVersion, []error, error) {
+								require.Equal(t, "android", appVersion.Platform)
+								require.Equal(t, "test-build-slug", appVersion.BuildSlug)
+								appInfo, err := appVersion.ArtifactInfo()
+								require.NoError(t, err)
+								require.Equal(t, models.ArtifactInfo{Version: "1.0", PackageName: "myPackage"}, appInfo)
+								appVersion.ID = testAppVersionID
+								appVersion.App = models.App{
+									BitriseAPIToken: "test-api-token",
+									AppSlug:         "test-app-slug",
+								}
+								return appVersion, nil, nil
+							},
+						},
+						BitriseAPI: &testBitriseAPI{
+							getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
+								return []bitrise.ArtifactListElementResponseModel{
+									bitrise.ArtifactListElementResponseModel{
+										Title: "app-armeabi-my-android-artifact.apk",
+										ArtifactMeta: &bitrise.ArtifactMeta{
+											AppInfo: bitrise.AppInfo{
+												VersionName: "1.0",
+												AppName:     "My Android APK",
+												PackageName: "myPackage",
+											},
+										},
+									},
+									bitrise.ArtifactListElementResponseModel{
+										Title: "app-armeabi-my-android-artifact.apk",
+										ArtifactMeta: &bitrise.ArtifactMeta{
+											AppInfo: bitrise.AppInfo{
+												VersionName: "1.0",
+												AppName:     "My Android APK",
+												PackageName: "myPackage",
+											},
+										},
+									},
+								}, nil
+							},
+							getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
+								require.Equal(t, "test-api-token", apiToken)
+								require.Equal(t, "test-app-slug", appSlug)
+								return &bitrise.AppDetails{Title: "My awesome app"}, nil
+							},
+						},
+						AppContactService: &testAppContactService{
+							findAllFn: func(app *models.App) ([]models.AppContact, error) {
+								require.Equal(t, "test-app-slug", app.AppSlug)
+								return []models.AppContact{
+									models.AppContact{Email: "the.address@we.send"},
+								}, nil
+							},
+						},
+						Mailer: &testMailer{
+							sendEmailNewVersionFn: func(appVersion *models.AppVersion, contacts []models.AppContact, frontendBaseURL string, appDetails *bitrise.AppDetails) error {
+								require.Equal(t, testAppVersionID, appVersion.ID)
+								require.Equal(t, "My awesome app", appDetails.Title)
+								require.Len(t, contacts, 1)
+								require.Equal(t, "the.address@we.send", contacts[0].Email)
+								require.Equal(t, "https://ship.bitrise.io", frontendBaseURL)
+								return nil
+							},
+						},
+					},
+					requestBody:        `{"build_slug":"test-build-slug"}`,
+					expectedStatusCode: http.StatusOK,
+				})
+			})
+
 			t.Run("when getting artifacts from API retrieves error", func(t *testing.T) {
 				performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
 					contextElements: map[ctxpkg.RequestContextKey]interface{}{
