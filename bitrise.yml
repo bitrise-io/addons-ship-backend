@@ -131,7 +131,6 @@ workflows:
             - content: |-
                 #!/bin/bash
                 set -ex
-                go get github.com/GeertJohan/go.rice/rice
                 cd ./templates
                 rice embed-go
                 cd ../services
