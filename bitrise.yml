@@ -93,19 +93,18 @@ workflows:
       #           set -ex
       #           go get github.com/kisielk/errcheck
       #           errcheck -asserts=true -blank=true $GOLIST_WITHOUT_VENDOR
-      - script:
-          title: Go Lint
-          inputs:
-            - content: |
-                #!/bin/bash
-                set -ex
-                go get -u golang.org/x/lint/golint
-
-                # lint
-                while read -r line; do
-                  echo "-> Linting: $line"
-                  golint -set_exit_status $line
-                done <<< "$GOLIST_WITHOUT_VENDOR"
+      # - script:
+      #     title: Go Lint
+      #     inputs:
+      #       - content: |
+      #           #!/bin/bash
+      #           set -ex
+      #           go get -u golang.org/x/lint/golint
+      #           # lint
+      #           while read -r line; do
+      #             echo "-> Linting: $line"
+      #             golint -set_exit_status $line
+      #           done <<< "$GOLIST_WITHOUT_VENDOR"
   test-with-docker:
     steps:
       - script@1.1.5:
