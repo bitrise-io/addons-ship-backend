@@ -7,7 +7,10 @@ services:
   redis:
     image: redis
   app:
-    build: .
+    build:
+      context: .
+      args:
+        - 'GOFLAGS=$GOFLAGS'
     volumes:
       - .:/bitrise/src
     command: gin --immediate --appPort=3003
@@ -43,7 +46,10 @@ services:
       TARGET_EMAIL: $TARGET_EMAIL
       ADDON_FRONTEND_HOST_URL: $ADDON_FRONTEND_HOST_URL
   worker:
-    build: .
+    build:
+      context: .
+      args:
+        - 'GOFLAGS=$GOFLAGS'
     volumes:
       - .:/bitrise/src
     command: go run main.go

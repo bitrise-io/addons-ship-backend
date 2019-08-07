@@ -10,6 +10,7 @@ app:
     - CODE_COV_DIR: ./_coverage
     - CODE_COV_TXT_REPORT_FILE: ${CODE_COV_DIR}/coverage.txt
     - PORT: 3003
+    - GOFLAGS: -mod=vendor
 workflows:
   _collect_package_list_without_vendor:
     steps:
@@ -90,7 +91,6 @@ workflows:
             - content: |
                 #!/bin/bash
                 set -ex
-                go get github.com/kisielk/errcheck
                 errcheck -asserts=true -blank=true $GOLIST_WITHOUT_VENDOR
       - script:
           title: Go Lint
@@ -98,8 +98,6 @@ workflows:
             - content: |
                 #!/bin/bash
                 set -ex
-                go get -u golang.org/x/lint/golint
-
                 # lint
                 while read -r line; do
                   echo "-> Linting: $line"
