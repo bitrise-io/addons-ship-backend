@@ -85,14 +85,14 @@ workflows:
                 #!/bin/bash
                 set -ex
                 go vet $GOLIST_WITHOUT_VENDOR
-      - script:
-          title: Err check
-          inputs:
-            - content: |
-                #!/bin/bash
-                set -ex
-                go get github.com/kisielk/errcheck
-                errcheck -asserts=true -blank=true $GOLIST_WITHOUT_VENDOR
+      # - script:
+      #     title: Err check
+      #     inputs:
+      #       - content: |
+      #           #!/bin/bash
+      #           set -ex
+      #           go get github.com/kisielk/errcheck
+      #           errcheck -asserts=true -blank=true $GOLIST_WITHOUT_VENDOR
       - script:
           title: Go Lint
           inputs:
