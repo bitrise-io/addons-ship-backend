@@ -48,3 +48,19 @@ func (*Service) EnqueueStoreLogChunkToRedis(publishTaskExternalID string, logChu
 	}
 	return nil
 }
+
+// EnqueueCopyUploadablesToNewAppVersion ...
+func (*Service) EnqueueCopyUploadablesToNewAppVersion(appVersionFromCopyID, appVersionToCopyID string) error {
+	enqueuer := work.NewEnqueuer(namespace, redisPool)
+	var err error
+	jobParams := work.Q{
+		"from_id": appVersionFromCopyID,
+		"to_id":   appVersionToCopyID,
+	}
+
+	_, err = enqueuer.EnqueueUnique(copyUploadablesToNewAppVersion, jobParams)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	return nil
+}

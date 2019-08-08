@@ -36,6 +36,7 @@ func Start(appEnv *env.AppEnv) error {
 
 	pool.Job(storeLogToAWS, (&context).StoreLogToAWS)
 	pool.Job(storeLogChunkToRedis, (&context).StoreLogChunkToRedis)
+	pool.Job(copyUploadablesToNewAppVersion, (&context).CopyUploadablesToNewAppVersion)
 
 	pool.Start()
 	defer pool.Stop()
