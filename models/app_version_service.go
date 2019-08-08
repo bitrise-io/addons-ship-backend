@@ -57,3 +57,12 @@ func (a *AppVersionService) Update(appVersion *AppVersion, whitelist []string) (
 	}
 	return nil, nil
 }
+
+// Latest ...
+func (a *AppVersionService) Latest(appVersion *AppVersion) (*AppVersion, error) {
+	err := a.DB.Preload("App").Order("created_at DESC").First(appVersion, appVersion).Error
+	if err != nil {
+		return nil, err
+	}
+	return appVersion, nil
+}

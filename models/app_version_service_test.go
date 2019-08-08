@@ -18,9 +18,11 @@ func compareAppVersion(t *testing.T, expected, actual models.AppVersion) {
 	expected.CreatedAt = time.Time{}
 	expected.UpdatedAt = time.Time{}
 	expected.LastUpdate = time.Time{}
+	expected.App = models.App{}
 	actual.CreatedAt = time.Time{}
 	actual.UpdatedAt = time.Time{}
 	actual.LastUpdate = time.Time{}
+	actual.App = models.App{}
 	require.Equal(t, expected, actual)
 }
 
@@ -224,5 +226,51 @@ func Test_AppVersionService_Update(t *testing.T) {
 		verrs, err := appVersionService.Update(testAppVersion, []string{"NonExistingField"})
 		require.EqualError(t, err, "Attribute name doesn't exist in the model")
 		require.Equal(t, 0, len(verrs))
+	})
+}
+
+func Test_AppVersionService_Latest(t *testing.T) {
+	dbCloseCallbackMethod := prepareDB(t)
+	defer dbCloseCallbackMethod()
+
+	appVersionService := models.AppVersionService{DB: dataservices.GetDB()}
+	testApp1 := createTestApp(t, &models.App{})
+	createTestAppVersion(t, &models.AppVersion{
+		App:              *testApp1,
+		Platform:         "android",
+		ArtifactInfoData: json.RawMessage(`{"version":"1.0"}`),
+	})
+	testApp1VersionAndroid := createTestAppVersion(t, &models.AppVersion{
+		App:              *testApp1,
+		Platform:         "android",
+		ArtifactInfoData: json.RawMessage(`{"version":"1.1"}`),
+	})
+	createTestAppVersion(t, &models.AppVersion{
+		App:              *testApp1,
+		Platform:         "ios",
+		ArtifactInfoData: json.RawMessage(`{"version":"1.0"}`),
+	})
+	testApp1VersionIOS := createTestAppVersion(t, &models.AppVersion{
+		App:              *testApp1,
+		Platform:         "ios",
+		ArtifactInfoData: json.RawMessage(`{"version":"1.1"}`),
+	})
+
+	t.Run("ok - finds the latest android version", func(t *testing.T) {
+		foundAppVersion, err := appVersionService.Latest(&models.AppVersion{AppID: testApp1.ID, Platform: "android"})
+		require.NoError(t, err)
+		compareAppVersion(t, *testApp1VersionAndroid, *foundAppVersion)
+	})
+
+	t.Run("ok - finds the latest ios version", func(t *testing.T) {
+		foundAppVersion, err := appVersionService.Latest(&models.AppVersion{AppID: testApp1.ID, Platform: "ios"})
+		require.NoError(t, err)
+		compareAppVersion(t, *testApp1VersionIOS, *foundAppVersion)
+	})
+
+	t.Run("when no app version found", func(t *testing.T) {
+		foundAppVersion, err := appVersionService.Latest(&models.AppVersion{AppID: testApp1.ID, Platform: "nope"})
+		require.EqualError(t, err, "record not found")
+		require.Nil(t, foundAppVersion)
 	})
 }
