@@ -70,8 +70,7 @@ func BuildWebhookHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request
 		}
 
 		app := appSettings.App
-		if appSettings.IosWorkflow == "all" ||
-			(params.BuildTriggeredWorkflow != "" && strings.Contains(appSettings.IosWorkflow, params.BuildTriggeredWorkflow)) {
+		if appSettings.IosWorkflow == "" || (params.BuildTriggeredWorkflow != "" && strings.Contains(appSettings.IosWorkflow, params.BuildTriggeredWorkflow)) {
 			appVersion, err := prepareAppVersionForIosPlatform(env, w, r, app.BitriseAPIToken, app.AppSlug, params.BuildSlug)
 			if err != nil {
 				return err
@@ -92,8 +91,7 @@ func BuildWebhookHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request
 			}
 		}
 
-		if appSettings.AndroidWorkflow == "all" ||
-			(params.BuildTriggeredWorkflow != "" && strings.Contains(appSettings.AndroidWorkflow, params.BuildTriggeredWorkflow)) {
+		if appSettings.AndroidWorkflow == "" || (params.BuildTriggeredWorkflow != "" && strings.Contains(appSettings.AndroidWorkflow, params.BuildTriggeredWorkflow)) {
 			appVersion, err := prepareAppVersionForAndroidPlatform(env, w, r, app.BitriseAPIToken, app.AppSlug, params.BuildSlug)
 			if err != nil {
 				return err
