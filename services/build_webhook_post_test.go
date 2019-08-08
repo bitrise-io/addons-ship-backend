@@ -75,7 +75,10 @@ func Test_BuildWebhookHandler(t *testing.T) {
 					},
 					AppSettingsService: &testAppSettingsService{
 						findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
-							return appSettings, nil
+							return &models.AppSettings{
+								IosWorkflow:     "some-ios-wf",
+								AndroidWorkflow: "some-android-wf",
+							}, nil
 						},
 					},
 					AppVersionService: &testAppVersionService{},
@@ -169,7 +172,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 
 		t.Run("when platform is ios", func(t *testing.T) {
 			testAppVersionID := uuid.FromStringOrNil("9f7b06d1-e736-42d3-94c3-c2bcfda0463c")
-			t.Run("ok - more complex - when ios workflow whitelist is 'all'", func(t *testing.T) {
+			t.Run("ok - more complex - when ios workflow whitelist is empty", func(t *testing.T) {
 				performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
 					contextElements: map[ctxpkg.RequestContextKey]interface{}{
 						services.ContextKeyAuthorizedAppID: uuid.NewV4(),
@@ -185,7 +188,8 @@ func Test_BuildWebhookHandler(t *testing.T) {
 						AppSettingsService: &testAppSettingsService{
 							findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
 								return &models.AppSettings{
-									IosWorkflow: "all",
+									IosWorkflow:     "",
+									AndroidWorkflow: "some-android-wf",
 									App: &models.App{
 										BitriseAPIToken: "test-api-token",
 										AppSlug:         "test-app-slug",
@@ -284,7 +288,8 @@ func Test_BuildWebhookHandler(t *testing.T) {
 						AppSettingsService: &testAppSettingsService{
 							findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
 								return &models.AppSettings{
-									IosWorkflow: "ios-wf,ios-wf2",
+									IosWorkflow:     "ios-wf,ios-wf2",
+									AndroidWorkflow: "some-android-wf",
 									App: &models.App{
 										BitriseAPIToken: "test-api-token",
 										AppSlug:         "test-app-slug",
@@ -651,7 +656,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 						AppSettingsService: &testAppSettingsService{
 							findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
 								return &models.AppSettings{
-									IosWorkflow: "all",
+									IosWorkflow: "",
 									App: &models.App{
 										BitriseAPIToken: "test-api-token",
 										AppSlug:         "test-app-slug",
@@ -713,7 +718,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 						},
 						AppSettingsService: &testAppSettingsService{
 							findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
-								return &models.AppSettings{IosWorkflow: "all",
+								return &models.AppSettings{IosWorkflow: "",
 									App: &models.App{
 										BitriseAPIToken: "test-api-token",
 										AppSlug:         "test-app-slug",
@@ -773,7 +778,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 						AppSettingsService: &testAppSettingsService{
 							findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
 								return &models.AppSettings{
-									IosWorkflow: "all",
+									IosWorkflow: "",
 									App: &models.App{
 										BitriseAPIToken: "test-api-token",
 										AppSlug:         "test-app-slug",
@@ -870,7 +875,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 						AppSettingsService: &testAppSettingsService{
 							findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
 								return &models.AppSettings{
-									IosWorkflow: "all",
+									IosWorkflow: "",
 									App: &models.App{
 										BitriseAPIToken: "test-api-token",
 										AppSlug:         "test-app-slug",
@@ -955,7 +960,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 
 		t.Run("when platform is android", func(t *testing.T) {
 			testAppVersionID := uuid.FromStringOrNil("9f7b06d1-e736-42d3-94c3-c2bcfda0463c")
-			t.Run("ok - more complex - when android workflow whitelist is 'all'", func(t *testing.T) {
+			t.Run("ok - more complex - when android workflow whitelist is empty", func(t *testing.T) {
 				performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
 					contextElements: map[ctxpkg.RequestContextKey]interface{}{
 						services.ContextKeyAuthorizedAppID: uuid.NewV4(),
@@ -970,7 +975,9 @@ func Test_BuildWebhookHandler(t *testing.T) {
 						},
 						AppSettingsService: &testAppSettingsService{
 							findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
-								return &models.AppSettings{AndroidWorkflow: "all",
+								return &models.AppSettings{
+									AndroidWorkflow: "",
+									IosWorkflow:     "some-ios-wf",
 									App: &models.App{
 										BitriseAPIToken: "test-api-token",
 										AppSlug:         "test-app-slug",
@@ -1054,6 +1061,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 							findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
 								return &models.AppSettings{
 									AndroidWorkflow: "android-wf,android-wf2",
+									IosWorkflow:     "some-ios-wf",
 									App: &models.App{
 										BitriseAPIToken: "test-api-token",
 										AppSlug:         "test-app-slug",
@@ -1121,7 +1129,9 @@ func Test_BuildWebhookHandler(t *testing.T) {
 						},
 						AppSettingsService: &testAppSettingsService{
 							findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
-								return &models.AppSettings{AndroidWorkflow: "all",
+								return &models.AppSettings{
+									AndroidWorkflow: "",
+									IosWorkflow:     "some-ios-wf",
 									App: &models.App{
 										BitriseAPIToken: "test-api-token",
 										AppSlug:         "test-app-slug",
@@ -1215,6 +1225,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 							findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
 								return &models.AppSettings{
 									AndroidWorkflow: "android-wf,android-wf2",
+									IosWorkflow:     "some-ios-wf",
 									App: &models.App{
 										BitriseAPIToken: "test-api-token",
 										AppSlug:         "test-app-slug",
@@ -1260,7 +1271,8 @@ func Test_BuildWebhookHandler(t *testing.T) {
 						AppSettingsService: &testAppSettingsService{
 							findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
 								return &models.AppSettings{
-									AndroidWorkflow: "all",
+									AndroidWorkflow: "",
+									IosWorkflow:     "some-ios-wf",
 									App: &models.App{
 										BitriseAPIToken: "test-api-token",
 										AppSlug:         "test-app-slug",
@@ -1306,7 +1318,8 @@ func Test_BuildWebhookHandler(t *testing.T) {
 						AppSettingsService: &testAppSettingsService{
 							findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
 								return &models.AppSettings{
-									AndroidWorkflow: "all",
+									AndroidWorkflow: "",
+									IosWorkflow:     "some-ios-wf",
 									App: &models.App{
 										BitriseAPIToken: "test-api-token",
 										AppSlug:         "test-app-slug",
@@ -1357,7 +1370,8 @@ func Test_BuildWebhookHandler(t *testing.T) {
 						AppSettingsService: &testAppSettingsService{
 							findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
 								return &models.AppSettings{
-									AndroidWorkflow: "all",
+									AndroidWorkflow: "",
+									IosWorkflow:     "some-ios-wf",
 									App: &models.App{
 										BitriseAPIToken: "test-api-token",
 										AppSlug:         "test-app-slug",
@@ -1410,7 +1424,8 @@ func Test_BuildWebhookHandler(t *testing.T) {
 						AppSettingsService: &testAppSettingsService{
 							findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
 								return &models.AppSettings{
-									AndroidWorkflow: "all",
+									AndroidWorkflow: "",
+									IosWorkflow:     "some-ios-wf",
 									App: &models.App{
 										BitriseAPIToken: "test-api-token",
 										AppSlug:         "test-app-slug",
@@ -1465,7 +1480,8 @@ func Test_BuildWebhookHandler(t *testing.T) {
 						AppSettingsService: &testAppSettingsService{
 							findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
 								return &models.AppSettings{
-									AndroidWorkflow: "all",
+									AndroidWorkflow: "",
+									IosWorkflow:     "some-ios-wf",
 									App: &models.App{
 										BitriseAPIToken: "test-api-token",
 										AppSlug:         "test-app-slug",
@@ -1516,7 +1532,9 @@ func Test_BuildWebhookHandler(t *testing.T) {
 						},
 						AppSettingsService: &testAppSettingsService{
 							findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
-								return &models.AppSettings{AndroidWorkflow: "all",
+								return &models.AppSettings{
+									AndroidWorkflow: "",
+									IosWorkflow:     "some-ios-wf",
 									App: &models.App{
 										BitriseAPIToken: "test-api-token",
 										AppSlug:         "test-app-slug",
@@ -1597,7 +1615,9 @@ func Test_BuildWebhookHandler(t *testing.T) {
 						},
 						AppSettingsService: &testAppSettingsService{
 							findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
-								return &models.AppSettings{AndroidWorkflow: "all",
+								return &models.AppSettings{
+									AndroidWorkflow: "",
+									IosWorkflow:     "some-ios-wf",
 									App: &models.App{
 										BitriseAPIToken: "test-api-token",
 										AppSlug:         "test-app-slug",

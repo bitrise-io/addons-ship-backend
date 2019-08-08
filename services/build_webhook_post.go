@@ -70,8 +70,7 @@ func BuildWebhookHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request
 		}
 
 		app := appSettings.App
-		if appSettings.IosWorkflow == "all" ||
-			(params.BuildTriggeredWorkflow != "" && strings.Contains(appSettings.IosWorkflow, params.BuildTriggeredWorkflow)) {
+		if appSettings.IosWorkflow == "" || (params.BuildTriggeredWorkflow != "" && strings.Contains(appSettings.IosWorkflow, params.BuildTriggeredWorkflow)) {
 			latestAppVersion, err := env.AppVersionService.Latest(&models.AppVersion{AppID: app.ID, Platform: "android"})
 			if err != nil && errors.Cause(err) != gorm.ErrRecordNotFound {
 				return errors.Wrap(err, "SQL Error")
@@ -105,8 +104,7 @@ func BuildWebhookHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request
 			}
 		}
 
-		if appSettings.AndroidWorkflow == "all" ||
-			(params.BuildTriggeredWorkflow != "" && strings.Contains(appSettings.AndroidWorkflow, params.BuildTriggeredWorkflow)) {
+		if appSettings.AndroidWorkflow == "" || (params.BuildTriggeredWorkflow != "" && strings.Contains(appSettings.AndroidWorkflow, params.BuildTriggeredWorkflow)) {
 			latestAppVersion, err := env.AppVersionService.Latest(&models.AppVersion{AppID: app.ID, Platform: "android"})
 			if err != nil && errors.Cause(err) != gorm.ErrRecordNotFound {
 				return errors.Wrap(err, "SQL Error")
