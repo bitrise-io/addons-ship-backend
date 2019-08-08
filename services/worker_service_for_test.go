@@ -6,8 +6,9 @@ import (
 )
 
 type testWorkerService struct {
-	enqueueStoreLogToAWSFn        func(uuid.UUID, int64, string, int64) error
-	enqueueStoreLogChunkToRedisFn func(string, models.LogChunk, int64) error
+	enqueueStoreLogToAWSFn                  func(uuid.UUID, int64, string, int64) error
+	enqueueStoreLogChunkToRedisFn           func(string, models.LogChunk, int64) error
+	enqueueCopyUploadablesToNewAppVersionFn func(appVersionFromCopyID, appVersionToCopyID string) error
 }
 
 func (s *testWorkerService) EnqueueStoreLogToAWS(publishTaskExternalID uuid.UUID, numberOfLogChunks int64, awsPath string, secondsFromNow int64) error {
@@ -22,4 +23,11 @@ func (s *testWorkerService) EnqueueStoreLogChunkToRedis(publishTaskExternalID st
 		panic("You have to override EnqueueStoreLogChunkToRedis function in tests")
 	}
 	return s.enqueueStoreLogChunkToRedisFn(publishTaskExternalID, logChunk, secondsFromNow)
+}
+
+func (s *testWorkerService) EnqueueCopyUploadablesToNewAppVersion(appVersionFromCopyID, appVersionToCopyID string) error {
+	if s.enqueueCopyUploadablesToNewAppVersionFn == nil {
+		panic("You have to override EnqueueCopyUploadablesToNewAppVersion function in tests")
+	}
+	return s.enqueueCopyUploadablesToNewAppVersionFn(appVersionFromCopyID, appVersionToCopyID)
 }

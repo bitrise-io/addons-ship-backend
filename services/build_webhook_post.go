@@ -72,6 +72,10 @@ func BuildWebhookHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request
 		app := appSettings.App
 		if appSettings.IosWorkflow == "all" ||
 			(params.BuildTriggeredWorkflow != "" && strings.Contains(appSettings.IosWorkflow, params.BuildTriggeredWorkflow)) {
+			latestAppVersion, err := env.AppVersionService.Latest(&models.AppVersion{AppID: app.ID, Platform: "android"})
+			if err != nil && errors.Cause(err) != gorm.ErrRecordNotFound {
+				return errors.Wrap(err, "SQL Error")
+			}
 			appVersion, err := prepareAppVersionForIosPlatform(env, w, r, app.BitriseAPIToken, app.AppSlug, params.BuildSlug)
 			if err != nil {
 				return err
@@ -79,12 +83,21 @@ func BuildWebhookHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request
 			appVersion.LastUpdate = time.Now()
 			appVersion.AppID = authorizedAppID
 			appVersion.BuildNumber = fmt.Sprintf("%d", params.BuildNumber)
-			_, verrs, err := env.AppVersionService.Create(appVersion)
+			if latestAppVersion != nil {
+				appVersion.AppStoreInfoData = latestAppVersion.AppStoreInfoData
+			}
+			appVersion, verrs, err := env.AppVersionService.Create(appVersion)
 			if len(verrs) > 0 {
 				return httpresponse.RespondWithUnprocessableEntity(w, verrs)
 			}
 			if err != nil {
 				return errors.Wrap(err, "SQL Error")
+			}
+			if latestAppVersion != nil {
+				err := env.WorkerService.EnqueueCopyUploadablesToNewAppVersion(latestAppVersion.ID.String(), appVersion.ID.String())
+				if err != nil {
+					return errors.Wrap(err, "Worker Error")
+				}
 			}
 
 			if err := sendNotification(env, appVersion, app); err != nil {
@@ -94,6 +107,10 @@ func BuildWebhookHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request
 
 		if appSettings.AndroidWorkflow == "all" ||
 			(params.BuildTriggeredWorkflow != "" && strings.Contains(appSettings.AndroidWorkflow, params.BuildTriggeredWorkflow)) {
+			latestAppVersion, err := env.AppVersionService.Latest(&models.AppVersion{AppID: app.ID, Platform: "android"})
+			if err != nil && errors.Cause(err) != gorm.ErrRecordNotFound {
+				return errors.Wrap(err, "SQL Error")
+			}
 			appVersion, err := prepareAppVersionForAndroidPlatform(env, w, r, app.BitriseAPIToken, app.AppSlug, params.BuildSlug)
 			if err != nil {
 				return err
@@ -101,12 +118,21 @@ func BuildWebhookHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request
 			appVersion.LastUpdate = time.Now()
 			appVersion.AppID = authorizedAppID
 			appVersion.BuildNumber = fmt.Sprintf("%d", params.BuildNumber)
-			_, verrs, err := env.AppVersionService.Create(appVersion)
+			if latestAppVersion != nil {
+				appVersion.AppStoreInfoData = latestAppVersion.AppStoreInfoData
+			}
+			appVersion, verrs, err := env.AppVersionService.Create(appVersion)
 			if len(verrs) > 0 {
 				return httpresponse.RespondWithUnprocessableEntity(w, verrs)
 			}
 			if err != nil {
 				return errors.Wrap(err, "SQL Error")
+			}
+			if latestAppVersion != nil {
+				err := env.WorkerService.EnqueueCopyUploadablesToNewAppVersion(latestAppVersion.ID.String(), appVersion.ID.String())
+				if err != nil {
+					return errors.Wrap(err, "Worker Error")
+				}
 			}
 
 			if err := sendNotification(env, appVersion, app); err != nil {
