@@ -50,6 +50,9 @@ func BuildWebhookHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request
 		if env.AppContactService == nil {
 			return errors.New("No App Contact Service defined for handler")
 		}
+		if env.WorkerService == nil {
+			return errors.New("No Worker Service defined for handler")
+		}
 		var params BuildWebhookPayload
 		defer httprequest.BodyCloseWithErrorLog(r)
 		if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
@@ -71,7 +74,7 @@ func BuildWebhookHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request
 
 		app := appSettings.App
 		if appSettings.IosWorkflow == "" || (params.BuildTriggeredWorkflow != "" && strings.Contains(appSettings.IosWorkflow, params.BuildTriggeredWorkflow)) {
-			latestAppVersion, err := env.AppVersionService.Latest(&models.AppVersion{AppID: app.ID, Platform: "android"})
+			latestAppVersion, err := env.AppVersionService.Latest(&models.AppVersion{AppID: app.ID, Platform: "ios"})
 			if err != nil && errors.Cause(err) != gorm.ErrRecordNotFound {
 				return errors.Wrap(err, "SQL Error")
 			}
