@@ -11,9 +11,7 @@ require (
 	github.com/c2fo/testify v0.0.0-20150827203832-fba96363964a
 	github.com/daaku/go.zipexe v1.0.1 // indirect
 	github.com/go-yaml/yaml v2.1.0+incompatible
-	github.com/gobuffalo/uuid v2.0.5+incompatible
 	github.com/gocraft/work v0.5.1
-	github.com/gofrs/uuid v3.2.0+incompatible // indirect
 	github.com/gomodule/redigo v2.0.0+incompatible
 	github.com/gorilla/mux v1.7.1 // indirect
 	github.com/jinzhu/gorm v1.9.8
@@ -27,7 +25,6 @@ require (
 	github.com/robfig/cron v1.2.0 // indirect
 	github.com/rs/cors v1.6.0 // indirect
 	github.com/satori/go.uuid v1.2.0
-	github.com/satori/uuid v1.2.0
 	github.com/stretchr/testify v1.3.0
 	github.com/tinylib/msgp v1.1.0 // indirect
 	go.uber.org/atomic v1.4.0 // indirect

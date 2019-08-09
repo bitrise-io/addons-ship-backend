@@ -10,6 +10,7 @@ type AWSMock struct {
 	GetObjectFn               func(string) (string, error)
 	PutObjectFn               func(string, []byte) error
 	MoveObjectFn              func(string, string) error
+	CopyObjectFn              func(string, string) error
 	DeleteObjectFn            func(string) error
 }
 
@@ -48,6 +49,14 @@ func (m *AWSMock) PutObject(key string, objectBytes []byte) error {
 		panic("You have to override PutObject function in tests")
 	}
 	return m.PutObjectFn(key, objectBytes)
+}
+
+// CopyObject ...
+func (m *AWSMock) CopyObject(from string, to string) error {
+	if m.CopyObjectFn == nil {
+		panic("You have to override CopyObject function in tests")
+	}
+	return m.CopyObjectFn(from, to)
 }
 
 // MoveObject ...
