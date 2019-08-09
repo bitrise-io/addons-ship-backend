@@ -66,7 +66,7 @@ func New(appEnv *env.AppEnv) *mux.Router {
 			handler: services.ScreenshotsUploadedPatchHandler, allowedMethods: []string{"PATCH", "OPTIONS"},
 		},
 		{
-			path: "/apps/{app-slug}/versions/{version-id}/screenshots/{screenshot-slug}", middleware: services.AuthorizedAppVersionScreenshotMiddleware(appEnv),
+			path: "/apps/{app-slug}/versions/{version-id}/screenshots/{screenshot-id}", middleware: services.AuthorizedAppVersionScreenshotMiddleware(appEnv),
 			handler: services.ScreenshotDeleteHandler, allowedMethods: []string{"DELETE", "OPTIONS"},
 		},
 		{
