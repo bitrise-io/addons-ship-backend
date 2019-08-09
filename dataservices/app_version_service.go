@@ -8,4 +8,5 @@ type AppVersionService interface {
 	Find(*models.AppVersion) (*models.AppVersion, error)
 	FindAll(app *models.App, filterParams map[string]interface{}) ([]models.AppVersion, error)
 	Update(appVersion *models.AppVersion, whitelist []string) (validationErrors []error, dbErr error)
+	Latest(appVersion *models.AppVersion) (*models.AppVersion, error)
 }

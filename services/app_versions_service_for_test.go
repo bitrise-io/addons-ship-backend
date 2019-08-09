@@ -7,6 +7,7 @@ type testAppVersionService struct {
 	findFn    func(*models.AppVersion) (*models.AppVersion, error)
 	findAllFn func(*models.App, map[string]interface{}) ([]models.AppVersion, error)
 	updateFn  func(*models.AppVersion, []string) (validationErrors []error, dbErr error)
+	latestFn  func(*models.AppVersion) (*models.AppVersion, error)
 }
 
 func (a *testAppVersionService) Create(appVersion *models.AppVersion) (*models.AppVersion, []error, error) {
@@ -33,4 +34,11 @@ func (a *testAppVersionService) Update(appVersion *models.AppVersion, whitelist 
 		return a.updateFn(appVersion, whitelist)
 	}
 	panic("You have to override Update function in tests")
+}
+
+func (a *testAppVersionService) Latest(appVersion *models.AppVersion) (*models.AppVersion, error) {
+	if a.latestFn != nil {
+		return a.latestFn(appVersion)
+	}
+	panic("You have to override Latest function in tests")
 }
