@@ -12,7 +12,8 @@ import (
 // AppVersionsGetResponseElement ...
 type AppVersionsGetResponseElement struct {
 	models.AppVersion
-	DistributionType     string   `json:"distributuin_type"`
+	AppInfo              AppData  `json:"app_info"`
+	DistributionType     string   `json:"distribution_type"`
 	Version              string   `json:"version"`
 	MinimumOS            string   `json:"minimum_os,omitempty"`
 	MinimumSDK           string   `json:"minimum_sdk,omitempty"`
@@ -48,7 +49,11 @@ func AppVersionsGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Reque
 		return errors.Wrap(err, "SQL Error")
 	}
 
-	response, err := newAppVersionsGetResponse(appVersions)
+	if env.BitriseAPI == nil {
+		return errors.New("No Bitrise API Service defined for handler")
+	}
+
+	response, err := newAppVersionsGetResponse(appVersions, env)
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -58,14 +63,24 @@ func AppVersionsGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Reque
 	})
 }
 
-func newAppVersionsGetResponse(appVersions []models.AppVersion) ([]AppVersionsGetResponseElement, error) {
+func newAppVersionsGetResponse(appVersions []models.AppVersion, env *env.AppEnv) ([]AppVersionsGetResponseElement, error) {
 	elements := []AppVersionsGetResponseElement{}
 	for _, appVersion := range appVersions {
+		appDetails, err := env.BitriseAPI.GetAppDetails(appVersion.App.BitriseAPIToken, appVersion.App.AppSlug)
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
+		appData := AppData{
+			Title:       appDetails.Title,
+			AppIconURL:  appDetails.AvatarURL,
+			ProjectType: appDetails.ProjectType,
+		}
 		artifactInfo, err := appVersion.ArtifactInfo()
 		if err != nil {
 			return nil, err
 		}
 		elements = append(elements, AppVersionsGetResponseElement{
+			AppInfo:              appData,
 			AppVersion:           appVersion,
 			Version:              artifactInfo.Version,
 			MinimumOS:            artifactInfo.MinimumOS,

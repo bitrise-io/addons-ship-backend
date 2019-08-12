@@ -5,10 +5,12 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/bitrise-io/addons-ship-backend/bitrise"
 	"github.com/bitrise-io/addons-ship-backend/env"
 	"github.com/bitrise-io/addons-ship-backend/models"
 	"github.com/bitrise-io/addons-ship-backend/services"
 	ctxpkg "github.com/bitrise-io/api-utils/context"
+	"github.com/bitrise-io/go-utils/pointers"
 	"github.com/c2fo/testify/require"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
@@ -19,12 +21,13 @@ func Test_AppVersionsGetHandler(t *testing.T) {
 	url := "/apps/{app-slug}/app-versions"
 	handler := services.AppVersionsGetHandler
 
-	behavesAsServiceCravingHandler(t, httpMethod, url, handler, []string{"AppVersionService"}, ControllerTestCase{
+	behavesAsServiceCravingHandler(t, httpMethod, url, handler, []string{"AppVersionService", "BitriseAPI"}, ControllerTestCase{
 		contextElements: map[ctxpkg.RequestContextKey]interface{}{
 			services.ContextKeyAuthorizedAppID: uuid.NewV4(),
 		},
 		env: &env.AppEnv{
 			AppVersionService: &testAppVersionService{},
+			BitriseAPI:        &testBitriseAPI{},
 		},
 	})
 
@@ -34,6 +37,7 @@ func Test_AppVersionsGetHandler(t *testing.T) {
 		},
 		env: &env.AppEnv{
 			AppVersionService: &testAppVersionService{},
+			BitriseAPI:        &testBitriseAPI{},
 		},
 	})
 
@@ -48,6 +52,27 @@ func Test_AppVersionsGetHandler(t *testing.T) {
 						require.Equal(t, app.ID.String(), "211afc15-127a-40f9-8cbe-1dadc1f86cdf")
 						require.Equal(t, filterParams, map[string]interface{}{})
 						return []models.AppVersion{}, nil
+					},
+				},
+				BitriseAPI: &testBitriseAPI{
+					getArtifactsFn: func(string, string, string) ([]bitrise.ArtifactListElementResponseModel, error) {
+						return []bitrise.ArtifactListElementResponseModel{
+							bitrise.ArtifactListElementResponseModel{
+								Title: "my-awesome-app.ipa",
+								ArtifactMeta: &bitrise.ArtifactMeta{
+									ProvisioningInfo: bitrise.ProvisioningInfo{
+										DistributionType: "development",
+									},
+									AppInfo: bitrise.AppInfo{},
+								},
+							},
+						}, nil
+					},
+					getArtifactPublicPageURLFn: func(string, string, string, string) (string, error) {
+						return "", nil
+					},
+					getAppDetailsFn: func(string, string) (*bitrise.AppDetails, error) {
+						return &bitrise.AppDetails{}, nil
 					},
 				},
 			},
@@ -78,6 +103,33 @@ func Test_AppVersionsGetHandler(t *testing.T) {
 						}, nil
 					},
 				},
+				BitriseAPI: &testBitriseAPI{
+					getArtifactsFn: func(string, string, string) ([]bitrise.ArtifactListElementResponseModel, error) {
+						return []bitrise.ArtifactListElementResponseModel{
+							bitrise.ArtifactListElementResponseModel{
+								Title: "my-awesome-app.ipa",
+								ArtifactMeta: &bitrise.ArtifactMeta{
+									ProvisioningInfo: bitrise.ProvisioningInfo{
+										DistributionType: "development",
+									},
+									AppInfo: bitrise.AppInfo{},
+								},
+							},
+						}, nil
+					},
+					getArtifactPublicPageURLFn: func(string, string, string, string) (string, error) {
+						return "", nil
+					},
+					getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
+						require.Equal(t, "test-api-token", apiToken)
+						require.Equal(t, "test-app-slug", appSlug)
+						return &bitrise.AppDetails{
+							Title:       "The Adventures of Stealy",
+							AvatarURL:   pointers.NewStringPtr("https://bit.ly/1LixVJu"),
+							ProjectType: "other",
+						}, nil
+					},
+				},
 			},
 			expectedStatusCode: http.StatusOK,
 			expectedResponse: services.AppVersionsGetResponse{
@@ -87,12 +139,22 @@ func Test_AppVersionsGetHandler(t *testing.T) {
 							Platform: "ios",
 						},
 						Version: "v1.0",
+						AppInfo: services.AppData{
+							Title:       "The Adventures of Stealy",
+							AppIconURL:  pointers.NewStringPtr("https://bit.ly/1LixVJu"),
+							ProjectType: "other",
+						},
 					},
 					services.AppVersionsGetResponseElement{
 						AppVersion: models.AppVersion{
 							Platform: "android",
 						},
 						Version: "v1.12",
+						AppInfo: services.AppData{
+							Title:       "The Adventures of Stealy",
+							AppIconURL:  pointers.NewStringPtr("https://bit.ly/1LixVJu"),
+							ProjectType: "other",
+						},
 					},
 				},
 			},
@@ -174,6 +236,44 @@ func Test_AppVersionsGetHandler(t *testing.T) {
 				},
 			},
 			expectedInternalErr: "invalid character 'i' looking for beginning of value",
+		})
+	})
+
+	t.Run("when error happens at fetching app data from Bitrise API", func(t *testing.T) {
+		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppVersionID: uuid.FromStringOrNil("de438ddc-98e5-4226-a5f4-fd2d53474879"),
+			},
+			env: &env.AppEnv{
+				AppVersionService: &testAppVersionService{
+					findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
+						require.Equal(t, appVersion.ID.String(), "de438ddc-98e5-4226-a5f4-fd2d53474879")
+						return &models.AppVersion{App: models.App{}, Platform: "ios"}, nil
+					},
+				},
+				BitriseAPI: &testBitriseAPI{
+					getArtifactsFn: func(string, string, string) ([]bitrise.ArtifactListElementResponseModel, error) {
+						return []bitrise.ArtifactListElementResponseModel{
+							bitrise.ArtifactListElementResponseModel{
+								Title: "my-awesome-app.ipa",
+								ArtifactMeta: &bitrise.ArtifactMeta{
+									ProvisioningInfo: bitrise.ProvisioningInfo{
+										DistributionType: "development",
+									},
+									AppInfo: bitrise.AppInfo{},
+								},
+							},
+						}, nil
+					},
+					getArtifactPublicPageURLFn: func(string, string, string, string) (string, error) {
+						return "", nil
+					},
+					getAppDetailsFn: func(string, string) (*bitrise.AppDetails, error) {
+						return nil, errors.New("SOME-BITRISE-API-ERROR")
+					},
+				},
+			},
+			expectedInternalErr: "SOME-BITRISE-API-ERROR",
 		})
 	})
 }
