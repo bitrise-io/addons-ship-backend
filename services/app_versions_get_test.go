@@ -26,8 +26,12 @@ func Test_AppVersionsGetHandler(t *testing.T) {
 			services.ContextKeyAuthorizedAppID: uuid.NewV4(),
 		},
 		env: &env.AppEnv{
-			AppVersionService: &testAppVersionService{},
-			BitriseAPI:        &testBitriseAPI{},
+			AppVersionService: &testAppVersionService{
+				findAllFn: func(*models.App, map[string]interface{}) ([]models.AppVersion, error) {
+					return nil, nil
+				},
+			},
+			BitriseAPI: &testBitriseAPI{},
 		},
 	})
 
@@ -182,6 +186,27 @@ func Test_AppVersionsGetHandler(t *testing.T) {
 						}, nil
 					},
 				},
+				BitriseAPI: &testBitriseAPI{
+					getArtifactsFn: func(string, string, string) ([]bitrise.ArtifactListElementResponseModel, error) {
+						return []bitrise.ArtifactListElementResponseModel{
+							bitrise.ArtifactListElementResponseModel{
+								Title: "my-awesome-app.ipa",
+								ArtifactMeta: &bitrise.ArtifactMeta{
+									ProvisioningInfo: bitrise.ProvisioningInfo{
+										DistributionType: "development",
+									},
+									AppInfo: bitrise.AppInfo{},
+								},
+							},
+						}, nil
+					},
+					getArtifactPublicPageURLFn: func(string, string, string, string) (string, error) {
+						return "", nil
+					},
+					getAppDetailsFn: func(string, string) (*bitrise.AppDetails, error) {
+						return &bitrise.AppDetails{}, nil
+					},
+				},
 			},
 			expectedStatusCode: http.StatusOK,
 			expectedResponse: services.AppVersionsGetResponse{
@@ -232,6 +257,27 @@ func Test_AppVersionsGetHandler(t *testing.T) {
 								Platform:         "ios",
 							},
 						}, nil
+					},
+				},
+				BitriseAPI: &testBitriseAPI{
+					getArtifactsFn: func(string, string, string) ([]bitrise.ArtifactListElementResponseModel, error) {
+						return []bitrise.ArtifactListElementResponseModel{
+							bitrise.ArtifactListElementResponseModel{
+								Title: "my-awesome-app.ipa",
+								ArtifactMeta: &bitrise.ArtifactMeta{
+									ProvisioningInfo: bitrise.ProvisioningInfo{
+										DistributionType: "development",
+									},
+									AppInfo: bitrise.AppInfo{},
+								},
+							},
+						}, nil
+					},
+					getArtifactPublicPageURLFn: func(string, string, string, string) (string, error) {
+						return "", nil
+					},
+					getAppDetailsFn: func(string, string) (*bitrise.AppDetails, error) {
+						return &bitrise.AppDetails{}, nil
 					},
 				},
 			},
