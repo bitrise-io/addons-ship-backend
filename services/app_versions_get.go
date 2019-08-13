@@ -68,7 +68,7 @@ func newAppVersionsGetResponse(appVersions []models.AppVersion, env *env.AppEnv)
 	for _, appVersion := range appVersions {
 		appDetails, err := env.BitriseAPI.GetAppDetails(appVersion.App.BitriseAPIToken, appVersion.App.AppSlug)
 		if err != nil {
-			return nil, errors.WithStack(err)
+			return nil, err
 		}
 		appData := AppData{
 			Title:       appDetails.Title,

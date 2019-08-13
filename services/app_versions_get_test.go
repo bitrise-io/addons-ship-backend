@@ -288,13 +288,15 @@ func Test_AppVersionsGetHandler(t *testing.T) {
 	t.Run("when error happens at fetching app data from Bitrise API", func(t *testing.T) {
 		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
 			contextElements: map[ctxpkg.RequestContextKey]interface{}{
+				services.ContextKeyAuthorizedAppID:        uuid.FromStringOrNil("211afc15-127a-40f9-8cbe-1dadc1f86cdf"),
 				services.ContextKeyAuthorizedAppVersionID: uuid.FromStringOrNil("de438ddc-98e5-4226-a5f4-fd2d53474879"),
 			},
 			env: &env.AppEnv{
 				AppVersionService: &testAppVersionService{
-					findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
-						require.Equal(t, appVersion.ID.String(), "de438ddc-98e5-4226-a5f4-fd2d53474879")
-						return &models.AppVersion{App: models.App{}, Platform: "ios"}, nil
+					findAllFn: func(app *models.App, filterParams map[string]interface{}) ([]models.AppVersion, error) {
+						require.Equal(t, app.ID.String(), "211afc15-127a-40f9-8cbe-1dadc1f86cdf")
+						require.Equal(t, filterParams, map[string]interface{}{})
+						return []models.AppVersion{}, nil
 					},
 				},
 				BitriseAPI: &testBitriseAPI{
