@@ -27,8 +27,8 @@ func Test_AppVersionsGetHandler(t *testing.T) {
 		},
 		env: &env.AppEnv{
 			AppVersionService: &testAppVersionService{
-				findAllFn: func(*models.App, map[string]interface{}) ([]models.AppVersion, error) {
-					return nil, nil
+				findAllFn: func(app *models.App, filterParams map[string]interface{}) ([]models.AppVersion, error) {
+					return []models.AppVersion{}, nil
 				},
 			},
 			BitriseAPI: &testBitriseAPI{},
@@ -60,17 +60,7 @@ func Test_AppVersionsGetHandler(t *testing.T) {
 				},
 				BitriseAPI: &testBitriseAPI{
 					getArtifactsFn: func(string, string, string) ([]bitrise.ArtifactListElementResponseModel, error) {
-						return []bitrise.ArtifactListElementResponseModel{
-							bitrise.ArtifactListElementResponseModel{
-								Title: "my-awesome-app.ipa",
-								ArtifactMeta: &bitrise.ArtifactMeta{
-									ProvisioningInfo: bitrise.ProvisioningInfo{
-										DistributionType: "development",
-									},
-									AppInfo: bitrise.AppInfo{},
-								},
-							},
-						}, nil
+						return []bitrise.ArtifactListElementResponseModel{}, nil
 					},
 					getArtifactPublicPageURLFn: func(string, string, string, string) (string, error) {
 						return "", nil
@@ -109,24 +99,12 @@ func Test_AppVersionsGetHandler(t *testing.T) {
 				},
 				BitriseAPI: &testBitriseAPI{
 					getArtifactsFn: func(string, string, string) ([]bitrise.ArtifactListElementResponseModel, error) {
-						return []bitrise.ArtifactListElementResponseModel{
-							bitrise.ArtifactListElementResponseModel{
-								Title: "my-awesome-app.ipa",
-								ArtifactMeta: &bitrise.ArtifactMeta{
-									ProvisioningInfo: bitrise.ProvisioningInfo{
-										DistributionType: "development",
-									},
-									AppInfo: bitrise.AppInfo{},
-								},
-							},
-						}, nil
+						return []bitrise.ArtifactListElementResponseModel{}, nil
 					},
 					getArtifactPublicPageURLFn: func(string, string, string, string) (string, error) {
 						return "", nil
 					},
-					getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
-						require.Equal(t, "test-api-token", apiToken)
-						require.Equal(t, "test-app-slug", appSlug)
+					getAppDetailsFn: func(string, string) (*bitrise.AppDetails, error) {
 						return &bitrise.AppDetails{
 							Title:       "The Adventures of Stealy",
 							AvatarURL:   pointers.NewStringPtr("https://bit.ly/1LixVJu"),
@@ -188,17 +166,7 @@ func Test_AppVersionsGetHandler(t *testing.T) {
 				},
 				BitriseAPI: &testBitriseAPI{
 					getArtifactsFn: func(string, string, string) ([]bitrise.ArtifactListElementResponseModel, error) {
-						return []bitrise.ArtifactListElementResponseModel{
-							bitrise.ArtifactListElementResponseModel{
-								Title: "my-awesome-app.ipa",
-								ArtifactMeta: &bitrise.ArtifactMeta{
-									ProvisioningInfo: bitrise.ProvisioningInfo{
-										DistributionType: "development",
-									},
-									AppInfo: bitrise.AppInfo{},
-								},
-							},
-						}, nil
+						return []bitrise.ArtifactListElementResponseModel{}, nil
 					},
 					getArtifactPublicPageURLFn: func(string, string, string, string) (string, error) {
 						return "", nil
@@ -261,17 +229,7 @@ func Test_AppVersionsGetHandler(t *testing.T) {
 				},
 				BitriseAPI: &testBitriseAPI{
 					getArtifactsFn: func(string, string, string) ([]bitrise.ArtifactListElementResponseModel, error) {
-						return []bitrise.ArtifactListElementResponseModel{
-							bitrise.ArtifactListElementResponseModel{
-								Title: "my-awesome-app.ipa",
-								ArtifactMeta: &bitrise.ArtifactMeta{
-									ProvisioningInfo: bitrise.ProvisioningInfo{
-										DistributionType: "development",
-									},
-									AppInfo: bitrise.AppInfo{},
-								},
-							},
-						}, nil
+						return []bitrise.ArtifactListElementResponseModel{}, nil
 					},
 					getArtifactPublicPageURLFn: func(string, string, string, string) (string, error) {
 						return "", nil
@@ -296,22 +254,17 @@ func Test_AppVersionsGetHandler(t *testing.T) {
 					findAllFn: func(app *models.App, filterParams map[string]interface{}) ([]models.AppVersion, error) {
 						require.Equal(t, app.ID.String(), "211afc15-127a-40f9-8cbe-1dadc1f86cdf")
 						require.Equal(t, filterParams, map[string]interface{}{})
-						return []models.AppVersion{}, nil
+						return []models.AppVersion{
+							models.AppVersion{
+								ArtifactInfoData: json.RawMessage(`{"version":"v1.0"}`),
+								Platform:         "ios",
+							},
+						}, nil
 					},
 				},
 				BitriseAPI: &testBitriseAPI{
 					getArtifactsFn: func(string, string, string) ([]bitrise.ArtifactListElementResponseModel, error) {
-						return []bitrise.ArtifactListElementResponseModel{
-							bitrise.ArtifactListElementResponseModel{
-								Title: "my-awesome-app.ipa",
-								ArtifactMeta: &bitrise.ArtifactMeta{
-									ProvisioningInfo: bitrise.ProvisioningInfo{
-										DistributionType: "development",
-									},
-									AppInfo: bitrise.AppInfo{},
-								},
-							},
-						}, nil
+						return []bitrise.ArtifactListElementResponseModel{}, nil
 					},
 					getArtifactPublicPageURLFn: func(string, string, string, string) (string, error) {
 						return "", nil

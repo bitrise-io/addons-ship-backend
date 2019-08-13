@@ -65,16 +65,21 @@ func AppVersionsGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Reque
 
 func newAppVersionsGetResponse(appVersions []models.AppVersion, env *env.AppEnv) ([]AppVersionsGetResponseElement, error) {
 	elements := []AppVersionsGetResponseElement{}
-	for _, appVersion := range appVersions {
-		appDetails, err := env.BitriseAPI.GetAppDetails(appVersion.App.BitriseAPIToken, appVersion.App.AppSlug)
+
+	var appData AppData
+	if len(appVersions) > 0 {
+		appDetails, err := env.BitriseAPI.GetAppDetails(appVersions[0].App.BitriseAPIToken, appVersions[0].App.AppSlug)
 		if err != nil {
 			return nil, err
 		}
-		appData := AppData{
+		appData = AppData{
 			Title:       appDetails.Title,
 			AppIconURL:  appDetails.AvatarURL,
 			ProjectType: appDetails.ProjectType,
 		}
+	}
+
+	for _, appVersion := range appVersions {
 		artifactInfo, err := appVersion.ArtifactInfo()
 		if err != nil {
 			return nil, err
