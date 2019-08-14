@@ -21,14 +21,14 @@ func Test_AppVersionsGetHandler(t *testing.T) {
 	url := "/apps/{app-slug}/app-versions"
 	handler := services.AppVersionsGetHandler
 
-	behavesAsServiceCravingHandler(t, httpMethod, url, handler, []string{"AppVersionService", "BitriseAPI"}, ControllerTestCase{
+	behavesAsServiceCravingHandler(t, httpMethod, url, handler, []string{"AppService", "BitriseAPI"}, ControllerTestCase{
 		contextElements: map[ctxpkg.RequestContextKey]interface{}{
 			services.ContextKeyAuthorizedAppID: uuid.NewV4(),
 		},
 		env: &env.AppEnv{
-			AppVersionService: &testAppVersionService{
-				findAllFn: func(app *models.App, filterParams map[string]interface{}) ([]models.AppVersion, error) {
-					return []models.AppVersion{}, nil
+			AppService: &testAppService{
+				findFn: func(app *models.App) (*models.App, error) {
+					return &models.App{}, nil
 				},
 			},
 			BitriseAPI: &testBitriseAPI{},
@@ -40,8 +40,8 @@ func Test_AppVersionsGetHandler(t *testing.T) {
 			services.ContextKeyAuthorizedAppID: uuid.NewV4(),
 		},
 		env: &env.AppEnv{
-			AppVersionService: &testAppVersionService{},
-			BitriseAPI:        &testBitriseAPI{},
+			AppService: &testAppService{},
+			BitriseAPI: &testBitriseAPI{},
 		},
 	})
 
@@ -51,11 +51,10 @@ func Test_AppVersionsGetHandler(t *testing.T) {
 				services.ContextKeyAuthorizedAppID: uuid.FromStringOrNil("211afc15-127a-40f9-8cbe-1dadc1f86cdf"),
 			},
 			env: &env.AppEnv{
-				AppVersionService: &testAppVersionService{
-					findAllFn: func(app *models.App, filterParams map[string]interface{}) ([]models.AppVersion, error) {
+				AppService: &testAppService{
+					findFn: func(app *models.App) (*models.App, error) {
 						require.Equal(t, app.ID.String(), "211afc15-127a-40f9-8cbe-1dadc1f86cdf")
-						require.Equal(t, filterParams, map[string]interface{}{})
-						return []models.AppVersion{}, nil
+						return &models.App{}, nil
 					},
 				},
 				BitriseAPI: &testBitriseAPI{
@@ -83,16 +82,18 @@ func Test_AppVersionsGetHandler(t *testing.T) {
 				services.ContextKeyAuthorizedAppID: uuid.NewV4(),
 			},
 			env: &env.AppEnv{
-				AppVersionService: &testAppVersionService{
-					findAllFn: func(app *models.App, filterParams map[string]interface{}) ([]models.AppVersion, error) {
-						return []models.AppVersion{
-							models.AppVersion{
-								Platform:         "ios",
-								ArtifactInfoData: json.RawMessage(`{"version":"v1.0"}`),
-							},
-							models.AppVersion{
-								Platform:         "android",
-								ArtifactInfoData: json.RawMessage(`{"version":"v1.12"}`),
+				AppService: &testAppService{
+					findFn: func(app *models.App) (*models.App, error) {
+						return &models.App{
+							AppVersions: []models.AppVersion{
+								models.AppVersion{
+									Platform:         "ios",
+									ArtifactInfoData: json.RawMessage(`{"version":"v1.0"}`),
+								},
+								models.AppVersion{
+									Platform:         "android",
+									ArtifactInfoData: json.RawMessage(`{"version":"v1.12"}`),
+								},
 							},
 						}, nil
 					},
@@ -150,16 +151,15 @@ func Test_AppVersionsGetHandler(t *testing.T) {
 				services.ContextKeyAuthorizedAppID: uuid.FromStringOrNil("211afc15-127a-40f9-8cbe-1dadc1f86cdf"),
 			},
 			env: &env.AppEnv{
-				AppVersionService: &testAppVersionService{
-					findAllFn: func(app *models.App, filterParams map[string]interface{}) ([]models.AppVersion, error) {
+				AppService: &testAppService{
+					findFn: func(app *models.App) (*models.App, error) {
 						require.Equal(t, app.ID.String(), "211afc15-127a-40f9-8cbe-1dadc1f86cdf")
-						require.Equal(t, filterParams, map[string]interface{}{
-							"platform": "ios",
-						})
-						return []models.AppVersion{
-							models.AppVersion{
-								ArtifactInfoData: json.RawMessage(`{"version":"v1.0"}`),
-								Platform:         "ios",
+						return &models.App{
+							AppVersions: []models.AppVersion{
+								models.AppVersion{
+									Platform:         "ios",
+									ArtifactInfoData: json.RawMessage(`{"version":"v1.0"}`),
+								},
 							},
 						}, nil
 					},
@@ -196,9 +196,9 @@ func Test_AppVersionsGetHandler(t *testing.T) {
 				services.ContextKeyAuthorizedAppID: uuid.NewV4(),
 			},
 			env: &env.AppEnv{
-				AppVersionService: &testAppVersionService{
-					findAllFn: func(app *models.App, filterParams map[string]interface{}) ([]models.AppVersion, error) {
-						return []models.AppVersion{}, errors.New("SOME-SQL-ERROR")
+				AppService: &testAppService{
+					findFn: func(app *models.App) (*models.App, error) {
+						return &models.App{}, errors.New("SOME-SQL-ERROR")
 					},
 				},
 			},
@@ -213,16 +213,15 @@ func Test_AppVersionsGetHandler(t *testing.T) {
 				services.ContextKeyAuthorizedAppID: uuid.FromStringOrNil("211afc15-127a-40f9-8cbe-1dadc1f86cdf"),
 			},
 			env: &env.AppEnv{
-				AppVersionService: &testAppVersionService{
-					findAllFn: func(app *models.App, filterParams map[string]interface{}) ([]models.AppVersion, error) {
+				AppService: &testAppService{
+					findFn: func(app *models.App) (*models.App, error) {
 						require.Equal(t, app.ID.String(), "211afc15-127a-40f9-8cbe-1dadc1f86cdf")
-						require.Equal(t, filterParams, map[string]interface{}{
-							"platform": "ios",
-						})
-						return []models.AppVersion{
-							models.AppVersion{
-								ArtifactInfoData: json.RawMessage(`invalid JSON`),
-								Platform:         "ios",
+						return &models.App{
+							AppVersions: []models.AppVersion{
+								models.AppVersion{
+									ArtifactInfoData: json.RawMessage(`invalid JSON`),
+									Platform:         "ios",
+								},
 							},
 						}, nil
 					},
@@ -250,14 +249,15 @@ func Test_AppVersionsGetHandler(t *testing.T) {
 				services.ContextKeyAuthorizedAppVersionID: uuid.FromStringOrNil("de438ddc-98e5-4226-a5f4-fd2d53474879"),
 			},
 			env: &env.AppEnv{
-				AppVersionService: &testAppVersionService{
-					findAllFn: func(app *models.App, filterParams map[string]interface{}) ([]models.AppVersion, error) {
+				AppService: &testAppService{
+					findFn: func(app *models.App) (*models.App, error) {
 						require.Equal(t, app.ID.String(), "211afc15-127a-40f9-8cbe-1dadc1f86cdf")
-						require.Equal(t, filterParams, map[string]interface{}{})
-						return []models.AppVersion{
-							models.AppVersion{
-								ArtifactInfoData: json.RawMessage(`{"version":"v1.0"}`),
-								Platform:         "ios",
+						return &models.App{
+							AppVersions: []models.AppVersion{
+								models.AppVersion{
+									ArtifactInfoData: json.RawMessage(`{"version":"v1.0"}`),
+									Platform:         "ios",
+								},
 							},
 						}, nil
 					},
