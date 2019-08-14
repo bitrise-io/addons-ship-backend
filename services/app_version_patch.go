@@ -12,6 +12,11 @@ import (
 	"github.com/pkg/errors"
 )
 
+// AppVersionPutRequestData ...
+type AppVersionPutRequestData struct {
+	AppStoreInfo models.AppStoreInfo `json:"app_store_info"`
+}
+
 // AppVersionPutResponseData ...
 type AppVersionPutResponseData struct {
 	*models.AppVersion
@@ -33,12 +38,12 @@ func AppVersionPutHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Reques
 		return errors.New("No App Version Service defined for handler")
 	}
 
-	var params models.AppStoreInfo
+	var params AppVersionPutRequestData
 	defer httprequest.BodyCloseWithErrorLog(r)
 	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
 		return httpresponse.RespondWithBadRequestError(w, "Invalid request body, JSON decode failed")
 	}
-	appStoreInfo, err := json.Marshal(params)
+	appStoreInfo, err := json.Marshal(params.AppStoreInfo)
 	if err != nil {
 		return errors.WithStack(err)
 	}

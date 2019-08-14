@@ -94,7 +94,7 @@ func Test_AppVersionPutHandler(t *testing.T) {
 					},
 				},
 			},
-			requestBody:        `{"short_description":"Some short description"}`,
+			requestBody:        `{"app_store_info":{"short_description":"Some short description"}}`,
 			expectedStatusCode: http.StatusOK,
 			expectedResponse: services.AppVersionPutResponse{
 				Data: services.AppVersionPutResponseData{

@@ -27,7 +27,7 @@ app_versions:
       keywords: awesome,app_version_1
       review_notes: Some review notes
       support_url: https://bit.ly/1GlKYXQ
-      marteking_url: https://bit.ly/1OWTjYk
+      marketing_url: https://bit.ly/1OWTjYk
   - id: 2fe1d042-657e-4624-83a9-2bc3abef5c2c
     app_id: 1278ddd3-0b24-4cd6-8ca7-537748b5c284
     platform: android
@@ -45,7 +45,7 @@ app_versions:
       keywords: awesome,app_version_2
       review_notes: Some review notes 2
       support_url: https://bit.ly/1GlKYXQ
-      marteking_url: https://bit.ly/1OWTjYk
+      marketing_url: https://bit.ly/1OWTjYk
 screenshots:
   - id: 9928de5b-c986-42ce-be1d-e99728a819b2
     app_version_id: e244f7ee-d923-483b-b90b-200a21f0ddf1
