@@ -32,8 +32,8 @@ func AppVersionsGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Reque
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	if env.AppVersionService == nil {
-		return errors.New("No App Version Service defined for handler")
+	if env.AppService == nil {
+		return errors.New("No App Service defined for handler")
 	}
 
 	filterParams := map[string]interface{}{}
@@ -41,10 +41,7 @@ func AppVersionsGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Reque
 		filterParams["platform"] = platformFilter
 	}
 
-	appVersions, err := env.AppVersionService.FindAll(
-		&models.App{Record: models.Record{ID: authorizedAppID}},
-		filterParams,
-	)
+	app, err := env.AppService.Find(&models.App{Record: models.Record{ID: authorizedAppID}})
 	if err != nil {
 		return errors.Wrap(err, "SQL Error")
 	}
@@ -53,7 +50,7 @@ func AppVersionsGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Reque
 		return errors.New("No Bitrise API Service defined for handler")
 	}
 
-	response, err := newAppVersionsGetResponse(appVersions, env)
+	response, err := newAppVersionsGetResponse(app, env)
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -63,23 +60,20 @@ func AppVersionsGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Reque
 	})
 }
 
-func newAppVersionsGetResponse(appVersions []models.AppVersion, env *env.AppEnv) ([]AppVersionsGetResponseElement, error) {
+func newAppVersionsGetResponse(app *models.App, env *env.AppEnv) ([]AppVersionsGetResponseElement, error) {
 	elements := []AppVersionsGetResponseElement{}
 
-	var appData AppData
-	if len(appVersions) > 0 {
-		appDetails, err := env.BitriseAPI.GetAppDetails(appVersions[0].App.BitriseAPIToken, appVersions[0].App.AppSlug)
-		if err != nil {
-			return nil, err
-		}
-		appData = AppData{
-			Title:       appDetails.Title,
-			AppIconURL:  appDetails.AvatarURL,
-			ProjectType: appDetails.ProjectType,
-		}
+	appDetails, err := env.BitriseAPI.GetAppDetails(app.BitriseAPIToken, app.AppSlug)
+	if err != nil {
+		return nil, err
+	}
+	appData := AppData{
+		Title:       appDetails.Title,
+		AppIconURL:  appDetails.AvatarURL,
+		ProjectType: appDetails.ProjectType,
 	}
 
-	for _, appVersion := range appVersions {
+	for _, appVersion := range app.AppVersions {
 		artifactInfo, err := appVersion.ArtifactInfo()
 		if err != nil {
 			return nil, err
