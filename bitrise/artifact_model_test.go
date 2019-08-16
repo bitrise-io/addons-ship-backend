@@ -15,3 +15,23 @@ func Test_ArtifactListElementResponseModel_IsXCodeArchive(t *testing.T) {
 		require.False(t, bitrise.ArtifactListElementResponseModel{Title: "export_options.plist"}.IsXCodeArchive())
 	})
 }
+
+func Test_ArtifactListElementResponseModel_IsIPA(t *testing.T) {
+	require.True(t, bitrise.ArtifactListElementResponseModel{Title: "app.ipa"}.IsIPA())
+	require.False(t, bitrise.ArtifactListElementResponseModel{Title: "app.apk"}.IsIPA())
+}
+
+func Test_ArtifactListElementResponseModel_IsAAB(t *testing.T) {
+	require.True(t, bitrise.ArtifactListElementResponseModel{Title: "app.aab"}.IsAAB())
+	require.False(t, bitrise.ArtifactListElementResponseModel{Title: "app.apk"}.IsAAB())
+}
+
+func Test_ArtifactListElementResponseModel_IsAPK(t *testing.T) {
+	require.True(t, bitrise.ArtifactListElementResponseModel{Title: "app.apk"}.IsAPK())
+	require.False(t, bitrise.ArtifactListElementResponseModel{Title: "app.exe"}.IsAPK())
+}
+
+func Test_ArtifactListElementResponseModel_IsUniversalAPK(t *testing.T) {
+	require.True(t, bitrise.ArtifactListElementResponseModel{Title: "app.universal.apk"}.IsUniversalAPK())
+	require.False(t, bitrise.ArtifactListElementResponseModel{Title: "app.apk"}.IsUniversalAPK())
+}

@@ -109,7 +109,12 @@ func (a ArtifactListElementResponseModel) IsAAB() bool {
 	return filepath.Ext(a.Title) == ".aab"
 }
 
+// IsAPK ...
+func (a ArtifactListElementResponseModel) IsAPK() bool {
+	return filepath.Ext(a.Title) == ".apk"
+}
+
 // IsUniversalAPK ...
 func (a ArtifactListElementResponseModel) IsUniversalAPK() bool {
-	return strings.Contains(strings.ToLower(a.Title), "universal") && filepath.Ext(a.Title) == ".apk"
+	return strings.Contains(strings.ToLower(a.Title), "universal") && a.IsAPK()
 }

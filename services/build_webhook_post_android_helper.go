@@ -48,7 +48,7 @@ func prepareAppVersionForAndroidPlatform(w http.ResponseWriter, r *http.Request,
 
 func hasAndroidArtifact(artifacts []bitrise.ArtifactListElementResponseModel) bool {
 	for _, artifact := range artifacts {
-		if artifact.IsAAB() || artifact.IsUniversalAPK() {
+		if artifact.IsAAB() || artifact.IsAPK() {
 			return true
 		}
 	}
