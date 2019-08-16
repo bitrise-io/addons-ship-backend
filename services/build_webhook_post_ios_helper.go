@@ -6,21 +6,14 @@ import (
 	"reflect"
 
 	"github.com/bitrise-io/addons-ship-backend/bitrise"
-	"github.com/bitrise-io/addons-ship-backend/env"
 	"github.com/bitrise-io/addons-ship-backend/models"
 	"github.com/pkg/errors"
 )
 
-func prepareAppVersionForIosPlatform(env *env.AppEnv, w http.ResponseWriter,
-	r *http.Request, apiToken, appSlug, buildSlug string) (*models.AppVersion, error) {
-	artifacts, err := env.BitriseAPI.GetArtifacts(apiToken, appSlug, buildSlug)
-	if err != nil {
-		return nil, errors.WithStack(err)
-	}
-
+func prepareAppVersionForIosPlatform(w http.ResponseWriter, r *http.Request, artifacts []bitrise.ArtifactListElementResponseModel, buildSlug string) (*models.AppVersion, error) {
 	selectedArtifact, _, _, _ := selectIosArtifact(artifacts)
 	if selectedArtifact == nil || reflect.DeepEqual(*selectedArtifact, bitrise.ArtifactListElementResponseModel{}) {
-		return nil, errors.New("No artifact found")
+		return nil, errors.New("No iOS artifact found")
 	}
 
 	if selectedArtifact.ArtifactMeta == nil {
@@ -63,6 +56,16 @@ func prepareAppVersionForIosPlatform(env *env.AppEnv, w http.ResponseWriter,
 		BuildSlug:        buildSlug,
 		ArtifactInfoData: artifactInfoData,
 	}, nil
+}
+
+func hasIosArtifact(artifacts []bitrise.ArtifactListElementResponseModel) bool {
+	for _, artifact := range artifacts {
+		if artifact.IsIPA() || artifact.IsXCodeArchive() {
+			return true
+		}
+	}
+
+	return false
 }
 
 func selectIosArtifact(artifacts []bitrise.ArtifactListElementResponseModel) (*bitrise.ArtifactListElementResponseModel, bool, bool, string) {

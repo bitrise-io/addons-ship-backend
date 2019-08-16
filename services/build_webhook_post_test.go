@@ -80,11 +80,16 @@ func Test_BuildWebhookHandler(t *testing.T) {
 							return &models.AppSettings{
 								IosWorkflow:     "some-ios-wf",
 								AndroidWorkflow: "some-android-wf",
+								App:             &models.App{},
 							}, nil
 						},
 					},
 					AppVersionService: &testAppVersionService{},
-					BitriseAPI:        &testBitriseAPI{},
+					BitriseAPI: &testBitriseAPI{
+						getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
+							return []bitrise.ArtifactListElementResponseModel{}, nil
+						},
+					},
 					AppContactService: &testAppContactService{},
 					WorkerService:     &testWorkerService{},
 				},
@@ -511,8 +516,8 @@ func Test_BuildWebhookHandler(t *testing.T) {
 						AppContactService: &testAppContactService{},
 						WorkerService:     &testWorkerService{},
 					},
-					requestBody:         `{"build_slug":"test-build-slug","build_triggered_workflow":"ios-wf"}`,
-					expectedInternalErr: "No artifact found",
+					requestBody:        `{"build_slug":"test-build-slug","build_triggered_workflow":"ios-wf"}`,
+					expectedStatusCode: http.StatusOK,
 				})
 			})
 
@@ -1411,8 +1416,8 @@ func Test_BuildWebhookHandler(t *testing.T) {
 						AppContactService: &testAppContactService{},
 						WorkerService:     &testWorkerService{},
 					},
-					requestBody:         `{"build_slug":"test-build-slug"}`,
-					expectedInternalErr: "No artifact found",
+					requestBody:        `{"build_slug":"test-build-slug"}`,
+					expectedStatusCode: http.StatusOK,
 				})
 			})
 

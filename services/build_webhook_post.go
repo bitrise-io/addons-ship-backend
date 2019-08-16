@@ -73,12 +73,19 @@ func BuildWebhookHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request
 		}
 
 		app := appSettings.App
-		if appSettings.IosWorkflow == "" || (params.BuildTriggeredWorkflow != "" && strings.Contains(appSettings.IosWorkflow, params.BuildTriggeredWorkflow)) {
+
+		artifacts, err := env.BitriseAPI.GetArtifacts(app.BitriseAPIToken, app.AppSlug, params.BuildSlug)
+		if err != nil {
+			return errors.WithStack(err)
+		}
+
+		workflowInWhitelist := params.BuildTriggeredWorkflow != "" && strings.Contains(appSettings.IosWorkflow, params.BuildTriggeredWorkflow)
+		if (appSettings.IosWorkflow == "" || workflowInWhitelist) && hasIosArtifact(artifacts) {
 			latestAppVersion, err := env.AppVersionService.Latest(&models.AppVersion{AppID: app.ID, Platform: "ios"})
 			if err != nil && errors.Cause(err) != gorm.ErrRecordNotFound {
 				return errors.Wrap(err, "SQL Error")
 			}
-			appVersion, err := prepareAppVersionForIosPlatform(env, w, r, app.BitriseAPIToken, app.AppSlug, params.BuildSlug)
+			appVersion, err := prepareAppVersionForIosPlatform(w, r, artifacts, params.BuildSlug)
 			if err != nil {
 				return err
 			}
@@ -107,12 +114,13 @@ func BuildWebhookHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request
 			}
 		}
 
-		if appSettings.AndroidWorkflow == "" || (params.BuildTriggeredWorkflow != "" && strings.Contains(appSettings.AndroidWorkflow, params.BuildTriggeredWorkflow)) {
+		workflowInWhitelist = params.BuildTriggeredWorkflow != "" && strings.Contains(appSettings.AndroidWorkflow, params.BuildTriggeredWorkflow)
+		if (appSettings.AndroidWorkflow == "" || workflowInWhitelist) && hasAndroidArtifact(artifacts) {
 			latestAppVersion, err := env.AppVersionService.Latest(&models.AppVersion{AppID: app.ID, Platform: "android"})
 			if err != nil && errors.Cause(err) != gorm.ErrRecordNotFound {
 				return errors.Wrap(err, "SQL Error")
 			}
-			appVersion, err := prepareAppVersionForAndroidPlatform(env, w, r, app.BitriseAPIToken, app.AppSlug, params.BuildSlug)
+			appVersion, err := prepareAppVersionForAndroidPlatform(w, r, artifacts, params.BuildSlug)
 			if err != nil {
 				return err
 			}
