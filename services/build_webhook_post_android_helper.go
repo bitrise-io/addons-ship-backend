@@ -6,23 +6,17 @@ import (
 	"reflect"
 
 	"github.com/bitrise-io/addons-ship-backend/bitrise"
-	"github.com/bitrise-io/addons-ship-backend/env"
 	"github.com/bitrise-io/addons-ship-backend/models"
 	"github.com/pkg/errors"
 )
 
-func prepareAppVersionForAndroidPlatform(env *env.AppEnv, w http.ResponseWriter,
-	r *http.Request, apiToken, appSlug, buildSlug string) (*models.AppVersion, error) {
-	artifacts, err := env.BitriseAPI.GetArtifacts(apiToken, appSlug, buildSlug)
-	if err != nil {
-		return nil, errors.WithStack(err)
-	}
-
+func prepareAppVersionForAndroidPlatform(w http.ResponseWriter, r *http.Request, artifacts []bitrise.ArtifactListElementResponseModel, buildSlug string) (*models.AppVersion, error) {
 	selectedArtifact, _, _, _ := selectAndroidArtifact(artifacts)
+
 	if selectedArtifact == nil || reflect.DeepEqual(*selectedArtifact, bitrise.ArtifactListElementResponseModel{}) {
 		splitAPKs := checkForSplitAPKs(artifacts)
 		if len(splitAPKs) == 0 {
-			return nil, errors.New("No artifact found")
+			return nil, errors.New("No Android artifact found")
 		}
 		selectedArtifact = &splitAPKs[0]
 	}
@@ -50,6 +44,16 @@ func prepareAppVersionForAndroidPlatform(env *env.AppEnv, w http.ResponseWriter,
 		BuildSlug:        buildSlug,
 		ArtifactInfoData: artifactInfoData,
 	}, nil
+}
+
+func hasAndroidArtifact(artifacts []bitrise.ArtifactListElementResponseModel) bool {
+	for _, artifact := range artifacts {
+		if artifact.IsAAB() || artifact.IsUniversalAPK() {
+			return true
+		}
+	}
+
+	return false
 }
 
 func selectAndroidArtifact(artifacts []bitrise.ArtifactListElementResponseModel) (*bitrise.ArtifactListElementResponseModel, bool, bool, string) {
