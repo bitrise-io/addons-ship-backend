@@ -27,6 +27,13 @@ func main() {
 
 	workerMode := os.Getenv("WORKER") == "true"
 	if workerMode {
+		err := dataservices.InitializeConnection(dataservices.ConnectionParams{}, true)
+		if err != nil {
+			logger.Error("Failed to initialize DB connection", zap.Any("error", err))
+			os.Exit(1)
+		}
+		defer dataservices.Close()
+
 		appEnv, err := env.New(dataservices.GetDB())
 		if err != nil {
 			logger.Error("Failed to initialize Application Environment object for worker", zap.Any("error", err))

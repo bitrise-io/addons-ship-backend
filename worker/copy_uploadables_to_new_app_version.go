@@ -1,11 +1,14 @@
 package worker
 
 import (
+	"net/url"
+
 	"github.com/bitrise-io/addons-ship-backend/models"
 	"github.com/gocraft/work"
 	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
-	"github.com/satori/go.uuid"
+	uuid "github.com/satori/go.uuid"
+	"go.uber.org/zap"
 )
 
 var copyUploadablesToNewAppVersion = "copy_uploadables_to_new_app_version"
@@ -48,9 +51,15 @@ func (c *Context) CopyUploadablesToNewAppVersion(job *work.Job) error {
 			return errors.Errorf("Validation errors: %#v", verrs)
 		}
 
+		c.env.Logger.Info("[i] CopyUploadablesToNewAppVersion: Copying S3 files...")
+
 		for idx, sc := range originalScreenshots {
-			err = c.env.AWS.CopyObject(sc.AWSPath(), createsScreenshots[idx].AWSPath())
+			from := url.QueryEscape(sc.AWSPath())
+			to := createsScreenshots[idx].AWSPath()
+
+			err = c.env.AWS.CopyObject(from, to)
 			if err != nil {
+				c.env.Logger.Error("[!] CopyUploadablesToNewAppVersion: Failed to copy AWS file", zap.Any("error", err))
 				return errors.WithStack(err)
 			}
 		}
@@ -74,7 +83,9 @@ func (c *Context) CopyUploadablesToNewAppVersion(job *work.Job) error {
 			return errors.Errorf("Validation error: %#v", verrs)
 		}
 
-		err = c.env.AWS.CopyObject(originalFeatureGraphic.AWSPath(), createsFeatureGraphic.AWSPath())
+		from := url.QueryEscape(originalFeatureGraphic.AWSPath())
+		to := createsFeatureGraphic.AWSPath()
+		err = c.env.AWS.CopyObject(from, to)
 		if err != nil {
 			return errors.WithStack(err)
 		}
