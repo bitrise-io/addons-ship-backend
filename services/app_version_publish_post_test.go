@@ -107,6 +107,7 @@ func Test_AppVersionPublishPostHandler(t *testing.T) {
 							App: models.App{
 								AppSlug:         "test-app-slug",
 								BitriseAPIToken: "bitrise-api-addon-token",
+								APIToken:        "addon-access-token",
 							},
 							Platform:         "ios",
 							AppStoreInfoData: json.RawMessage(`{}`),
@@ -122,7 +123,9 @@ func Test_AppVersionPublishPostHandler(t *testing.T) {
 						return &bitrise.ArtifactData{Slug: "test-artifact-slug"}, nil
 					},
 					triggerDENTaskFn: func(params bitrise.TaskParams) (*bitrise.TriggerResponse, error) {
-						require.Equal(t, `{"BITRISE_APP_SLUG":"test-app-slug","BITRISE_ARTIFACT_SLUG":"test-artifact-slug","BITRISE_BUILD_SLUG":"test-build-slug"}`, params.InlineEnvs)
+						require.Equal(t, `{"BITRISE_APP_SLUG":"test-app-slug","BITRISE_ARTIFACT_SLUG":"test-artifact-slug"`+
+							`,"BITRISE_BUILD_SLUG":"test-build-slug","CONFIG_JSON_URL":"http://ship.addon.url/apps/test-app-slug/versions/de438ddc-98e5-4226-a5f4-fd2d53474879/ios-config"`+
+							`,"SHIP_ADDON_ACCESS_TOKEN":"addon-access-token"}`, params.InlineEnvs)
 						require.Equal(t, `{"BITRISE_ACCESS_TOKEN":"bitrise-api-addon-token"}`, params.Secrets)
 						require.Equal(t, "http://ship.addon.url/task-webhook", params.WebhookURL)
 						require.Equal(t, "resign_archive_app_store", params.Workflow)
@@ -163,6 +166,7 @@ func Test_AppVersionPublishPostHandler(t *testing.T) {
 							App: models.App{
 								AppSlug:         "test-app-slug",
 								BitriseAPIToken: "bitrise-api-addon-token",
+								APIToken:        "addon-access-token",
 							},
 							Platform:         "android",
 							AppStoreInfoData: json.RawMessage(`{}`),
@@ -178,7 +182,9 @@ func Test_AppVersionPublishPostHandler(t *testing.T) {
 						return &bitrise.ArtifactData{Slug: "test-artifact-slug"}, nil
 					},
 					triggerDENTaskFn: func(params bitrise.TaskParams) (*bitrise.TriggerResponse, error) {
-						require.Equal(t, `{"CONFIG_JSON_URL":"http://ship.addon.url/apps/test-app-slug/versions/de438ddc-98e5-4226-a5f4-fd2d53474879/config","GIT_REPOSITORY_URL":"https://git_user:git_pwd@github.com/bitrise-io/addons-ship-bg-worker-task-android"}`, params.InlineEnvs)
+						require.Equal(t, `{"CONFIG_JSON_URL":"http://ship.addon.url/apps/test-app-slug/versions/de438ddc-98e5-4226-a5f4-fd2d53474879/android-config"`+
+							`,"GIT_REPOSITORY_URL":"https://git_user:git_pwd@github.com/bitrise-io/addons-ship-bg-worker-task-android"`+
+							`,"SHIP_ADDON_ACCESS_TOKEN":"addon-access-token"}`, params.InlineEnvs)
 						require.Equal(t, "http://ship.addon.url/task-webhook", params.WebhookURL)
 						require.Equal(t, "resign_android", params.Workflow)
 						require.Equal(t, `{"ADDON_SHIP_ACCESS_TOKEN":"super-secret-token"}`, params.Secrets)

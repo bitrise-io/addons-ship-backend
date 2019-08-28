@@ -72,7 +72,7 @@ func AppVersionPublishPostHandler(env *env.AppEnv, w http.ResponseWriter, r *htt
 			"BITRISE_BUILD_SLUG":      appVersion.BuildSlug,
 			"BITRISE_ARTIFACT_SLUG":   artifactData.Slug,
 			"CONFIG_JSON_URL":         fmt.Sprintf("%s/apps/%s/versions/%s/ios-config", env.AddonHostURL, appVersion.App.AppSlug, authorizedAppVersionID),
-			"SHIP-ADDON-ACCESS-TOKEN": appVersion.App.APIToken,
+			"SHIP_ADDON_ACCESS_TOKEN": appVersion.App.APIToken,
 		}
 		secrets = map[string]string{"BITRISE_ACCESS_TOKEN": appVersion.App.BitriseAPIToken}
 	case "android":
@@ -83,7 +83,7 @@ func AppVersionPublishPostHandler(env *env.AppEnv, w http.ResponseWriter, r *htt
 		inlineEnvs = map[string]string{
 			"CONFIG_JSON_URL":         fmt.Sprintf("%s/apps/%s/versions/%s/android-config", env.AddonHostURL, appVersion.App.AppSlug, authorizedAppVersionID),
 			"GIT_REPOSITORY_URL":      fmt.Sprintf("https://%s:%s@github.com/bitrise-io/addons-ship-bg-worker-task-android", cloneUser, clonePwd),
-			"SHIP-ADDON-ACCESS-TOKEN": appVersion.App.APIToken,
+			"SHIP_ADDON_ACCESS_TOKEN": appVersion.App.APIToken,
 		}
 		secrets = map[string]string{"ADDON_SHIP_ACCESS_TOKEN": env.AddonAccessToken}
 	}
