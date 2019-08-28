@@ -18,7 +18,10 @@ func (s *FeatureGraphicService) Create(featureGraphic *FeatureGraphic) (*Feature
 	if result.Error != nil {
 		return nil, nil, result.Error
 	}
-	return featureGraphic, nil, nil
+
+	return featureGraphic, nil, s.DB.Where("id = ?", featureGraphic.ID).
+		Preload("AppVersion").Preload("AppVersion.App").
+		First(featureGraphic).Error
 }
 
 // Find ...
