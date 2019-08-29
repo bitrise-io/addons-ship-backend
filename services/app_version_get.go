@@ -135,5 +135,7 @@ func newArtifactVersionGetResponse(appVersion *models.AppVersion, env *env.AppEn
 		MinimumSDK:           artifactInfo.MinimumSDK,
 		Size:                 artifactInfo.Size,
 		SupportedDeviceTypes: artifactInfo.SupportedDeviceTypes,
+		BundleID:             artifactInfo.BundleID,
+		PackageName:          artifactInfo.PackageName,
 	}, nil
 }

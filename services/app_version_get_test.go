@@ -115,7 +115,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 									AppSlug:         "test-app-slug",
 								},
 								BuildSlug:        "test-build-slug",
-								ArtifactInfoData: json.RawMessage(`{"version":"v1.0","distribution_type":"app-store","size":1024,"minimum_os":"11.1"}`),
+								ArtifactInfoData: json.RawMessage(`{"version":"v1.0","distribution_type":"app-store","size":1024,"minimum_os":"11.1","bundle_id":"test.app"}`),
 							}, nil
 						},
 					},
@@ -174,6 +174,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 							ShortDescription: "Some shorter description",
 						},
 						PublishEnabled: true,
+						BundleID:       "test.app",
 					},
 				},
 			})
@@ -195,7 +196,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 									AppSlug:         "test-app-slug",
 								},
 								BuildSlug:        "test-build-slug",
-								ArtifactInfoData: json.RawMessage(`{"version":"v1.0","minimum_os":"11.1"}`),
+								ArtifactInfoData: json.RawMessage(`{"version":"v1.0","minimum_os":"11.1","bundle_id":"test.app"}`),
 							}, nil
 						},
 					},
@@ -248,6 +249,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 							ShortDescription: "Some shorter description",
 						},
 						PublishEnabled: true,
+						BundleID:       "test.app",
 					},
 				},
 			})
@@ -267,7 +269,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 								App: models.App{
 									BitriseAPIToken: "test-api-token",
 								},
-								ArtifactInfoData: json.RawMessage(`{"version":"v1.0","distribution_type":"development","minimum_os":"10.1"}`),
+								ArtifactInfoData: json.RawMessage(`{"version":"v1.0","distribution_type":"development","minimum_os":"10.1","bundle_id":"test.app"}`),
 							}, nil
 						},
 					},
@@ -315,6 +317,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 						AppStoreInfo: models.AppStoreInfo{
 							ShortDescription: "Some shorter description",
 						},
+						BundleID: "test.app",
 					},
 				},
 			})
@@ -334,7 +337,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 								App: models.App{
 									BitriseAPIToken: "test-api-token",
 								},
-								ArtifactInfoData: json.RawMessage(`{"version":"v1.0","distribution_type":"development","minimum_os":"10.1","supported_device_types":["iPhone","iPod Touch","iPad"]}`),
+								ArtifactInfoData: json.RawMessage(`{"version":"v1.0","distribution_type":"development","minimum_os":"10.1","supported_device_types":["iPhone","iPod Touch","iPad"],"bundle_id":"test.app"}`),
 							}, nil
 						},
 					},
@@ -380,6 +383,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 							AppIconURL:  pointers.NewStringPtr("https://bit.ly/1LixVJu"),
 							ProjectType: "ios",
 						},
+						BundleID: "test.app",
 					},
 				},
 			})
@@ -399,7 +403,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 								App: models.App{
 									BitriseAPIToken: "test-api-token",
 								},
-								ArtifactInfoData: json.RawMessage(`{"version":"v1.0","minimum_os":"10.1","supported_device_types":["Unknown"]}`),
+								ArtifactInfoData: json.RawMessage(`{"version":"v1.0","minimum_os":"10.1","supported_device_types":["Unknown"],"bundle_id":"test.app"}`),
 							}, nil
 						},
 					},
@@ -444,6 +448,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 							AppIconURL:  pointers.NewStringPtr("https://bit.ly/1LixVJu"),
 							ProjectType: "ios",
 						},
+						BundleID: "test.app",
 					},
 				},
 			})
@@ -571,7 +576,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 							return &models.AppVersion{
 								App:              models.App{},
 								AppStoreInfoData: json.RawMessage(`{}`),
-								ArtifactInfoData: json.RawMessage(`{}`),
+								ArtifactInfoData: json.RawMessage(`{"package_name":"test.package"}`),
 								Platform:         "android",
 							}, nil
 						},
@@ -600,6 +605,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 					Data: services.AppVersionGetResponseData{
 						AppVersion:     &models.AppVersion{Platform: "android"},
 						PublishEnabled: true,
+						PackageName:    "test.package",
 					},
 				},
 			})
