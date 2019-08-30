@@ -57,7 +57,6 @@ func NewPool(urlStr string, maxIdle, maxActive int) *redis.Pool {
 			}
 			c, err := redis.Dial("tcp", url, redis.DialPassword(pass))
 			if err != nil {
-				c.Close()
 				return nil, errors.WithStack(err)
 			}
 			return c, nil
