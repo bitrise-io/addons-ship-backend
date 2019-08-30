@@ -1,7 +1,6 @@
 package services
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -89,10 +88,10 @@ func AppVersionPublishPostHandler(env *env.AppEnv, w http.ResponseWriter, r *htt
 	// 	return errors.WithStack(err)
 	// }
 
-	secretsBytes, err := json.Marshal(secrets)
-	if err != nil {
-		return errors.WithStack(err)
-	}
+	// secretsBytes, err := json.Marshal(secrets)
+	// if err != nil {
+	// 	return errors.WithStack(err)
+	// }
 
 	if env.PublishTaskService == nil {
 		return errors.New("No Publish Task Service defined for handler")
@@ -102,7 +101,7 @@ func AppVersionPublishPostHandler(env *env.AppEnv, w http.ResponseWriter, r *htt
 		Workflow:    workflowToTrigger,
 		BuildConfig: config,
 		InlineEnvs:  inlineEnvs,
-		Secrets:     string(secretsBytes),
+		Secrets:     secrets,
 		WebhookURL:  env.AddonHostURL + "/task-webhook",
 	})
 	response, err := env.BitriseAPI.TriggerDENTask(bitrise.TaskParams{
@@ -110,7 +109,7 @@ func AppVersionPublishPostHandler(env *env.AppEnv, w http.ResponseWriter, r *htt
 		Workflow:    workflowToTrigger,
 		BuildConfig: config,
 		InlineEnvs:  inlineEnvs,
-		Secrets:     string(secretsBytes),
+		Secrets:     secrets,
 		WebhookURL:  env.AddonHostURL + "/task-webhook",
 	})
 	if err != nil {
