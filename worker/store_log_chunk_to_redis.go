@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/bitrise-io/addons-ship-backend/models"
-	"github.com/bitrise-io/addons-ship-backend/redis"
 	"github.com/gocraft/work"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
@@ -22,8 +21,7 @@ func (c *Context) StoreLogChunkToRedis(job *work.Job) error {
 		return errors.New("Failed to get task_id")
 	}
 	chunkCountRedisKey := fmt.Sprintf("%s_chunk_count", taskID)
-	redisClient := redis.New()
-	latestChunkIndex, err := redisClient.GetInt64(chunkCountRedisKey)
+	latestChunkIndex, err := c.env.Redis.GetInt64(chunkCountRedisKey)
 	if err != nil {
 		c.env.Logger.Error("Failed to get chunk count", zap.Error(err))
 		return errors.WithStack(err)
@@ -36,14 +34,13 @@ func (c *Context) StoreLogChunkToRedis(job *work.Job) error {
 	}
 
 	chunkRedisKey := fmt.Sprintf("%s%d", taskID, latestChunkIndex+1)
-	logStoreService := &models.LogStoreService{Redis: redisClient, Expiration: c.env.RedisExpirationTime}
-	err = logStoreService.Set(chunkRedisKey, logChunk)
+	err = c.env.LogStoreService.Set(chunkRedisKey, logChunk)
 	if err != nil {
 		c.env.Logger.Error("Failed to store Log Chunk in Redis", zap.Error(err))
 		return errors.New("Failed to store Log Chunk in Redis")
 	}
 
-	err = redisClient.Set(chunkCountRedisKey, latestChunkIndex+1, 0)
+	err = c.env.Redis.Set(chunkCountRedisKey, latestChunkIndex+1, 0)
 	if err != nil {
 		c.env.Logger.Error("Failed to set new chunk count", zap.Error(err))
 		return errors.WithStack(err)
