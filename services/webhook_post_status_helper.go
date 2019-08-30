@@ -7,6 +7,7 @@ import (
 
 	"github.com/bitrise-io/addons-ship-backend/env"
 	"github.com/bitrise-io/addons-ship-backend/models"
+	"github.com/bitrise-io/addons-ship-backend/redis"
 	"github.com/bitrise-io/api-utils/httpresponse"
 	"github.com/pkg/errors"
 )
@@ -16,6 +17,7 @@ func webhookPostStatusHelper(env *env.AppEnv, w http.ResponseWriter, r *http.Req
 	if err != nil {
 		return httpresponse.RespondWithBadRequestError(w, "Invalid format of status data")
 	}
+	redisClient := redis.New()
 	switch data.NewStatus {
 	case "started":
 		_, err := env.AppVersionEventService.Create(&models.AppVersionEvent{
@@ -26,7 +28,7 @@ func webhookPostStatusHelper(env *env.AppEnv, w http.ResponseWriter, r *http.Req
 		if err != nil {
 			return errors.Wrap(err, "SQL Error")
 		}
-		err = env.Redis.Set(fmt.Sprintf("%s_chunk_count", params.TaskID.String()), 0, env.RedisExpirationTime)
+		err = redisClient.Set(fmt.Sprintf("%s_chunk_count", params.TaskID.String()), 0, env.RedisExpirationTime)
 		if err != nil {
 			return errors.WithStack(err)
 		}

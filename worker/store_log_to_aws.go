@@ -5,6 +5,7 @@ import (
 	"sort"
 
 	"github.com/bitrise-io/addons-ship-backend/models"
+	"github.com/bitrise-io/addons-ship-backend/redis"
 	"github.com/gocraft/work"
 	"github.com/pkg/errors"
 	"github.com/satori/go.uuid"
@@ -29,8 +30,9 @@ func (c *Context) StoreLogToAWS(job *work.Job) error {
 
 	numberOfChunks := job.ArgInt64("number_of_log_chunks")
 	chunks := []models.LogChunk{}
+	logStoreService := &models.LogStoreService{Redis: redis.New(), Expiration: c.env.RedisExpirationTime}
 	for i := int64(1); i <= numberOfChunks; i++ {
-		chunk, err := c.env.LogStoreService.Get(fmt.Sprintf("%s%d", denTaskID, i))
+		chunk, err := logStoreService.Get(fmt.Sprintf("%s%d", denTaskID, i))
 		if err != nil {
 			c.env.Logger.Error("Failed to get log chunk", zap.String("redis_key", fmt.Sprintf("%s%d", denTaskID, i)), zap.Error(err))
 			continue
