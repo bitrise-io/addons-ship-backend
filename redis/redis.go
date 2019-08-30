@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/bitrise-io/api-utils/utils"
 	"github.com/gomodule/redigo/redis"
@@ -42,8 +43,9 @@ func (c *Client) Close() error {
 // NewPool ...
 func NewPool(urlStr string, maxIdle, maxActive int) *redis.Pool {
 	return &redis.Pool{
-		MaxIdle:   maxIdle,
-		MaxActive: maxActive,
+		MaxIdle:     maxIdle,
+		IdleTimeout: 240 * time.Second,
+		MaxActive:   maxActive,
 		Dial: func() (redis.Conn, error) {
 			url, err := DialURL(urlStr)
 			if err != nil {
@@ -55,6 +57,7 @@ func NewPool(urlStr string, maxIdle, maxActive int) *redis.Pool {
 			}
 			c, err := redis.Dial("tcp", url, redis.DialPassword(pass))
 			if err != nil {
+				c.Close()
 				return nil, errors.WithStack(err)
 			}
 			return c, nil
