@@ -99,7 +99,14 @@ func AppVersionPublishPostHandler(env *env.AppEnv, w http.ResponseWriter, r *htt
 	if env.PublishTaskService == nil {
 		return errors.New("No Publish Task Service defined for handler")
 	}
-
+	fmt.Printf("Task params: \n%#v\n", bitrise.TaskParams{
+		StackID:     stackIDForTrigger,
+		Workflow:    workflowToTrigger,
+		BuildConfig: config,
+		InlineEnvs:  string(inlineEnvsBytes),
+		Secrets:     string(secretsBytes),
+		WebhookURL:  env.AddonHostURL + "/task-webhook",
+	})
 	response, err := env.BitriseAPI.TriggerDENTask(bitrise.TaskParams{
 		StackID:     stackIDForTrigger,
 		Workflow:    workflowToTrigger,
