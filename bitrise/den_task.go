@@ -8,12 +8,12 @@ import (
 
 // TaskParams ...
 type TaskParams struct {
-	Workflow    string `json:"workflow_id"`
-	StackID     string `json:"stack_id"`
-	BuildConfig string `json:"build_config"`
-	Secrets     string `json:"secrets"`
-	InlineEnvs  string `json:"inline_envs"`
-	WebhookURL  string `json:"webhook_url"`
+	Workflow    string            `json:"workflow_id"`
+	StackID     string            `json:"stack_id"`
+	BuildConfig string            `json:"build_config"`
+	Secrets     string            `json:"secrets"`
+	InlineEnvs  map[string]string `json:"inline_envs"`
+	WebhookURL  string            `json:"webhook_url"`
 }
 
 // TriggerResponse ...

@@ -86,10 +86,10 @@ func AppVersionPublishPostHandler(env *env.AppEnv, w http.ResponseWriter, r *htt
 		secrets = map[string]string{"ADDON_SHIP_ACCESS_TOKEN": env.AddonAccessToken, "SHIP_ADDON_ACCESS_TOKEN": appVersion.App.APIToken}
 	}
 
-	inlineEnvsBytes, err := json.Marshal(inlineEnvs)
-	if err != nil {
-		return errors.WithStack(err)
-	}
+	// inlineEnvsBytes, err := json.Marshal(inlineEnvs)
+	// if err != nil {
+	// 	return errors.WithStack(err)
+	// }
 
 	secretsBytes, err := json.Marshal(secrets)
 	if err != nil {
@@ -103,7 +103,7 @@ func AppVersionPublishPostHandler(env *env.AppEnv, w http.ResponseWriter, r *htt
 		StackID:     stackIDForTrigger,
 		Workflow:    workflowToTrigger,
 		BuildConfig: config,
-		InlineEnvs:  string(inlineEnvsBytes),
+		InlineEnvs:  inlineEnvs,
 		Secrets:     string(secretsBytes),
 		WebhookURL:  env.AddonHostURL + "/task-webhook",
 	})
@@ -111,7 +111,7 @@ func AppVersionPublishPostHandler(env *env.AppEnv, w http.ResponseWriter, r *htt
 		StackID:     stackIDForTrigger,
 		Workflow:    workflowToTrigger,
 		BuildConfig: config,
-		InlineEnvs:  string(inlineEnvsBytes),
+		InlineEnvs:  inlineEnvs,
 		Secrets:     string(secretsBytes),
 		WebhookURL:  env.AddonHostURL + "/task-webhook",
 	})
