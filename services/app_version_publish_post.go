@@ -68,24 +68,22 @@ func AppVersionPublishPostHandler(env *env.AppEnv, w http.ResponseWriter, r *htt
 		workflowToTrigger = "resign_archive_app_store"
 		stackIDForTrigger = "osx-vs4mac-stable"
 		inlineEnvs = map[string]string{
-			"BITRISE_APP_SLUG":        appVersion.App.AppSlug,
-			"BITRISE_BUILD_SLUG":      appVersion.BuildSlug,
-			"BITRISE_ARTIFACT_SLUG":   artifactData.Slug,
-			"CONFIG_JSON_URL":         fmt.Sprintf("%s/apps/%s/versions/%s/ios-config", env.AddonHostURL, appVersion.App.AppSlug, authorizedAppVersionID),
-			"SHIP_ADDON_ACCESS_TOKEN": appVersion.App.APIToken,
+			"BITRISE_APP_SLUG":      appVersion.App.AppSlug,
+			"BITRISE_BUILD_SLUG":    appVersion.BuildSlug,
+			"BITRISE_ARTIFACT_SLUG": artifactData.Slug,
+			"CONFIG_JSON_URL":       fmt.Sprintf("%s/apps/%s/versions/%s/ios-config", env.AddonHostURL, appVersion.App.AppSlug, authorizedAppVersionID),
 		}
-		secrets = map[string]string{"BITRISE_ACCESS_TOKEN": appVersion.App.BitriseAPIToken}
+		secrets = map[string]string{"BITRISE_ACCESS_TOKEN": appVersion.App.BitriseAPIToken, "SHIP_ADDON_ACCESS_TOKEN": appVersion.App.APIToken}
 	case "android":
 		workflowToTrigger = "resign_android"
 		stackIDForTrigger = "osx-vs4mac-stable"
 		cloneUser := os.Getenv("ANDROID_PUBLISH_WF_GIT_CLONE_USER")
 		clonePwd := os.Getenv("ANDROID_PUBLISH_WF_GIT_CLONE_PWD")
 		inlineEnvs = map[string]string{
-			"CONFIG_JSON_URL":         fmt.Sprintf("%s/apps/%s/versions/%s/android-config", env.AddonHostURL, appVersion.App.AppSlug, authorizedAppVersionID),
-			"GIT_REPOSITORY_URL":      fmt.Sprintf("https://%s:%s@github.com/bitrise-io/addons-ship-bg-worker-task-android", cloneUser, clonePwd),
-			"SHIP_ADDON_ACCESS_TOKEN": appVersion.App.APIToken,
+			"CONFIG_JSON_URL":    fmt.Sprintf("%s/apps/%s/versions/%s/android-config", env.AddonHostURL, appVersion.App.AppSlug, authorizedAppVersionID),
+			"GIT_REPOSITORY_URL": fmt.Sprintf("https://%s:%s@github.com/bitrise-io/addons-ship-bg-worker-task-android", cloneUser, clonePwd),
 		}
-		secrets = map[string]string{"ADDON_SHIP_ACCESS_TOKEN": env.AddonAccessToken}
+		secrets = map[string]string{"ADDON_SHIP_ACCESS_TOKEN": env.AddonAccessToken, "SHIP_ADDON_ACCESS_TOKEN": appVersion.App.APIToken}
 	}
 
 	inlineEnvsBytes, err := json.Marshal(inlineEnvs)
