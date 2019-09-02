@@ -36,11 +36,6 @@ func New() *Client {
 	}
 }
 
-// // Close ...
-// func (c *Client) Close() error {
-// 	return c.conn.Close()
-// }
-
 // NewPool ...
 func NewPool(urlStr string, maxIdle, maxActive int) *redis.Pool {
 	return &redis.Pool{
