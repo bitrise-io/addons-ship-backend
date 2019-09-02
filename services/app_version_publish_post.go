@@ -73,7 +73,7 @@ func AppVersionPublishPostHandler(env *env.AppEnv, w http.ResponseWriter, r *htt
 			"BITRISE_ARTIFACT_SLUG": artifactData.Slug,
 			"CONFIG_JSON_URL":       fmt.Sprintf("%s/apps/%s/versions/%s/ios-config", env.AddonHostURL, appVersion.App.AppSlug, authorizedAppVersionID),
 		}
-		secrets = map[string]string{"BITRISE_ACCESS_TOKEN": appVersion.App.BitriseAPIToken, "SHIP_ADDON_ACCESS_TOKEN": appVersion.App.APIToken}
+		secrets = map[string]string{"BITRISE_ACCESS_TOKEN": appVersion.App.BitriseAPIToken, "SHIP_ADDON_ACCESS_TOKEN": appVersion.App.APIToken, "BITRISE_ACCESS_TOKEN": appVersion.App.BitriseAPIToken}
 	case "android":
 		workflowToTrigger = "resign_android"
 		stackIDForTrigger = "osx-vs4mac-stable"
@@ -83,7 +83,7 @@ func AppVersionPublishPostHandler(env *env.AppEnv, w http.ResponseWriter, r *htt
 			"CONFIG_JSON_URL":    fmt.Sprintf("%s/apps/%s/versions/%s/android-config", env.AddonHostURL, appVersion.App.AppSlug, authorizedAppVersionID),
 			"GIT_REPOSITORY_URL": fmt.Sprintf("https://%s:%s@github.com/bitrise-io/addons-ship-bg-worker-task-android", cloneUser, clonePwd),
 		}
-		secrets = map[string]string{"ADDON_SHIP_ACCESS_TOKEN": env.AddonAccessToken, "SHIP_ADDON_ACCESS_TOKEN": appVersion.App.APIToken}
+		secrets = map[string]string{"ADDON_SHIP_ACCESS_TOKEN": env.AddonAccessToken, "SHIP_ADDON_ACCESS_TOKEN": appVersion.App.APIToken, "BITRISE_ACCESS_TOKEN": appVersion.App.BitriseAPIToken}
 	}
 
 	if env.PublishTaskService == nil {
