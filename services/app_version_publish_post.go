@@ -1,7 +1,6 @@
 package services
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -11,10 +10,8 @@ import (
 	"github.com/bitrise-io/addons-ship-backend/env"
 	"github.com/bitrise-io/addons-ship-backend/models"
 	"github.com/bitrise-io/api-utils/httpresponse"
-	"github.com/bitrise-io/api-utils/structs"
 	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
-	yaml "gopkg.in/yaml.v2"
 )
 
 // AppVersionPublishResponse ...
@@ -142,17 +139,17 @@ func getConfigJSON() (string, error) {
 		return "", errors.WithStack(err)
 	}
 
-	// return tmpContent, nil
-	var config interface{}
-	err = yaml.Unmarshal([]byte(tmpContent), &config)
-	if err != nil {
-		return "", err
-	}
-	config = structs.ConvertMapIToMapS(config)
+	return tmpContent, nil
+	// var config interface{}
+	// err = yaml.Unmarshal([]byte(tmpContent), &config)
+	// if err != nil {
+	// 	return "", err
+	// }
+	// config = structs.ConvertMapIToMapS(config)
 
-	jsonBytes, err := json.Marshal(config)
-	if err != nil {
-		return "", err
-	}
-	return string(jsonBytes), nil
+	// jsonBytes, err := json.Marshal(config)
+	// if err != nil {
+	// 	return "", err
+	// }
+	// return string(jsonBytes), nil
 }
