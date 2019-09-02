@@ -51,7 +51,7 @@ func AppVersionPublishPostHandler(env *env.AppEnv, w http.ResponseWriter, r *htt
 		return errors.WithStack(err)
 	}
 
-	artifactData, err := env.BitriseAPI.GetArtifactData(
+	artifactList, err := env.BitriseAPI.GetArtifacts(
 		appVersion.App.BitriseAPIToken,
 		appVersion.App.AppSlug,
 		appVersion.BuildSlug,
@@ -64,6 +64,7 @@ func AppVersionPublishPostHandler(env *env.AppEnv, w http.ResponseWriter, r *htt
 	var inlineEnvs, secrets map[string]string
 	switch appVersion.Platform {
 	case "ios":
+		artifactData, _, _, _ := selectIosArtifact(artifactList)
 		workflowToTrigger = "resign_archive_app_store"
 		stackIDForTrigger = "osx-vs4mac-stable"
 		inlineEnvs = map[string]string{
@@ -85,27 +86,9 @@ func AppVersionPublishPostHandler(env *env.AppEnv, w http.ResponseWriter, r *htt
 		secrets = map[string]string{"ADDON_SHIP_ACCESS_TOKEN": env.AddonAccessToken, "SHIP_ADDON_ACCESS_TOKEN": appVersion.App.APIToken}
 	}
 
-	// inlineEnvsBytes, err := json.Marshal(inlineEnvs)
-	// if err != nil {
-	// 	return errors.WithStack(err)
-	// }
-
-	// secretsBytes, err := json.Marshal(secrets)
-	// if err != nil {
-	// 	return errors.WithStack(err)
-	// }
-
 	if env.PublishTaskService == nil {
 		return errors.New("No Publish Task Service defined for handler")
 	}
-	fmt.Printf("Task params: \n%#v\n", bitrise.TaskParams{
-		StackID:     stackIDForTrigger,
-		Workflow:    workflowToTrigger,
-		BuildConfig: config,
-		InlineEnvs:  inlineEnvs,
-		Secrets:     secrets,
-		WebhookURL:  env.AddonHostURL + "/task-webhook",
-	})
 	response, err := env.BitriseAPI.TriggerDENTask(bitrise.TaskParams{
 		StackID:     stackIDForTrigger,
 		Workflow:    workflowToTrigger,
@@ -147,10 +130,4 @@ func getConfigJSON() (interface{}, error) {
 		return "", err
 	}
 	return structs.ConvertMapIToMapS(config), nil
-
-	// jsonBytes, err := json.Marshal(config)
-	// if err != nil {
-	// 	return "", err
-	// }
-	// return string(jsonBytes), nil
 }
