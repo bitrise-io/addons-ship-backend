@@ -10,8 +10,10 @@ import (
 	"github.com/bitrise-io/addons-ship-backend/env"
 	"github.com/bitrise-io/addons-ship-backend/models"
 	"github.com/bitrise-io/api-utils/httpresponse"
+	"github.com/bitrise-io/api-utils/structs"
 	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
+	yaml "gopkg.in/yaml.v2"
 )
 
 // AppVersionPublishResponse ...
@@ -129,7 +131,7 @@ func AppVersionPublishPostHandler(env *env.AppEnv, w http.ResponseWriter, r *htt
 	})
 }
 
-func getConfigJSON() (string, error) {
+func getConfigJSON() (interface{}, error) {
 	templateBox, err := rice.FindBox("../utility")
 	if err != nil {
 		return "", errors.WithStack(err)
@@ -139,13 +141,12 @@ func getConfigJSON() (string, error) {
 		return "", errors.WithStack(err)
 	}
 
-	return tmpContent, nil
-	// var config interface{}
-	// err = yaml.Unmarshal([]byte(tmpContent), &config)
-	// if err != nil {
-	// 	return "", err
-	// }
-	// config = structs.ConvertMapIToMapS(config)
+	var config interface{}
+	err = yaml.Unmarshal([]byte(tmpContent), &config)
+	if err != nil {
+		return "", err
+	}
+	return structs.ConvertMapIToMapS(config), nil
 
 	// jsonBytes, err := json.Marshal(config)
 	// if err != nil {
