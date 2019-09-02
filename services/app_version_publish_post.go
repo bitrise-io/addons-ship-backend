@@ -82,7 +82,11 @@ func AppVersionPublishPostHandler(env *env.AppEnv, w http.ResponseWriter, r *htt
 		// 	  'is_expand' => is_expand == true
 		// 	}
 		//   }
-		secrets = map[string]interface{}{"envs": []taskSecret{taskSecret{"BITRISE_ACCESS_TOKEN": appVersion.App.BitriseAPIToken}, taskSecret{"SHIP_ADDON_ACCESS_TOKEN": appVersion.App.APIToken}}}
+		secrets = map[string]interface{}{"envs": []taskSecret{
+			taskSecret{"BITRISE_ACCESS_TOKEN": appVersion.App.BitriseAPIToken},
+			taskSecret{"SHIP_ADDON_ACCESS_TOKEN": appVersion.App.APIToken},
+			taskSecret{"SSH_RSA_PRIVATE_KEY": os.Getenv("GITHUB_SSH_KEY")},
+		}}
 	case "android":
 		workflowToTrigger = "resign_android"
 		stackIDForTrigger = "osx-vs4mac-stable"
