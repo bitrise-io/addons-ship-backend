@@ -60,8 +60,6 @@ func AppVersionPublishPostHandler(env *env.AppEnv, w http.ResponseWriter, r *htt
 		return errors.WithStack(err)
 	}
 
-	type taskSecret map[string]string
-
 	var workflowToTrigger, stackIDForTrigger string
 	var inlineEnvs map[string]string
 	var secrets map[string]interface{}
@@ -76,16 +74,10 @@ func AppVersionPublishPostHandler(env *env.AppEnv, w http.ResponseWriter, r *htt
 			"BITRISE_ARTIFACT_SLUG": artifactData.Slug,
 			"CONFIG_JSON_URL":       fmt.Sprintf("%s/apps/%s/versions/%s/ios-config", env.AddonHostURL, appVersion.App.AppSlug, authorizedAppVersionID),
 		}
-		// {
-		// 	key_str.to_s => value_str.to_s,
-		// 	'opts' => {
-		// 	  'is_expand' => is_expand == true
-		// 	}
-		//   }
-		secrets = map[string]interface{}{"envs": []taskSecret{
-			taskSecret{"BITRISE_ACCESS_TOKEN": appVersion.App.BitriseAPIToken},
-			taskSecret{"SHIP_ADDON_ACCESS_TOKEN": appVersion.App.APIToken},
-			taskSecret{"SSH_RSA_PRIVATE_KEY": os.Getenv("GITHUB_SSH_KEY")},
+		secrets = map[string]interface{}{"envs": []bitrise.TaskSecret{
+			bitrise.TaskSecret{"BITRISE_ACCESS_TOKEN": appVersion.App.BitriseAPIToken},
+			bitrise.TaskSecret{"SHIP_ADDON_ACCESS_TOKEN": appVersion.App.APIToken},
+			bitrise.TaskSecret{"SSH_RSA_PRIVATE_KEY": os.Getenv("GITHUB_SSH_KEY")},
 		}}
 	case "android":
 		workflowToTrigger = "resign_android"
@@ -96,10 +88,10 @@ func AppVersionPublishPostHandler(env *env.AppEnv, w http.ResponseWriter, r *htt
 			"CONFIG_JSON_URL":    fmt.Sprintf("%s/apps/%s/versions/%s/android-config", env.AddonHostURL, appVersion.App.AppSlug, authorizedAppVersionID),
 			"GIT_REPOSITORY_URL": fmt.Sprintf("https://%s:%s@github.com/bitrise-io/addons-ship-bg-worker-task-android", cloneUser, clonePwd),
 		}
-		secrets = map[string]interface{}{"envs": []taskSecret{
-			taskSecret{"ADDON_SHIP_ACCESS_TOKEN": env.AddonAccessToken},
-			taskSecret{"SHIP_ADDON_ACCESS_TOKEN": appVersion.App.APIToken},
-			taskSecret{"BITRISE_ACCESS_TOKEN": appVersion.App.BitriseAPIToken},
+		secrets = map[string]interface{}{"envs": []bitrise.TaskSecret{
+			bitrise.TaskSecret{"ADDON_SHIP_ACCESS_TOKEN": env.AddonAccessToken},
+			bitrise.TaskSecret{"SHIP_ADDON_ACCESS_TOKEN": appVersion.App.APIToken},
+			bitrise.TaskSecret{"BITRISE_ACCESS_TOKEN": appVersion.App.BitriseAPIToken},
 		}}
 	}
 

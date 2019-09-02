@@ -38,8 +38,8 @@ func Test_AppVersionPublishPostHandler(t *testing.T) {
 			},
 			PublishTaskService: &testPublishTaskService{},
 			BitriseAPI: &testBitriseAPI{
-				getArtifactDataFn: func(string, string, string) (*bitrise.ArtifactData, error) {
-					return &bitrise.ArtifactData{}, nil
+				getArtifactsFn: func(apiToken string, appSlug string, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
+					return []bitrise.ArtifactListElementResponseModel{}, nil
 				},
 			},
 		},
@@ -53,8 +53,8 @@ func Test_AppVersionPublishPostHandler(t *testing.T) {
 			AppVersionService:  &testAppVersionService{},
 			PublishTaskService: &testPublishTaskService{},
 			BitriseAPI: &testBitriseAPI{
-				getArtifactDataFn: func(string, string, string) (*bitrise.ArtifactData, error) {
-					return &bitrise.ArtifactData{}, nil
+				getArtifactsFn: func(apiToken string, appSlug string, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
+					return []bitrise.ArtifactListElementResponseModel{}, nil
 				},
 			},
 		},
@@ -73,8 +73,8 @@ func Test_AppVersionPublishPostHandler(t *testing.T) {
 					},
 				},
 				BitriseAPI: &testBitriseAPI{
-					getArtifactDataFn: func(string, string, string) (*bitrise.ArtifactData, error) {
-						return &bitrise.ArtifactData{}, nil
+					getArtifactsFn: func(apiToken string, appSlug string, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
+						return []bitrise.ArtifactListElementResponseModel{}, nil
 					},
 					triggerDENTaskFn: func(bitrise.TaskParams) (*bitrise.TriggerResponse, error) {
 						return &bitrise.TriggerResponse{}, nil
@@ -116,17 +116,29 @@ func Test_AppVersionPublishPostHandler(t *testing.T) {
 					},
 				},
 				BitriseAPI: &testBitriseAPI{
-					getArtifactDataFn: func(apiToken string, appSlug string, buildSlug string) (*bitrise.ArtifactData, error) {
+					getArtifactsFn: func(apiToken string, appSlug string, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
 						require.Equal(t, "bitrise-api-addon-token", apiToken)
 						require.Equal(t, "test-app-slug", appSlug)
 						require.Equal(t, "test-build-slug", buildSlug)
-						return &bitrise.ArtifactData{Slug: "test-artifact-slug"}, nil
+						return []bitrise.ArtifactListElementResponseModel{
+							bitrise.ArtifactListElementResponseModel{
+								Slug:  "test-artifact-slug",
+								Title: "my-awesome-app.xcarchive.zip",
+							},
+						}, nil
 					},
 					triggerDENTaskFn: func(params bitrise.TaskParams) (*bitrise.TriggerResponse, error) {
-						require.Equal(t, `{"BITRISE_APP_SLUG":"test-app-slug","BITRISE_ARTIFACT_SLUG":"test-artifact-slug"`+
-							`,"BITRISE_BUILD_SLUG":"test-build-slug","CONFIG_JSON_URL":"http://ship.addon.url/apps/test-app-slug/versions/de438ddc-98e5-4226-a5f4-fd2d53474879/ios-config"`+
-							`}`, params.InlineEnvs)
-						require.Equal(t, `{"BITRISE_ACCESS_TOKEN":"bitrise-api-addon-token","SHIP_ADDON_ACCESS_TOKEN":"addon-access-token"}`, params.Secrets)
+						require.Equal(t, map[string]string{
+							"BITRISE_APP_SLUG":      "test-app-slug",
+							"BITRISE_ARTIFACT_SLUG": "test-artifact-slug",
+							"BITRISE_BUILD_SLUG":    "test-build-slug",
+							"CONFIG_JSON_URL":       "http://ship.addon.url/apps/test-app-slug/versions/de438ddc-98e5-4226-a5f4-fd2d53474879/ios-config",
+						}, params.InlineEnvs)
+						require.Equal(t, map[string]interface{}{"envs": []bitrise.TaskSecret{
+							bitrise.TaskSecret{"BITRISE_ACCESS_TOKEN": "bitrise-api-addon-token"},
+							bitrise.TaskSecret{"SHIP_ADDON_ACCESS_TOKEN": "addon-access-token"},
+							bitrise.TaskSecret{"SSH_RSA_PRIVATE_KEY": ""},
+						}}, params.Secrets)
 						require.Equal(t, "http://ship.addon.url/task-webhook", params.WebhookURL)
 						require.Equal(t, "resign_archive_app_store", params.Workflow)
 						return &bitrise.TriggerResponse{TaskIdentifier: testTaskIdentifier}, nil
@@ -175,18 +187,24 @@ func Test_AppVersionPublishPostHandler(t *testing.T) {
 					},
 				},
 				BitriseAPI: &testBitriseAPI{
-					getArtifactDataFn: func(apiToken string, appSlug string, buildSlug string) (*bitrise.ArtifactData, error) {
+					getArtifactsFn: func(apiToken string, appSlug string, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
 						require.Equal(t, "bitrise-api-addon-token", apiToken)
 						require.Equal(t, "test-app-slug", appSlug)
 						require.Equal(t, "test-build-slug", buildSlug)
-						return &bitrise.ArtifactData{Slug: "test-artifact-slug"}, nil
+						return []bitrise.ArtifactListElementResponseModel{bitrise.ArtifactListElementResponseModel{Slug: "test-artifact-slug"}}, nil
 					},
 					triggerDENTaskFn: func(params bitrise.TaskParams) (*bitrise.TriggerResponse, error) {
-						require.Equal(t, `{"CONFIG_JSON_URL":"http://ship.addon.url/apps/test-app-slug/versions/de438ddc-98e5-4226-a5f4-fd2d53474879/android-config"`+
-							`,"GIT_REPOSITORY_URL":"https://git_user:git_pwd@github.com/bitrise-io/addons-ship-bg-worker-task-android"}`, params.InlineEnvs)
+						require.Equal(t, map[string]string{
+							"CONFIG_JSON_URL":    "http://ship.addon.url/apps/test-app-slug/versions/de438ddc-98e5-4226-a5f4-fd2d53474879/android-config",
+							"GIT_REPOSITORY_URL": "https://git_user:git_pwd@github.com/bitrise-io/addons-ship-bg-worker-task-android",
+						}, params.InlineEnvs)
 						require.Equal(t, "http://ship.addon.url/task-webhook", params.WebhookURL)
 						require.Equal(t, "resign_android", params.Workflow)
-						require.Equal(t, `{"ADDON_SHIP_ACCESS_TOKEN":"super-secret-token","SHIP_ADDON_ACCESS_TOKEN":"addon-access-token"}`, params.Secrets)
+						require.Equal(t, map[string]interface{}{"envs": []bitrise.TaskSecret{
+							bitrise.TaskSecret{"ADDON_SHIP_ACCESS_TOKEN": "super-secret-token"},
+							bitrise.TaskSecret{"SHIP_ADDON_ACCESS_TOKEN": "addon-access-token"},
+							bitrise.TaskSecret{"BITRISE_ACCESS_TOKEN": "bitrise-api-addon-token"},
+						}}, params.Secrets)
 						return &bitrise.TriggerResponse{TaskIdentifier: testTaskIdentifier}, nil
 					},
 				},
@@ -219,8 +237,8 @@ func Test_AppVersionPublishPostHandler(t *testing.T) {
 					},
 				},
 				BitriseAPI: &testBitriseAPI{
-					getArtifactDataFn: func(string, string, string) (*bitrise.ArtifactData, error) {
-						return &bitrise.ArtifactData{}, nil
+					getArtifactsFn: func(apiToken string, appSlug string, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
+						return []bitrise.ArtifactListElementResponseModel{}, nil
 					},
 					triggerDENTaskFn: func(bitrise.TaskParams) (*bitrise.TriggerResponse, error) {
 						return nil, nil
@@ -246,8 +264,8 @@ func Test_AppVersionPublishPostHandler(t *testing.T) {
 					},
 				},
 				BitriseAPI: &testBitriseAPI{
-					getArtifactDataFn: func(string, string, string) (*bitrise.ArtifactData, error) {
-						return &bitrise.ArtifactData{}, nil
+					getArtifactsFn: func(apiToken string, appSlug string, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
+						return []bitrise.ArtifactListElementResponseModel{}, nil
 					},
 					triggerDENTaskFn: func(bitrise.TaskParams) (*bitrise.TriggerResponse, error) {
 						return nil, nil
@@ -272,8 +290,8 @@ func Test_AppVersionPublishPostHandler(t *testing.T) {
 					},
 				},
 				BitriseAPI: &testBitriseAPI{
-					getArtifactDataFn: func(string, string, string) (*bitrise.ArtifactData, error) {
-						return &bitrise.ArtifactData{}, errors.New("SOME-BITRISE-API-ERROR")
+					getArtifactsFn: func(apiToken string, appSlug string, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
+						return []bitrise.ArtifactListElementResponseModel{}, errors.New("SOME-BITRISE-API-ERROR")
 					},
 					triggerDENTaskFn: func(bitrise.TaskParams) (*bitrise.TriggerResponse, error) {
 						return nil, nil
@@ -298,8 +316,8 @@ func Test_AppVersionPublishPostHandler(t *testing.T) {
 					},
 				},
 				BitriseAPI: &testBitriseAPI{
-					getArtifactDataFn: func(string, string, string) (*bitrise.ArtifactData, error) {
-						return &bitrise.ArtifactData{}, nil
+					getArtifactsFn: func(apiToken string, appSlug string, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
+						return []bitrise.ArtifactListElementResponseModel{}, nil
 					},
 					triggerDENTaskFn: func(bitrise.TaskParams) (*bitrise.TriggerResponse, error) {
 						return nil, errors.New("SOME-BITRISE-API-ERROR")
@@ -324,8 +342,8 @@ func Test_AppVersionPublishPostHandler(t *testing.T) {
 					},
 				},
 				BitriseAPI: &testBitriseAPI{
-					getArtifactDataFn: func(string, string, string) (*bitrise.ArtifactData, error) {
-						return &bitrise.ArtifactData{}, nil
+					getArtifactsFn: func(apiToken string, appSlug string, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
+						return []bitrise.ArtifactListElementResponseModel{}, nil
 					},
 					triggerDENTaskFn: func(bitrise.TaskParams) (*bitrise.TriggerResponse, error) {
 						return &bitrise.TriggerResponse{}, nil

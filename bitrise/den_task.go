@@ -33,3 +33,6 @@ type TriggerResponse struct {
 	UpdatedAt              time.Time  `json:"updated_at"`
 	WebhookURL             string     `json:"webhook_url"`
 }
+
+// TaskSecret ...
+type TaskSecret map[string]string

@@ -22,7 +22,6 @@ type Interface interface {
 // Client ...
 type Client struct {
 	pool *redis.Pool
-	conn redis.Conn
 }
 
 // New ...
