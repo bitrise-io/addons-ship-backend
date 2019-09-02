@@ -32,7 +32,7 @@ workflows:
                 #!/usr/bin/env bash
                 set -ex
 
-                download_url=$(curl -X GET "https://api.bitrise.io/v0.1/apps/${BITRISE_APP_SLUG}/builds/${BITRISE_BUILD_SLUG}/artifacts/${BITRISE_ARTIFACT_SLUG}" -H "accept: application/json" -H "Authorization: ${BITRISE_ACCESS_TOKEN}" | jq -r '.data.expiring_download_url')
+                download_url=$(curl -X GET "https://api.bitrise.io/v0.1/apps/${BITRISE_APP_SLUG}/builds/${BITRISE_BUILD_SLUG}/artifacts/${BITRISE_ARTIFACT_SLUG}" -H "accept: application/json" -H "Bitrise-Addon-Auth-Token: ${BITRISE_ACCESS_TOKEN}" | jq -r '.data.expiring_download_url')
                 envman add --key BITRISE_DOWNLOAD_URL --value $download_url
       - resource-archive@2.0.1:
           inputs:
