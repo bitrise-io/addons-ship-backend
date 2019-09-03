@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/bitrise-io/addons-ship-backend/bitrise"
 	"github.com/bitrise-io/addons-ship-backend/env"
 	"github.com/bitrise-io/addons-ship-backend/models"
 	"github.com/bitrise-io/api-utils/httpresponse"
@@ -81,38 +80,18 @@ func AppVersionIosConfigGetHandler(env *env.AppEnv, w http.ResponseWriter, r *ht
 		return errors.WithStack(err)
 	}
 
-	var selectedProvisioningProfile bitrise.ProvisioningProfile
-	provisioningProfiles, err := env.BitriseAPI.GetProvisioningProfiles(appVersion.App.BitriseAPIToken, appVersion.App.AppSlug)
+	selectedProvisioningProfile, err := env.BitriseAPI.GetProvisioningProfile(appVersion.App.BitriseAPIToken, appVersion.App.AppSlug, iosSettings.SelectedAppStoreProvisioningProfile)
 	if err != nil {
 		return errors.WithStack(err)
-	}
-	for _, provProfile := range provisioningProfiles {
-		if provProfile.Slug == iosSettings.SelectedAppStoreProvisioningProfile {
-			selectedProvisioningProfile = provProfile
-			break
-		}
-	}
-	if selectedProvisioningProfile == (bitrise.ProvisioningProfile{}) {
-		return httpresponse.RespondWithNotFoundError(w)
 	}
 	config.MetaData.Signing.AppStoreProfileURL = selectedProvisioningProfile.DownloadURL
 
-	var selectedCodeSigningID bitrise.CodeSigningIdentity
-	codeSigningIDs, err := env.BitriseAPI.GetCodeSigningIdentities(appVersion.App.BitriseAPIToken, appVersion.App.AppSlug)
+	codeSigningID, err := env.BitriseAPI.GetCodeSigningIdentity(appVersion.App.BitriseAPIToken, appVersion.App.AppSlug, iosSettings.SelectedCodeSigningIdentity)
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	for _, csID := range codeSigningIDs {
-		if csID.Slug == iosSettings.SelectedCodeSigningIdentity {
-			selectedCodeSigningID = csID
-			break
-		}
-	}
-	if selectedCodeSigningID == (bitrise.CodeSigningIdentity{}) {
-		return httpresponse.RespondWithNotFoundError(w)
-	}
-	config.MetaData.Signing.DistributionCertificateURL = selectedCodeSigningID.DownloadURL
-	config.MetaData.Signing.DistributionCertificatePasshprase = selectedCodeSigningID.CertificatePassword
+	config.MetaData.Signing.DistributionCertificateURL = codeSigningID.DownloadURL
+	config.MetaData.Signing.DistributionCertificatePasshprase = codeSigningID.CertificatePassword
 
 	config.MetaData.ExportOptions = ExportOptions{IncludeBitcode: iosSettings.IncludeBitCode}
 	config.MetaData.SKU = iosSettings.AppSKU
