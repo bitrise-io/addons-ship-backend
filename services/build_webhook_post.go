@@ -7,12 +7,15 @@ import (
 	"strings"
 	"time"
 
+	"github.com/bitrise-io/addons-ship-backend/bitrise"
 	"github.com/bitrise-io/addons-ship-backend/env"
 	"github.com/bitrise-io/addons-ship-backend/models"
 	"github.com/bitrise-io/api-utils/httprequest"
 	"github.com/bitrise-io/api-utils/httpresponse"
 	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
+	"github.com/simonmarton/common-colors/processimage"
+	"go.uber.org/zap"
 )
 
 // BuildWebhookPayload ...
@@ -79,6 +82,21 @@ func BuildWebhookHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request
 			return errors.WithStack(err)
 		}
 
+		appDetails, err := env.BitriseAPI.GetAppDetails(app.BitriseAPIToken, app.AppSlug)
+		if err != nil {
+			return errors.WithStack(err)
+		}
+
+		if appDetails.AvatarURL != nil {
+			colors, err := processimage.FromURL(*appDetails.AvatarURL)
+			if err != nil {
+				env.Logger.Warn("Failed to generate header colors", zap.Any("app_details", appDetails), zap.Error(err))
+			}
+			app.HeaderColor1 = colors[0]
+			app.HeaderColor2 = colors[1]
+			env.AppService.Update(app, []string{"HeaderColor1", "HeaderColor2"})
+		}
+
 		workflowInWhitelist := params.BuildTriggeredWorkflow != "" && strings.Contains(appSettings.IosWorkflow, params.BuildTriggeredWorkflow)
 		if (appSettings.IosWorkflow == "" || workflowInWhitelist) && hasIosArtifact(artifacts) {
 			latestAppVersion, err := env.AppVersionService.Latest(&models.AppVersion{AppID: app.ID, Platform: "ios"})
@@ -109,7 +127,7 @@ func BuildWebhookHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request
 				}
 			}
 
-			if err := sendNotification(env, appVersion, app); err != nil {
+			if err := sendNotification(env, appVersion, app, appDetails); err != nil {
 				return errors.WithStack(err)
 			}
 		}
@@ -144,7 +162,7 @@ func BuildWebhookHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request
 				}
 			}
 
-			if err := sendNotification(env, appVersion, app); err != nil {
+			if err := sendNotification(env, appVersion, app, appDetails); err != nil {
 				return errors.WithStack(err)
 			}
 		}
@@ -155,12 +173,8 @@ func BuildWebhookHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request
 	}
 }
 
-func sendNotification(env *env.AppEnv, appVersion *models.AppVersion, app *models.App) error {
+func sendNotification(env *env.AppEnv, appVersion *models.AppVersion, app *models.App, appDetails *bitrise.AppDetails) error {
 	appContacts, err := env.AppContactService.FindAll(app)
-	if err != nil {
-		return errors.WithStack(err)
-	}
-	appDetails, err := env.BitriseAPI.GetAppDetails(app.BitriseAPIToken, app.AppSlug)
 	if err != nil {
 		return errors.WithStack(err)
 	}
