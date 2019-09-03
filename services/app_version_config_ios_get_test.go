@@ -12,7 +12,6 @@ import (
 	"github.com/bitrise-io/addons-ship-backend/models"
 	"github.com/bitrise-io/addons-ship-backend/services"
 	ctxpkg "github.com/bitrise-io/api-utils/context"
-	"github.com/bitrise-io/api-utils/httpresponse"
 	"github.com/bitrise-io/api-utils/providers"
 	"github.com/bitrise-io/go-utils/pointers"
 	"github.com/c2fo/testify/require"
@@ -76,11 +75,11 @@ func Test_AppVersionIosConfigGetHandler(t *testing.T) {
 					getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
 						return &bitrise.AppDetails{}, nil
 					},
-					getProvisioningProfilesFn: func(apiToken, appSlug string) ([]bitrise.ProvisioningProfile, error) {
-						return []bitrise.ProvisioningProfile{bitrise.ProvisioningProfile{Slug: "prov-profile-slug"}}, nil
+					getProvisioningProfileFn: func(apiToken, appSlug, provProfileSlug string) (*bitrise.ProvisioningProfile, error) {
+						return &bitrise.ProvisioningProfile{Slug: "prov-profile-slug", DownloadURL: "http://here.you.can.find.the.prov.profile"}, nil
 					},
-					getCodeSigningIdentitiesFn: func(apiToken, appSlug string) ([]bitrise.CodeSigningIdentity, error) {
-						return []bitrise.CodeSigningIdentity{bitrise.CodeSigningIdentity{Slug: "code-signing-slug"}}, nil
+					getCodeSigningIdentityFn: func(apiToken, appSlug, codeSignIDSlug string) (*bitrise.CodeSigningIdentity, error) {
+						return &bitrise.CodeSigningIdentity{Slug: "code-signing-slug", DownloadURL: "http://here.you.can.find.the.code.signing.id", CertificatePassword: "super-secret"}, nil
 					},
 					getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
 						return []bitrise.ArtifactListElementResponseModel{}, nil
@@ -106,6 +105,11 @@ func Test_AppVersionIosConfigGetHandler(t *testing.T) {
 				MetaData: services.IosConfigMetaData{
 					ListingInfoMap: map[string]services.IosListingInfo{
 						"en-US": services.IosListingInfo{Screenshots: map[string][]string{}},
+					},
+					Signing: services.Signing{
+						AppStoreProfileURL:                "http://here.you.can.find.the.prov.profile",
+						DistributionCertificateURL:        "http://here.you.can.find.the.code.signing.id",
+						DistributionCertificatePasshprase: "super-secret",
 					},
 				},
 			},
@@ -142,22 +146,20 @@ func Test_AppVersionIosConfigGetHandler(t *testing.T) {
 						require.Equal(t, "test-api-token", apiToken)
 						return &bitrise.AppDetails{Title: "my-awesome-app"}, nil
 					},
-					getProvisioningProfilesFn: func(apiToken, appSlug string) ([]bitrise.ProvisioningProfile, error) {
+					getProvisioningProfileFn: func(apiToken, appSlug, provProfileSlug string) (*bitrise.ProvisioningProfile, error) {
 						require.Equal(t, "test-app-slug", appSlug)
 						require.Equal(t, "test-api-token", apiToken)
-						return []bitrise.ProvisioningProfile{
-							bitrise.ProvisioningProfile{Slug: "prov-profile-slug", DownloadURL: "http://provisioning-profile.url"},
-						}, nil
+						require.Equal(t, "prov-profile-slug", provProfileSlug)
+						return &bitrise.ProvisioningProfile{Slug: "prov-profile-slug", DownloadURL: "http://provisioning-profile.url"}, nil
 					},
-					getCodeSigningIdentitiesFn: func(apiToken, appSlug string) ([]bitrise.CodeSigningIdentity, error) {
+					getCodeSigningIdentityFn: func(apiToken, appSlug, codeSignIDSlug string) (*bitrise.CodeSigningIdentity, error) {
 						require.Equal(t, "test-app-slug", appSlug)
 						require.Equal(t, "test-api-token", apiToken)
-						return []bitrise.CodeSigningIdentity{
-							bitrise.CodeSigningIdentity{
-								Slug:                "code-signing-slug",
-								DownloadURL:         "http:/code-signing.url",
-								CertificatePassword: "my-super-password",
-							},
+						require.Equal(t, "code-signing-slug", codeSignIDSlug)
+						return &bitrise.CodeSigningIdentity{
+							Slug:                "code-signing-slug",
+							DownloadURL:         "http:/code-signing.url",
+							CertificatePassword: "my-super-password",
 						}, nil
 					},
 					getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
@@ -257,11 +259,11 @@ func Test_AppVersionIosConfigGetHandler(t *testing.T) {
 					getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
 						return &bitrise.AppDetails{}, nil
 					},
-					getProvisioningProfilesFn: func(apiToken, appSlug string) ([]bitrise.ProvisioningProfile, error) {
-						return []bitrise.ProvisioningProfile{bitrise.ProvisioningProfile{Slug: "prov-profile-slug"}}, nil
+					getProvisioningProfileFn: func(apiToken, appSlug, provProfileSlug string) (*bitrise.ProvisioningProfile, error) {
+						return &bitrise.ProvisioningProfile{Slug: "prov-profile-slug", DownloadURL: "http://here.you.can.find.the.prov.profile"}, nil
 					},
-					getCodeSigningIdentitiesFn: func(apiToken, appSlug string) ([]bitrise.CodeSigningIdentity, error) {
-						return []bitrise.CodeSigningIdentity{bitrise.CodeSigningIdentity{Slug: "code-signing-slug"}}, nil
+					getCodeSigningIdentityFn: func(apiToken, appSlug, codeSignIDSlug string) (*bitrise.CodeSigningIdentity, error) {
+						return &bitrise.CodeSigningIdentity{Slug: "code-signing-slug", DownloadURL: "http://here.you.can.find.the.code.signing.id"}, nil
 					},
 				},
 				AppSettingsService: &testAppSettingsService{
@@ -302,11 +304,11 @@ func Test_AppVersionIosConfigGetHandler(t *testing.T) {
 					getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
 						return &bitrise.AppDetails{}, nil
 					},
-					getProvisioningProfilesFn: func(apiToken, appSlug string) ([]bitrise.ProvisioningProfile, error) {
-						return []bitrise.ProvisioningProfile{bitrise.ProvisioningProfile{Slug: "prov-profile-slug"}}, nil
+					getProvisioningProfileFn: func(apiToken, appSlug, provProfileSlug string) (*bitrise.ProvisioningProfile, error) {
+						return &bitrise.ProvisioningProfile{Slug: "prov-profile-slug", DownloadURL: "http://here.you.can.find.the.prov.profile"}, nil
 					},
-					getCodeSigningIdentitiesFn: func(apiToken, appSlug string) ([]bitrise.CodeSigningIdentity, error) {
-						return []bitrise.CodeSigningIdentity{bitrise.CodeSigningIdentity{Slug: "code-signing-slug"}}, nil
+					getCodeSigningIdentityFn: func(apiToken, appSlug, codeSignIDSlug string) (*bitrise.CodeSigningIdentity, error) {
+						return &bitrise.CodeSigningIdentity{Slug: "code-signing-slug", DownloadURL: "http://here.you.can.find.the.code.signing.id"}, nil
 					},
 				},
 				AppSettingsService: &testAppSettingsService{
@@ -347,11 +349,11 @@ func Test_AppVersionIosConfigGetHandler(t *testing.T) {
 					getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
 						return &bitrise.AppDetails{}, nil
 					},
-					getProvisioningProfilesFn: func(apiToken, appSlug string) ([]bitrise.ProvisioningProfile, error) {
-						return []bitrise.ProvisioningProfile{bitrise.ProvisioningProfile{Slug: "prov-profile-slug"}}, nil
+					getProvisioningProfileFn: func(apiToken, appSlug, provProfileSlug string) (*bitrise.ProvisioningProfile, error) {
+						return &bitrise.ProvisioningProfile{Slug: "prov-profile-slug", DownloadURL: "http://here.you.can.find.the.prov.profile"}, nil
 					},
-					getCodeSigningIdentitiesFn: func(apiToken, appSlug string) ([]bitrise.CodeSigningIdentity, error) {
-						return []bitrise.CodeSigningIdentity{bitrise.CodeSigningIdentity{Slug: "code-signing-slug"}}, nil
+					getCodeSigningIdentityFn: func(apiToken, appSlug, codeSignIDSlug string) (*bitrise.CodeSigningIdentity, error) {
+						return &bitrise.CodeSigningIdentity{Slug: "code-signing-slug", DownloadURL: "http://here.you.can.find.the.code.signing.id"}, nil
 					},
 				},
 				AppSettingsService: &testAppSettingsService{
@@ -392,11 +394,11 @@ func Test_AppVersionIosConfigGetHandler(t *testing.T) {
 					getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
 						return &bitrise.AppDetails{}, nil
 					},
-					getProvisioningProfilesFn: func(apiToken, appSlug string) ([]bitrise.ProvisioningProfile, error) {
-						return []bitrise.ProvisioningProfile{bitrise.ProvisioningProfile{Slug: "prov-profile-slug"}}, nil
+					getProvisioningProfileFn: func(apiToken, appSlug, provProfileSlug string) (*bitrise.ProvisioningProfile, error) {
+						return &bitrise.ProvisioningProfile{Slug: "prov-profile-slug", DownloadURL: "http://here.you.can.find.the.prov.profile"}, nil
 					},
-					getCodeSigningIdentitiesFn: func(apiToken, appSlug string) ([]bitrise.CodeSigningIdentity, error) {
-						return []bitrise.CodeSigningIdentity{bitrise.CodeSigningIdentity{Slug: "code-signing-slug"}}, nil
+					getCodeSigningIdentityFn: func(apiToken, appSlug, codeSignIDSlug string) (*bitrise.CodeSigningIdentity, error) {
+						return &bitrise.CodeSigningIdentity{Slug: "code-signing-slug", DownloadURL: "http://here.you.can.find.the.code.signing.id"}, nil
 					},
 				},
 				AppSettingsService: &testAppSettingsService{
@@ -437,11 +439,11 @@ func Test_AppVersionIosConfigGetHandler(t *testing.T) {
 					getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
 						return &bitrise.AppDetails{}, nil
 					},
-					getProvisioningProfilesFn: func(apiToken, appSlug string) ([]bitrise.ProvisioningProfile, error) {
-						return []bitrise.ProvisioningProfile{bitrise.ProvisioningProfile{Slug: "prov-profile-slug"}}, nil
+					getProvisioningProfileFn: func(apiToken, appSlug, provProfileSlug string) (*bitrise.ProvisioningProfile, error) {
+						return &bitrise.ProvisioningProfile{Slug: "prov-profile-slug", DownloadURL: "http://here.you.can.find.the.prov.profile"}, nil
 					},
-					getCodeSigningIdentitiesFn: func(apiToken, appSlug string) ([]bitrise.CodeSigningIdentity, error) {
-						return []bitrise.CodeSigningIdentity{bitrise.CodeSigningIdentity{Slug: "code-signing-slug"}}, nil
+					getCodeSigningIdentityFn: func(apiToken, appSlug, codeSignIDSlug string) (*bitrise.CodeSigningIdentity, error) {
+						return &bitrise.CodeSigningIdentity{Slug: "code-signing-slug", DownloadURL: "http://here.you.can.find.the.code.signing.id"}, nil
 					},
 				},
 				AppSettingsService: &testAppSettingsService{
@@ -481,11 +483,11 @@ func Test_AppVersionIosConfigGetHandler(t *testing.T) {
 					getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
 						return &bitrise.AppDetails{}, nil
 					},
-					getProvisioningProfilesFn: func(apiToken, appSlug string) ([]bitrise.ProvisioningProfile, error) {
-						return []bitrise.ProvisioningProfile{bitrise.ProvisioningProfile{Slug: "prov-profile-slug"}}, nil
+					getProvisioningProfileFn: func(apiToken, appSlug, provProfileSlug string) (*bitrise.ProvisioningProfile, error) {
+						return &bitrise.ProvisioningProfile{Slug: "prov-profile-slug", DownloadURL: "http://here.you.can.find.the.prov.profile"}, nil
 					},
-					getCodeSigningIdentitiesFn: func(apiToken, appSlug string) ([]bitrise.CodeSigningIdentity, error) {
-						return []bitrise.CodeSigningIdentity{bitrise.CodeSigningIdentity{Slug: "code-signing-slug"}}, nil
+					getCodeSigningIdentityFn: func(apiToken, appSlug, codeSignIDSlug string) (*bitrise.CodeSigningIdentity, error) {
+						return &bitrise.CodeSigningIdentity{Slug: "code-signing-slug", DownloadURL: "http://here.you.can.find.the.code.signing.id"}, nil
 					},
 				},
 				AppSettingsService: &testAppSettingsService{
@@ -526,11 +528,11 @@ func Test_AppVersionIosConfigGetHandler(t *testing.T) {
 					getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
 						return &bitrise.AppDetails{}, nil
 					},
-					getProvisioningProfilesFn: func(apiToken, appSlug string) ([]bitrise.ProvisioningProfile, error) {
-						return []bitrise.ProvisioningProfile{}, errors.New("SOME-BITRISE-API-ERROR")
+					getProvisioningProfileFn: func(apiToken, appSlug, provProfileSlug string) (*bitrise.ProvisioningProfile, error) {
+						return nil, errors.New("SOME-BITRISE-API-ERROR")
 					},
-					getCodeSigningIdentitiesFn: func(apiToken, appSlug string) ([]bitrise.CodeSigningIdentity, error) {
-						return []bitrise.CodeSigningIdentity{bitrise.CodeSigningIdentity{Slug: "code-signing-slug"}}, nil
+					getCodeSigningIdentityFn: func(apiToken, appSlug, codeSignIDSlug string) (*bitrise.CodeSigningIdentity, error) {
+						return &bitrise.CodeSigningIdentity{Slug: "code-signing-slug", DownloadURL: "http://here.you.can.find.the.code.signing.id"}, nil
 					},
 				},
 				AppSettingsService: &testAppSettingsService{
@@ -546,52 +548,6 @@ func Test_AppVersionIosConfigGetHandler(t *testing.T) {
 				},
 			},
 			expectedInternalErr: "SOME-BITRISE-API-ERROR",
-		})
-	})
-
-	t.Run("when no matching provisioning profile found", func(t *testing.T) {
-		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
-			contextElements: map[ctxpkg.RequestContextKey]interface{}{
-				services.ContextKeyAuthorizedAppVersionID: uuid.NewV4(),
-			},
-			env: &env.AppEnv{
-				AppVersionService: &testAppVersionService{
-					findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
-						appVersion.ArtifactInfoData = json.RawMessage(`{}`)
-						appVersion.AppStoreInfoData = json.RawMessage(`{}`)
-						return appVersion, nil
-					},
-				},
-				AWS: &providers.AWSMock{
-					GeneratePresignedGETURLFn: func(path string, expiration time.Duration) (string, error) {
-						return "", nil
-					},
-				},
-				BitriseAPI: &testBitriseAPI{
-					getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
-						return &bitrise.AppDetails{}, nil
-					},
-					getProvisioningProfilesFn: func(apiToken, appSlug string) ([]bitrise.ProvisioningProfile, error) {
-						return []bitrise.ProvisioningProfile{bitrise.ProvisioningProfile{Slug: "not-matching-slug"}}, nil
-					},
-					getCodeSigningIdentitiesFn: func(apiToken, appSlug string) ([]bitrise.CodeSigningIdentity, error) {
-						return []bitrise.CodeSigningIdentity{bitrise.CodeSigningIdentity{Slug: "code-signing-slug"}}, nil
-					},
-				},
-				AppSettingsService: &testAppSettingsService{
-					findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
-						appSettings.IosSettingsData = json.RawMessage(`{"selected_app_store_provisioning_profile":"prov-profile-slug","selected_code_signing_identity":"code-signing-slug"}`)
-						return appSettings, nil
-					},
-				},
-				ScreenshotService: &testScreenshotService{
-					findAllFn: func(appVersion *models.AppVersion) ([]models.Screenshot, error) {
-						return []models.Screenshot{}, nil
-					},
-				},
-			},
-			expectedStatusCode: http.StatusNotFound,
-			expectedResponse:   httpresponse.StandardErrorRespModel{Message: "Not Found"},
 		})
 	})
 
@@ -617,11 +573,11 @@ func Test_AppVersionIosConfigGetHandler(t *testing.T) {
 					getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
 						return &bitrise.AppDetails{}, nil
 					},
-					getProvisioningProfilesFn: func(apiToken, appSlug string) ([]bitrise.ProvisioningProfile, error) {
-						return []bitrise.ProvisioningProfile{bitrise.ProvisioningProfile{Slug: "prov-profile-slug"}}, nil
+					getProvisioningProfileFn: func(apiToken, appSlug, provProfileSlug string) (*bitrise.ProvisioningProfile, error) {
+						return &bitrise.ProvisioningProfile{Slug: "prov-profile-slug", DownloadURL: "http://here.you.can.find.the.prov.profile"}, nil
 					},
-					getCodeSigningIdentitiesFn: func(apiToken, appSlug string) ([]bitrise.CodeSigningIdentity, error) {
-						return []bitrise.CodeSigningIdentity{}, errors.New("SOME-BITRISE-API-ERROR")
+					getCodeSigningIdentityFn: func(apiToken, appSlug, codeSignIDSlug string) (*bitrise.CodeSigningIdentity, error) {
+						return nil, errors.New("SOME-BITRISE-API-ERROR")
 					},
 				},
 				AppSettingsService: &testAppSettingsService{
@@ -637,52 +593,6 @@ func Test_AppVersionIosConfigGetHandler(t *testing.T) {
 				},
 			},
 			expectedInternalErr: "SOME-BITRISE-API-ERROR",
-		})
-	})
-
-	t.Run("when no matching code signing identity found", func(t *testing.T) {
-		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
-			contextElements: map[ctxpkg.RequestContextKey]interface{}{
-				services.ContextKeyAuthorizedAppVersionID: uuid.NewV4(),
-			},
-			env: &env.AppEnv{
-				AppVersionService: &testAppVersionService{
-					findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
-						appVersion.ArtifactInfoData = json.RawMessage(`{}`)
-						appVersion.AppStoreInfoData = json.RawMessage(`{}`)
-						return appVersion, nil
-					},
-				},
-				AWS: &providers.AWSMock{
-					GeneratePresignedGETURLFn: func(path string, expiration time.Duration) (string, error) {
-						return "", nil
-					},
-				},
-				BitriseAPI: &testBitriseAPI{
-					getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
-						return &bitrise.AppDetails{}, nil
-					},
-					getProvisioningProfilesFn: func(apiToken, appSlug string) ([]bitrise.ProvisioningProfile, error) {
-						return []bitrise.ProvisioningProfile{bitrise.ProvisioningProfile{Slug: "prov-profile-slug"}}, nil
-					},
-					getCodeSigningIdentitiesFn: func(apiToken, appSlug string) ([]bitrise.CodeSigningIdentity, error) {
-						return []bitrise.CodeSigningIdentity{bitrise.CodeSigningIdentity{Slug: "not-matching-slug"}}, nil
-					},
-				},
-				AppSettingsService: &testAppSettingsService{
-					findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
-						appSettings.IosSettingsData = json.RawMessage(`{"selected_app_store_provisioning_profile":"prov-profile-slug","selected_code_signing_identity":"code-signing-slug"}`)
-						return appSettings, nil
-					},
-				},
-				ScreenshotService: &testScreenshotService{
-					findAllFn: func(appVersion *models.AppVersion) ([]models.Screenshot, error) {
-						return []models.Screenshot{}, nil
-					},
-				},
-			},
-			expectedStatusCode: http.StatusNotFound,
-			expectedResponse:   httpresponse.StandardErrorRespModel{Message: "Not Found"},
 		})
 	})
 
@@ -708,11 +618,11 @@ func Test_AppVersionIosConfigGetHandler(t *testing.T) {
 					getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
 						return &bitrise.AppDetails{}, nil
 					},
-					getProvisioningProfilesFn: func(apiToken, appSlug string) ([]bitrise.ProvisioningProfile, error) {
-						return []bitrise.ProvisioningProfile{bitrise.ProvisioningProfile{Slug: "prov-profile-slug"}}, nil
+					getProvisioningProfileFn: func(apiToken, appSlug, provProfileSlug string) (*bitrise.ProvisioningProfile, error) {
+						return &bitrise.ProvisioningProfile{Slug: "prov-profile-slug", DownloadURL: "http://here.you.can.find.the.prov.profile"}, nil
 					},
-					getCodeSigningIdentitiesFn: func(apiToken, appSlug string) ([]bitrise.CodeSigningIdentity, error) {
-						return []bitrise.CodeSigningIdentity{bitrise.CodeSigningIdentity{Slug: "code-signing-slug"}}, nil
+					getCodeSigningIdentityFn: func(apiToken, appSlug, codeSignIDSlug string) (*bitrise.CodeSigningIdentity, error) {
+						return &bitrise.CodeSigningIdentity{Slug: "code-signing-slug", DownloadURL: "http://here.you.can.find.the.code.signing.id"}, nil
 					},
 					getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
 						return []bitrise.ArtifactListElementResponseModel{}, errors.New("SOME-BITRISE-API-ERROR")
@@ -759,11 +669,11 @@ func Test_AppVersionIosConfigGetHandler(t *testing.T) {
 					getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
 						return &bitrise.AppDetails{}, nil
 					},
-					getProvisioningProfilesFn: func(apiToken, appSlug string) ([]bitrise.ProvisioningProfile, error) {
-						return []bitrise.ProvisioningProfile{bitrise.ProvisioningProfile{Slug: "prov-profile-slug"}}, nil
+					getProvisioningProfileFn: func(apiToken, appSlug, provProfileSlug string) (*bitrise.ProvisioningProfile, error) {
+						return &bitrise.ProvisioningProfile{Slug: "prov-profile-slug", DownloadURL: "http://here.you.can.find.the.prov.profile"}, nil
 					},
-					getCodeSigningIdentitiesFn: func(apiToken, appSlug string) ([]bitrise.CodeSigningIdentity, error) {
-						return []bitrise.CodeSigningIdentity{bitrise.CodeSigningIdentity{Slug: "code-signing-slug"}}, nil
+					getCodeSigningIdentityFn: func(apiToken, appSlug, codeSignIDSlug string) (*bitrise.CodeSigningIdentity, error) {
+						return &bitrise.CodeSigningIdentity{Slug: "code-signing-slug", DownloadURL: "http://here.you.can.find.the.code.signing.id"}, nil
 					},
 					getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
 						return []bitrise.ArtifactListElementResponseModel{bitrise.ArtifactListElementResponseModel{Title: "app.xcarchive.zip", Slug: "test-artifact-slug"}}, nil
@@ -810,11 +720,11 @@ func Test_AppVersionIosConfigGetHandler(t *testing.T) {
 					getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
 						return &bitrise.AppDetails{}, nil
 					},
-					getProvisioningProfilesFn: func(apiToken, appSlug string) ([]bitrise.ProvisioningProfile, error) {
-						return []bitrise.ProvisioningProfile{bitrise.ProvisioningProfile{Slug: "prov-profile-slug"}}, nil
+					getProvisioningProfileFn: func(apiToken, appSlug, provProfileSlug string) (*bitrise.ProvisioningProfile, error) {
+						return &bitrise.ProvisioningProfile{Slug: "prov-profile-slug", DownloadURL: "http://here.you.can.find.the.prov.profile"}, nil
 					},
-					getCodeSigningIdentitiesFn: func(apiToken, appSlug string) ([]bitrise.CodeSigningIdentity, error) {
-						return []bitrise.CodeSigningIdentity{bitrise.CodeSigningIdentity{Slug: "code-signing-slug"}}, nil
+					getCodeSigningIdentityFn: func(apiToken, appSlug, codeSignIDSlug string) (*bitrise.CodeSigningIdentity, error) {
+						return &bitrise.CodeSigningIdentity{Slug: "code-signing-slug", DownloadURL: "http://here.you.can.find.the.code.signing.id"}, nil
 					},
 					getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
 						return []bitrise.ArtifactListElementResponseModel{bitrise.ArtifactListElementResponseModel{Title: "app.xcarchive.zip", Slug: "test-artifact-slug"}}, nil
