@@ -26,7 +26,9 @@ type APIInterface interface {
 	GetArtifactPublicInstallPageURL(string, string, string, string) (string, error)
 	GetAppDetails(authToken, appSlug string) (*AppDetails, error)
 	GetProvisioningProfiles(authToken, appSlug string) ([]ProvisioningProfile, error)
+	GetProvisioningProfile(authToken, appSlug, provProfileSlug string) (*ProvisioningProfile, error)
 	GetCodeSigningIdentities(authToken, appSlug string) ([]CodeSigningIdentity, error)
+	GetCodeSigningIdentity(authToken, appSlug, codeSigningSlug string) (*CodeSigningIdentity, error)
 	GetAndroidKeystoreFiles(authToken, appSlug string) ([]AndroidKeystoreFile, error)
 	GetServiceAccountFiles(authToken, appSlug string) ([]GenericProjectFile, error)
 	TriggerDENTask(params TaskParams) (*TriggerResponse, error)
@@ -197,6 +199,23 @@ func (a *API) GetProvisioningProfiles(authToken, appSlug string) ([]Provisioning
 	return responseModel.ProvisioningProfiles, nil
 }
 
+// GetProvisioningProfile ...
+func (a *API) GetProvisioningProfile(authToken, appSlug, provProfileSlug string) (*ProvisioningProfile, error) {
+	resp, err := a.doRequest(authToken, "GET", fmt.Sprintf("/apps/%s/provisioning-profiles/%s", appSlug, provProfileSlug), nil)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	defer httpresponse.BodyCloseWithErrorLog(resp)
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.Errorf("Failed to fetch provisioning profile: status: %d", resp.StatusCode)
+	}
+	var responseModel provisioningProfileShowResponseModel
+	if err := json.NewDecoder(resp.Body).Decode(&responseModel); err != nil {
+		return nil, errors.WithStack(err)
+	}
+	return &responseModel.Data, nil
+}
+
 // GetCodeSigningIdentities ...
 func (a *API) GetCodeSigningIdentities(authToken, appSlug string) ([]CodeSigningIdentity, error) {
 	resp, err := a.doRequest(authToken, "GET", fmt.Sprintf("/apps/%s/build-certificates", appSlug), nil)
@@ -212,6 +231,23 @@ func (a *API) GetCodeSigningIdentities(authToken, appSlug string) ([]CodeSigning
 		return nil, errors.WithStack(err)
 	}
 	return responseModel.CodeSigningIdentities, nil
+}
+
+// GetCodeSigningIdentity ...
+func (a *API) GetCodeSigningIdentity(authToken, appSlug, codeSigningSlug string) (*CodeSigningIdentity, error) {
+	resp, err := a.doRequest(authToken, "GET", fmt.Sprintf("/apps/%s/build-certificates/%s", appSlug, codeSigningSlug), nil)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	defer httpresponse.BodyCloseWithErrorLog(resp)
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.Errorf("Failed to fetch build certificate: status: %d", resp.StatusCode)
+	}
+	var responseModel codeSigningIdentityShowResponseModel
+	if err := json.NewDecoder(resp.Body).Decode(&responseModel); err != nil {
+		return nil, errors.WithStack(err)
+	}
+	return &responseModel.Data, nil
 }
 
 // GetAndroidKeystoreFiles ...
