@@ -94,7 +94,13 @@ func BuildWebhookHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request
 			}
 			app.HeaderColor1 = colors[0]
 			app.HeaderColor2 = colors[1]
-			env.AppService.Update(app, []string{"HeaderColor1", "HeaderColor2"})
+			verrs, err := env.AppService.Update(app, []string{"HeaderColor1", "HeaderColor2"})
+			if len(verrs) > 0 {
+				return httpresponse.RespondWithUnprocessableEntity(w, verrs)
+			}
+			if err != nil {
+				return errors.Wrap(err, "SQL Error")
+			}
 		}
 
 		workflowInWhitelist := params.BuildTriggeredWorkflow != "" && strings.Contains(appSettings.IosWorkflow, params.BuildTriggeredWorkflow)
