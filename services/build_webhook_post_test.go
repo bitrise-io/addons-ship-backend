@@ -28,12 +28,13 @@ func Test_BuildWebhookHandler(t *testing.T) {
 		},
 		requestHeaders: map[string]string{"Bitrise-Event-Type": "build/finished"},
 		env: &env.AppEnv{
-			AppService:         &testAppService{},
-			AppVersionService:  &testAppVersionService{},
-			AppSettingsService: &testAppSettingsService{},
-			BitriseAPI:         &testBitriseAPI{},
-			AppContactService:  &testAppContactService{},
-			WorkerService:      &testWorkerService{},
+			AppService:             &testAppService{},
+			AppVersionService:      &testAppVersionService{},
+			AppVersionEventService: &testAppVersionEventService{},
+			AppSettingsService:     &testAppSettingsService{},
+			BitriseAPI:             &testBitriseAPI{},
+			AppContactService:      &testAppContactService{},
+			WorkerService:          &testWorkerService{},
 		},
 	})
 
@@ -43,12 +44,13 @@ func Test_BuildWebhookHandler(t *testing.T) {
 		},
 		requestHeaders: map[string]string{"Bitrise-Event-Type": "build/finished"},
 		env: &env.AppEnv{
-			AppService:         &testAppService{},
-			AppVersionService:  &testAppVersionService{},
-			AppSettingsService: &testAppSettingsService{},
-			BitriseAPI:         &testBitriseAPI{},
-			AppContactService:  &testAppContactService{},
-			WorkerService:      &testWorkerService{},
+			AppService:             &testAppService{},
+			AppVersionService:      &testAppVersionService{},
+			AppVersionEventService: &testAppVersionEventService{},
+			AppSettingsService:     &testAppSettingsService{},
+			BitriseAPI:             &testBitriseAPI{},
+			AppContactService:      &testAppContactService{},
+			WorkerService:          &testWorkerService{},
 		},
 	})
 
@@ -84,7 +86,8 @@ func Test_BuildWebhookHandler(t *testing.T) {
 							}, nil
 						},
 					},
-					AppVersionService: &testAppVersionService{},
+					AppVersionService:      &testAppVersionService{},
+					AppVersionEventService: &testAppVersionEventService{},
 					BitriseAPI: &testBitriseAPI{
 						getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
 							return []bitrise.ArtifactListElementResponseModel{}, nil
@@ -115,10 +118,11 @@ func Test_BuildWebhookHandler(t *testing.T) {
 							return appSettings, nil
 						},
 					},
-					AppVersionService: &testAppVersionService{},
-					BitriseAPI:        &testBitriseAPI{},
-					AppContactService: &testAppContactService{},
-					WorkerService:     &testWorkerService{},
+					AppVersionService:      &testAppVersionService{},
+					AppVersionEventService: &testAppVersionEventService{},
+					BitriseAPI:             &testBitriseAPI{},
+					AppContactService:      &testAppContactService{},
+					WorkerService:          &testWorkerService{},
 				},
 				requestBody:        `invalid JSON`,
 				expectedStatusCode: http.StatusBadRequest,
@@ -143,10 +147,11 @@ func Test_BuildWebhookHandler(t *testing.T) {
 							return appSettings, nil
 						},
 					},
-					AppVersionService: &testAppVersionService{},
-					BitriseAPI:        &testBitriseAPI{},
-					AppContactService: &testAppContactService{},
-					WorkerService:     &testWorkerService{},
+					AppVersionService:      &testAppVersionService{},
+					AppVersionEventService: &testAppVersionEventService{},
+					BitriseAPI:             &testBitriseAPI{},
+					AppContactService:      &testAppContactService{},
+					WorkerService:          &testWorkerService{},
 				},
 				requestBody:         `{}`,
 				expectedInternalErr: "SQL Error: SOME-SQL-ERROR",
@@ -170,10 +175,11 @@ func Test_BuildWebhookHandler(t *testing.T) {
 							return nil, gorm.ErrRecordNotFound
 						},
 					},
-					AppVersionService: &testAppVersionService{},
-					BitriseAPI:        &testBitriseAPI{},
-					AppContactService: &testAppContactService{},
-					WorkerService:     &testWorkerService{},
+					AppVersionService:      &testAppVersionService{},
+					AppVersionEventService: &testAppVersionEventService{},
+					BitriseAPI:             &testBitriseAPI{},
+					AppContactService:      &testAppContactService{},
+					WorkerService:          &testWorkerService{},
 				},
 				requestBody:        `{}`,
 				expectedStatusCode: http.StatusNotFound,
@@ -230,6 +236,13 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								require.Equal(t, "ios", appVersion.Platform)
 								appVersion.ID = testAppVersion2ID
 								return appVersion, nil
+							},
+						},
+						AppVersionEventService: &testAppVersionEventService{
+							createFn: func(appVersionEvent *models.AppVersionEvent) (*models.AppVersionEvent, error) {
+								require.Equal(t, testAppVersionID, appVersionEvent.AppVersionID)
+								require.Equal(t, "New version was created", appVersionEvent.Text)
+								return nil, nil
 							},
 						},
 						BitriseAPI: &testBitriseAPI{
@@ -338,6 +351,13 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								return appVersion, nil
 							},
 						},
+						AppVersionEventService: &testAppVersionEventService{
+							createFn: func(appVersionEvent *models.AppVersionEvent) (*models.AppVersionEvent, error) {
+								require.Equal(t, testAppVersionID, appVersionEvent.AppVersionID)
+								require.Equal(t, "New version was created", appVersionEvent.Text)
+								return nil, nil
+							},
+						},
 						BitriseAPI: &testBitriseAPI{
 							getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
 								require.Equal(t, "test-api-token", apiToken)
@@ -409,10 +429,11 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								return nil, errors.New("SOME-SQL-ERROR")
 							},
 						},
-						AppVersionService: &testAppVersionService{},
-						BitriseAPI:        &testBitriseAPI{},
-						AppContactService: &testAppContactService{},
-						WorkerService:     &testWorkerService{},
+						AppVersionService:      &testAppVersionService{},
+						AppVersionEventService: &testAppVersionEventService{},
+						BitriseAPI:             &testBitriseAPI{},
+						AppContactService:      &testAppContactService{},
+						WorkerService:          &testWorkerService{},
 					},
 					requestBody:         `{}`,
 					expectedInternalErr: "SQL Error: SOME-SQL-ERROR",
@@ -456,6 +477,11 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								require.Equal(t, "ios", appVersion.Platform)
 								appVersion.ID = testAppVersion2ID
 								return appVersion, nil
+							},
+						},
+						AppVersionEventService: &testAppVersionEventService{
+							createFn: func(appVersionEvent *models.AppVersionEvent) (*models.AppVersionEvent, error) {
+								return nil, nil
 							},
 						},
 						BitriseAPI: &testBitriseAPI{
@@ -508,6 +534,11 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								return appVersion, nil
 							},
 						},
+						AppVersionEventService: &testAppVersionEventService{
+							createFn: func(appVersionEvent *models.AppVersionEvent) (*models.AppVersionEvent, error) {
+								return nil, nil
+							},
+						},
 						BitriseAPI: &testBitriseAPI{
 							getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
 								return []bitrise.ArtifactListElementResponseModel{}, nil
@@ -556,6 +587,11 @@ func Test_BuildWebhookHandler(t *testing.T) {
 							},
 							latestFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
 								return appVersion, nil
+							},
+						},
+						AppVersionEventService: &testAppVersionEventService{
+							createFn: func(appVersionEvent *models.AppVersionEvent) (*models.AppVersionEvent, error) {
+								return nil, nil
 							},
 						},
 						BitriseAPI: &testBitriseAPI{
@@ -611,6 +647,11 @@ func Test_BuildWebhookHandler(t *testing.T) {
 							},
 							latestFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
 								return appVersion, nil
+							},
+						},
+						AppVersionEventService: &testAppVersionEventService{
+							createFn: func(appVersionEvent *models.AppVersionEvent) (*models.AppVersionEvent, error) {
+								return nil, nil
 							},
 						},
 						BitriseAPI: &testBitriseAPI{
@@ -728,6 +769,11 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								return appVersion, nil
 							},
 						},
+						AppVersionEventService: &testAppVersionEventService{
+							createFn: func(appVersionEvent *models.AppVersionEvent) (*models.AppVersionEvent, error) {
+								return nil, nil
+							},
+						},
 						BitriseAPI: &testBitriseAPI{
 							getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
 								return []bitrise.ArtifactListElementResponseModel{
@@ -792,6 +838,84 @@ func Test_BuildWebhookHandler(t *testing.T) {
 							},
 							latestFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
 								return appVersion, nil
+							},
+						},
+						AppVersionEventService: &testAppVersionEventService{
+							createFn: func(appVersionEvent *models.AppVersionEvent) (*models.AppVersionEvent, error) {
+								return nil, nil
+							},
+						},
+						BitriseAPI: &testBitriseAPI{
+							getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
+								return []bitrise.ArtifactListElementResponseModel{
+									bitrise.ArtifactListElementResponseModel{
+										Title: "my-ios-artifact.ipa",
+										ArtifactMeta: &bitrise.ArtifactMeta{
+											AppInfo: bitrise.AppInfo{
+												Version: "1.0",
+											},
+											ProvisioningInfo: bitrise.ProvisioningInfo{DistributionType: "app-store"},
+										},
+									},
+									bitrise.ArtifactListElementResponseModel{
+										Title: "my-ios-artifact.xcarchive.zip",
+										ArtifactMeta: &bitrise.ArtifactMeta{
+											AppInfo: bitrise.AppInfo{
+												Version: "1.0",
+											},
+											ProvisioningInfo: bitrise.ProvisioningInfo{DistributionType: "app-store"},
+										},
+									},
+								}, nil
+							},
+						},
+						AppContactService: &testAppContactService{},
+						WorkerService:     &testWorkerService{},
+					},
+					requestBody:         `{"build_slug":"test-build-slug"}`,
+					expectedInternalErr: "SQL Error: SOME-SQL-ERROR",
+				})
+			})
+
+			t.Run("when db error is retrieved when creating new version event", func(t *testing.T) {
+				performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+					contextElements: map[ctxpkg.RequestContextKey]interface{}{
+						services.ContextKeyAuthorizedAppID: uuid.NewV4(),
+					},
+					requestHeaders: map[string]string{"Bitrise-Event-Type": "build/finished"},
+					env: &env.AppEnv{
+						AppService: &testAppService{
+							findFn: func(app *models.App) (*models.App, error) {
+								return app, nil
+							},
+						},
+						AppSettingsService: &testAppSettingsService{
+							findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
+								return &models.AppSettings{IosWorkflow: "",
+									App: &models.App{
+										BitriseAPIToken: "test-api-token",
+										AppSlug:         "test-app-slug",
+									},
+								}, nil
+							},
+						},
+						AppVersionService: &testAppVersionService{
+							createFn: func(appVersion *models.AppVersion) (*models.AppVersion, []error, error) {
+								require.Equal(t, "ios", appVersion.Platform)
+								require.Equal(t, "test-build-slug", appVersion.BuildSlug)
+								require.NotEqual(t, time.Time{}, appVersion.LastUpdate)
+								artifactData, err := appVersion.ArtifactInfo()
+								require.NoError(t, err)
+								require.Equal(t, "1.0", artifactData.Version)
+								return appVersion, nil, nil
+							},
+							latestFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
+								return nil, nil
+							},
+						},
+						AppVersionEventService: &testAppVersionEventService{
+							createFn: func(appVersionEvent *models.AppVersionEvent) (*models.AppVersionEvent, error) {
+								return nil, errors.New("SOME-SQL-ERROR")
 							},
 						},
 						BitriseAPI: &testBitriseAPI{
@@ -868,6 +992,11 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								return appVersion, nil, nil
 							},
 							latestFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
+								return nil, nil
+							},
+						},
+						AppVersionEventService: &testAppVersionEventService{
+							createFn: func(appVersionEvent *models.AppVersionEvent) (*models.AppVersionEvent, error) {
 								return nil, nil
 							},
 						},
@@ -969,6 +1098,11 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								return appVersion, nil, nil
 							},
 							latestFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
+								return nil, nil
+							},
+						},
+						AppVersionEventService: &testAppVersionEventService{
+							createFn: func(appVersionEvent *models.AppVersionEvent) (*models.AppVersionEvent, error) {
 								return nil, nil
 							},
 						},
@@ -1078,6 +1212,13 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								return appVersion, nil
 							},
 						},
+						AppVersionEventService: &testAppVersionEventService{
+							createFn: func(appVersionEvent *models.AppVersionEvent) (*models.AppVersionEvent, error) {
+								require.Equal(t, testAppVersionID, appVersionEvent.AppVersionID)
+								require.Equal(t, "New version was created", appVersionEvent.Text)
+								return nil, nil
+							},
+						},
 						BitriseAPI: &testBitriseAPI{
 							getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
 								return []bitrise.ArtifactListElementResponseModel{
@@ -1170,6 +1311,13 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								return appVersion, nil
 							},
 						},
+						AppVersionEventService: &testAppVersionEventService{
+							createFn: func(appVersionEvent *models.AppVersionEvent) (*models.AppVersionEvent, error) {
+								require.Equal(t, testAppVersionID, appVersionEvent.AppVersionID)
+								require.Equal(t, "New version was created", appVersionEvent.Text)
+								return nil, nil
+							},
+						},
 						BitriseAPI: &testBitriseAPI{
 							getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
 								return []bitrise.ArtifactListElementResponseModel{
@@ -1255,6 +1403,13 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								require.Equal(t, "android", appVersion.Platform)
 								appVersion.ID = testAppVersion2ID
 								return appVersion, nil
+							},
+						},
+						AppVersionEventService: &testAppVersionEventService{
+							createFn: func(appVersionEvent *models.AppVersionEvent) (*models.AppVersionEvent, error) {
+								require.Equal(t, testAppVersionID, appVersionEvent.AppVersionID)
+								require.Equal(t, "New version was created", appVersionEvent.Text)
+								return nil, nil
 							},
 						},
 						BitriseAPI: &testBitriseAPI{
@@ -1357,6 +1512,11 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								return nil, nil
 							},
 						},
+						AppVersionEventService: &testAppVersionEventService{
+							createFn: func(appVersionEvent *models.AppVersionEvent) (*models.AppVersionEvent, error) {
+								return nil, nil
+							},
+						},
 						BitriseAPI: &testBitriseAPI{
 							getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
 								return nil, errors.New("SOME-BITRISE-API-ERROR")
@@ -1408,6 +1568,11 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								return nil, nil
 							},
 						},
+						AppVersionEventService: &testAppVersionEventService{
+							createFn: func(appVersionEvent *models.AppVersionEvent) (*models.AppVersionEvent, error) {
+								return nil, nil
+							},
+						},
 						BitriseAPI: &testBitriseAPI{
 							getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
 								return []bitrise.ArtifactListElementResponseModel{}, nil
@@ -1456,6 +1621,11 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								return appVersion, nil, nil
 							},
 							latestFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
+								return nil, nil
+							},
+						},
+						AppVersionEventService: &testAppVersionEventService{
+							createFn: func(appVersionEvent *models.AppVersionEvent) (*models.AppVersionEvent, error) {
 								return nil, nil
 							},
 						},
@@ -1515,6 +1685,11 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								return nil, nil
 							},
 						},
+						AppVersionEventService: &testAppVersionEventService{
+							createFn: func(appVersionEvent *models.AppVersionEvent) (*models.AppVersionEvent, error) {
+								return nil, nil
+							},
+						},
 						BitriseAPI: &testBitriseAPI{
 							getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
 								return []bitrise.ArtifactListElementResponseModel{
@@ -1564,6 +1739,11 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								return nil, []error{errors.New("SOME-VALIDATION-ERROR")}, nil
 							},
 							latestFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
+								return nil, nil
+							},
+						},
+						AppVersionEventService: &testAppVersionEventService{
+							createFn: func(appVersionEvent *models.AppVersionEvent) (*models.AppVersionEvent, error) {
 								return nil, nil
 							},
 						},
@@ -1625,6 +1805,78 @@ func Test_BuildWebhookHandler(t *testing.T) {
 							},
 							latestFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
 								return nil, nil
+							},
+						},
+						AppVersionEventService: &testAppVersionEventService{
+							createFn: func(appVersionEvent *models.AppVersionEvent) (*models.AppVersionEvent, error) {
+								return nil, nil
+							},
+						},
+						BitriseAPI: &testBitriseAPI{
+							getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
+								return []bitrise.ArtifactListElementResponseModel{
+									bitrise.ArtifactListElementResponseModel{
+										Title: "my-android-artifact.aab",
+										ArtifactMeta: &bitrise.ArtifactMeta{
+											AppInfo: bitrise.AppInfo{
+												VersionName:       "1.0",
+												MinimumSDKVersion: "1.23",
+												PackageName:       "myPackage",
+											},
+										},
+									},
+								}, nil
+							},
+						},
+						AppContactService: &testAppContactService{},
+						WorkerService:     &testWorkerService{},
+					},
+					requestBody:         `{"build_slug":"test-build-slug"}`,
+					expectedInternalErr: "SQL Error: SOME-SQL-ERROR",
+				})
+			})
+
+			t.Run("when db error is retrieved when creating new version event", func(t *testing.T) {
+				performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
+					contextElements: map[ctxpkg.RequestContextKey]interface{}{
+						services.ContextKeyAuthorizedAppID: uuid.NewV4(),
+					},
+					requestHeaders: map[string]string{"Bitrise-Event-Type": "build/finished"},
+					env: &env.AppEnv{
+						AppService: &testAppService{
+							findFn: func(app *models.App) (*models.App, error) {
+								return app, nil
+							},
+						},
+						AppSettingsService: &testAppSettingsService{
+							findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
+								return &models.AppSettings{
+									AndroidWorkflow: "",
+									IosWorkflow:     "some-ios-wf",
+									App: &models.App{
+										BitriseAPIToken: "test-api-token",
+										AppSlug:         "test-app-slug",
+									},
+								}, nil
+							},
+						},
+						AppVersionService: &testAppVersionService{
+							createFn: func(appVersion *models.AppVersion) (*models.AppVersion, []error, error) {
+								require.Equal(t, "android", appVersion.Platform)
+								require.Equal(t, "test-build-slug", appVersion.BuildSlug)
+								require.NotEqual(t, time.Time{}, appVersion.LastUpdate)
+								artifactData, err := appVersion.ArtifactInfo()
+								require.NoError(t, err)
+								require.Equal(t, "1.0", artifactData.Version)
+								return appVersion, nil, nil
+							},
+							latestFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
+								return nil, nil
+							},
+						},
+						AppVersionEventService: &testAppVersionEventService{
+							createFn: func(appVersionEvent *models.AppVersionEvent) (*models.AppVersionEvent, error) {
+								return nil, errors.New("SOME-SQL-ERROR")
 							},
 						},
 						BitriseAPI: &testBitriseAPI{
@@ -1691,6 +1943,11 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								return appVersion, nil, nil
 							},
 							latestFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
+								return nil, nil
+							},
+						},
+						AppVersionEventService: &testAppVersionEventService{
+							createFn: func(appVersionEvent *models.AppVersionEvent) (*models.AppVersionEvent, error) {
 								return nil, nil
 							},
 						},
@@ -1778,6 +2035,11 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								return appVersion, nil, nil
 							},
 							latestFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
+								return nil, nil
+							},
+						},
+						AppVersionEventService: &testAppVersionEventService{
+							createFn: func(appVersionEvent *models.AppVersionEvent) (*models.AppVersionEvent, error) {
 								return nil, nil
 							},
 						},
