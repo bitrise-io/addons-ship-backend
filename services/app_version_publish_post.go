@@ -1,7 +1,6 @@
 package services
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -12,9 +11,9 @@ import (
 	"github.com/bitrise-io/addons-ship-backend/models"
 	"github.com/bitrise-io/api-utils/httpresponse"
 	"github.com/bitrise-io/api-utils/structs"
-	"github.com/go-yaml/yaml"
 	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
+	yaml "gopkg.in/yaml.v2"
 )
 
 // AppVersionPublishResponse ...
@@ -52,7 +51,7 @@ func AppVersionPublishPostHandler(env *env.AppEnv, w http.ResponseWriter, r *htt
 		return errors.WithStack(err)
 	}
 
-	artifactData, err := env.BitriseAPI.GetArtifactData(
+	artifactList, err := env.BitriseAPI.GetArtifacts(
 		appVersion.App.BitriseAPIToken,
 		appVersion.App.AppSlug,
 		appVersion.BuildSlug,
@@ -62,52 +61,49 @@ func AppVersionPublishPostHandler(env *env.AppEnv, w http.ResponseWriter, r *htt
 	}
 
 	var workflowToTrigger, stackIDForTrigger string
-	var inlineEnvs, secrets map[string]string
+	var inlineEnvs map[string]string
+	var secrets map[string]interface{}
 	switch appVersion.Platform {
 	case "ios":
+		artifactData, _, _, _ := selectIosArtifact(artifactList)
 		workflowToTrigger = "resign_archive_app_store"
 		stackIDForTrigger = "osx-vs4mac-stable"
 		inlineEnvs = map[string]string{
-			"BITRISE_APP_SLUG":        appVersion.App.AppSlug,
-			"BITRISE_BUILD_SLUG":      appVersion.BuildSlug,
-			"BITRISE_ARTIFACT_SLUG":   artifactData.Slug,
-			"CONFIG_JSON_URL":         fmt.Sprintf("%s/apps/%s/versions/%s/ios-config", env.AddonHostURL, appVersion.App.AppSlug, authorizedAppVersionID),
-			"SHIP_ADDON_ACCESS_TOKEN": appVersion.App.APIToken,
+			"BITRISE_APP_SLUG":      appVersion.App.AppSlug,
+			"BITRISE_BUILD_SLUG":    appVersion.BuildSlug,
+			"BITRISE_ARTIFACT_SLUG": artifactData.Slug,
+			"CONFIG_JSON_URL":       fmt.Sprintf("%s/apps/%s/versions/%s/ios-config", env.AddonHostURL, appVersion.App.AppSlug, authorizedAppVersionID),
 		}
-		secrets = map[string]string{"BITRISE_ACCESS_TOKEN": appVersion.App.BitriseAPIToken}
+		secrets = map[string]interface{}{"envs": []bitrise.TaskSecret{
+			bitrise.TaskSecret{"BITRISE_ACCESS_TOKEN": appVersion.App.BitriseAPIToken},
+			bitrise.TaskSecret{"SHIP_ADDON_ACCESS_TOKEN": appVersion.App.APIToken},
+			bitrise.TaskSecret{"SSH_RSA_PRIVATE_KEY": os.Getenv("GITHUB_SSH_KEY")},
+		}}
 	case "android":
 		workflowToTrigger = "resign_android"
 		stackIDForTrigger = "osx-vs4mac-stable"
 		cloneUser := os.Getenv("ANDROID_PUBLISH_WF_GIT_CLONE_USER")
 		clonePwd := os.Getenv("ANDROID_PUBLISH_WF_GIT_CLONE_PWD")
 		inlineEnvs = map[string]string{
-			"CONFIG_JSON_URL":         fmt.Sprintf("%s/apps/%s/versions/%s/android-config", env.AddonHostURL, appVersion.App.AppSlug, authorizedAppVersionID),
-			"GIT_REPOSITORY_URL":      fmt.Sprintf("https://%s:%s@github.com/bitrise-io/addons-ship-bg-worker-task-android", cloneUser, clonePwd),
-			"SHIP_ADDON_ACCESS_TOKEN": appVersion.App.APIToken,
+			"CONFIG_JSON_URL":    fmt.Sprintf("%s/apps/%s/versions/%s/android-config", env.AddonHostURL, appVersion.App.AppSlug, authorizedAppVersionID),
+			"GIT_REPOSITORY_URL": fmt.Sprintf("https://%s:%s@github.com/bitrise-io/addons-ship-bg-worker-task-android", cloneUser, clonePwd),
 		}
-		secrets = map[string]string{"ADDON_SHIP_ACCESS_TOKEN": env.AddonAccessToken}
-	}
-
-	inlineEnvsBytes, err := json.Marshal(inlineEnvs)
-	if err != nil {
-		return errors.WithStack(err)
-	}
-
-	secretsBytes, err := json.Marshal(secrets)
-	if err != nil {
-		return errors.WithStack(err)
+		secrets = map[string]interface{}{"envs": []bitrise.TaskSecret{
+			bitrise.TaskSecret{"ADDON_SHIP_ACCESS_TOKEN": env.AddonAccessToken},
+			bitrise.TaskSecret{"SHIP_ADDON_ACCESS_TOKEN": appVersion.App.APIToken},
+			bitrise.TaskSecret{"BITRISE_ACCESS_TOKEN": appVersion.App.BitriseAPIToken},
+		}}
 	}
 
 	if env.PublishTaskService == nil {
 		return errors.New("No Publish Task Service defined for handler")
 	}
-
 	response, err := env.BitriseAPI.TriggerDENTask(bitrise.TaskParams{
 		StackID:     stackIDForTrigger,
 		Workflow:    workflowToTrigger,
 		BuildConfig: config,
-		InlineEnvs:  string(inlineEnvsBytes),
-		Secrets:     string(secretsBytes),
+		InlineEnvs:  inlineEnvs,
+		Secrets:     secrets,
 		WebhookURL:  env.AddonHostURL + "/task-webhook",
 	})
 	if err != nil {
@@ -127,7 +123,7 @@ func AppVersionPublishPostHandler(env *env.AppEnv, w http.ResponseWriter, r *htt
 	})
 }
 
-func getConfigJSON() (string, error) {
+func getConfigJSON() (interface{}, error) {
 	templateBox, err := rice.FindBox("../utility")
 	if err != nil {
 		return "", errors.WithStack(err)
@@ -142,11 +138,5 @@ func getConfigJSON() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	config = structs.ConvertMapIToMapS(config)
-
-	jsonBytes, err := json.Marshal(config)
-	if err != nil {
-		return "", err
-	}
-	return string(jsonBytes), nil
+	return structs.ConvertMapIToMapS(config), nil
 }
