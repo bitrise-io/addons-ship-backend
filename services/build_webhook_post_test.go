@@ -22,7 +22,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 	url := "/webhook"
 	handler := services.BuildWebhookHandler
 
-	behavesAsServiceCravingHandler(t, httpMethod, url, handler, []string{"AppService", "AppSettingsService", "AppVersionService", "BitriseAPI", "AppContactService", "WorkerService"}, ControllerTestCase{
+	behavesAsServiceCravingHandler(t, httpMethod, url, handler, []string{"AppService", "AppSettingsService", "AppVersionService", "AppVersionEventService", "BitriseAPI", "AppContactService", "WorkerService"}, ControllerTestCase{
 		contextElements: map[ctxpkg.RequestContextKey]interface{}{
 			services.ContextKeyAuthorizedAppID: uuid.NewV4(),
 		},
