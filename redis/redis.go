@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/bitrise-io/api-utils/utils"
 	"github.com/gomodule/redigo/redis"
@@ -20,30 +21,26 @@ type Interface interface {
 
 // Client ...
 type Client struct {
-	conn redis.Conn
+	pool *redis.Pool
 }
 
 // New ...
 func New() *Client {
 	return &Client{
-		conn: NewPool(
+		pool: NewPool(
 			os.Getenv("REDIS_URL"),
 			int(utils.GetInt64EnvWithDefault("REDIS_MAX_IDLE_CONNECTION", 50)),
 			int(utils.GetInt64EnvWithDefault("REDIS_MAX_ACTIVE_CONNECTION", 1000)),
-		).Get(),
+		),
 	}
-}
-
-// Close ...
-func (c *Client) Close() error {
-	return c.conn.Close()
 }
 
 // NewPool ...
 func NewPool(urlStr string, maxIdle, maxActive int) *redis.Pool {
 	return &redis.Pool{
-		MaxIdle:   maxIdle,
-		MaxActive: maxActive,
+		MaxIdle:     maxIdle,
+		IdleTimeout: 240 * time.Second,
+		MaxActive:   maxActive,
 		Dial: func() (redis.Conn, error) {
 			url, err := DialURL(urlStr)
 			if err != nil {
@@ -64,36 +61,39 @@ func NewPool(urlStr string, maxIdle, maxActive int) *redis.Pool {
 
 // Set ...
 func (c *Client) Set(key string, value interface{}, ttl int) error {
-	_, err := c.conn.Do("SET", key, value)
+	conn := c.pool.Get()
+	_, err := conn.Do("SET", key, value)
 	if err != nil {
 		return err
 	}
 	if ttl > 0 {
-		_, err := c.conn.Do("EXPIRE", key, ttl)
+		_, err := conn.Do("EXPIRE", key, ttl)
 		if err != nil {
 			return err
 		}
 	}
 
-	return nil
+	return conn.Close()
 }
 
 // GetString ...
 func (c *Client) GetString(key string) (string, error) {
-	value, err := redis.String(c.conn.Do("GET", key))
+	conn := c.pool.Get()
+	value, err := redis.String(conn.Do("GET", key))
 	if err != nil {
 		return "", err
 	}
-	return value, nil
+	return value, conn.Close()
 }
 
 // GetInt64 ...
 func (c *Client) GetInt64(key string) (int64, error) {
-	value, err := redis.Int64(c.conn.Do("GET", key))
+	conn := c.pool.Get()
+	value, err := redis.Int64(conn.Do("GET", key))
 	if err != nil {
 		return 0, err
 	}
-	return value, nil
+	return value, conn.Close()
 }
 
 // DialURL ...
