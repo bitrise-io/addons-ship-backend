@@ -18,6 +18,8 @@ type App struct {
 	APIToken          string `json:"-"`
 	EncryptedSecret   []byte `json:"-"`
 	EncryptedSecretIV []byte `json:"-"`
+	HeaderColor1      string `json:"header_color_1"`
+	HeaderColor2      string `json:"header_color_2"`
 
 	AppVersions []AppVersion `gorm:"foreignkey:AppID" json:"app_versions"`
 	AppSettings AppSettings  `gorm:"foreignkey:AppsID" json:"app_settings"`
