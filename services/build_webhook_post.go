@@ -44,6 +44,9 @@ func BuildWebhookHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request
 		if env.AppVersionService == nil {
 			return errors.New("No App Version Service defined for handler")
 		}
+		if env.AppVersionEventService == nil {
+			return errors.New("No App Version Event Service defined for handler")
+		}
 		if env.BitriseAPI == nil {
 			return errors.New("No Bitrise API Service defined for handler")
 		}
@@ -109,6 +112,11 @@ func BuildWebhookHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request
 				}
 			}
 
+			_, err = env.AppVersionEventService.Create(&models.AppVersionEvent{AppVersionID: appVersion.ID, Text: "New version was created"})
+			if err != nil {
+				return errors.Wrap(err, "SQL Error")
+			}
+
 			if err := sendNotification(env, appVersion, app); err != nil {
 				return errors.WithStack(err)
 			}
@@ -142,6 +150,10 @@ func BuildWebhookHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request
 				if err != nil {
 					return errors.Wrap(err, "Worker Error")
 				}
+			}
+			_, err = env.AppVersionEventService.Create(&models.AppVersionEvent{AppVersionID: appVersion.ID, Text: "New version was created"})
+			if err != nil {
+				return errors.Wrap(err, "SQL Error")
 			}
 
 			if err := sendNotification(env, appVersion, app); err != nil {
