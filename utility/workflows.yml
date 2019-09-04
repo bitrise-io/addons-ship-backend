@@ -37,35 +37,35 @@ workflows:
     steps:
       - activate-ssh-key@4.0.3:
           run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
-      - git-clone@4.0.17: {}
       - script@1.1.5:
           inputs:
             - content: |-
                 #!/usr/bin/env bash
                 set -ex
 
-                tree -L 3
-                cd addons-ship-bg-worker-task-android
-                bitrise run ship
-      # - path::./prepare:
-      # - sign-apk:
-      #     run_if: true
-      #     inputs:
-      #       - android_app: '$APP_LIST'
-      #       - keystore_url: '$KEYSTORE_URL'
-      #       - keystore_password: '$KEYSTORE_PASSWORD'
-      #       - keystore_alias: '$KEYSTORE_ALIAS'
-      #       - private_key_password: '$KEYSTORE_PRIVATE_KEY_PASSWORD'
-      # - google-play-deploy:
-      #     inputs:
-      #       - service_account_json_key_path: '$SERVICE_ACCOUNT_JSON_URL'
-      #       - package_name: '$PACKAGE_NAME'
-      #       - expansionfile_path: '$EXPANSION_FILE_PATH'
-      #       - track: '$TRACK'
-      #       - whatsnews_dir: '$WHATS_NEW_DIR_PATH'
-      #       - mapping_file: '$MAPPING_PATH'
-      # - path::./sync:
-      #     inputs:
-      #       - service_account_json_key_path: '$SERVICE_ACCOUNT_JSON_URL'
-      #       - package_name: '$PACKAGE_NAME'
-      #       - metadata_dir_path: '$METADATA_DIR_PATH'
+                # tree -L 3
+                # cd addons-ship-bg-worker-task-android
+                # bitrise run ship
+                git clone git@github.com:bitrise-io/addons-ship-bg-worker-task-android.git .
+      - path::./prepare:
+      - sign-apk:
+          run_if: true
+          inputs:
+            - android_app: '$APP_LIST'
+            - keystore_url: '$KEYSTORE_URL'
+            - keystore_password: '$KEYSTORE_PASSWORD'
+            - keystore_alias: '$KEYSTORE_ALIAS'
+            - private_key_password: '$KEYSTORE_PRIVATE_KEY_PASSWORD'
+      - google-play-deploy:
+          inputs:
+            - service_account_json_key_path: '$SERVICE_ACCOUNT_JSON_URL'
+            - package_name: '$PACKAGE_NAME'
+            - expansionfile_path: '$EXPANSION_FILE_PATH'
+            - track: '$TRACK'
+            - whatsnews_dir: '$WHATS_NEW_DIR_PATH'
+            - mapping_file: '$MAPPING_PATH'
+      - path::./sync:
+          inputs:
+            - service_account_json_key_path: '$SERVICE_ACCOUNT_JSON_URL'
+            - package_name: '$PACKAGE_NAME'
+            - metadata_dir_path: '$METADATA_DIR_PATH'
