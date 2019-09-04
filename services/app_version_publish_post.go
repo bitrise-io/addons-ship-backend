@@ -84,7 +84,6 @@ func AppVersionPublishPostHandler(env *env.AppEnv, w http.ResponseWriter, r *htt
 		stackIDForTrigger = "osx-vs4mac-stable"
 		inlineEnvs = map[string]string{
 			"CONFIG_JSON_URL":    fmt.Sprintf("%s/apps/%s/versions/%s/android-config", env.AddonHostURL, appVersion.App.AppSlug, authorizedAppVersionID),
-			"BITRISE_SOURCE_DIR": "/bitrise/src",
 			"GIT_REPOSITORY_URL": "git@github.com:bitrise-io/addons-ship-bg-worker-task-android.git",
 		}
 		secrets = map[string]interface{}{"envs": []bitrise.TaskSecret{
