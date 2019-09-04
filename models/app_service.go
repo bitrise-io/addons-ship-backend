@@ -5,6 +5,7 @@ import "github.com/jinzhu/gorm"
 // AppService ...
 type AppService struct {
 	DB *gorm.DB
+	UpdatableModelService
 }
 
 // Create ...
@@ -24,6 +25,23 @@ func (a *AppService) Find(app *App) (*App, error) {
 		return nil, err
 	}
 	return app, nil
+}
+
+// Update ...
+func (a *AppService) Update(app *App, whitelist []string) (validationErrors []error, dbErr error) {
+	updateData, err := a.UpdateData(*app, whitelist)
+	if err != nil {
+		return nil, err
+	}
+	result := a.DB.Model(app).Updates(updateData)
+	verrs := ValidationErrors(result.GetErrors())
+	if len(verrs) > 0 {
+		return verrs, nil
+	}
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return nil, nil
 }
 
 // Delete ...
