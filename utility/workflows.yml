@@ -44,6 +44,8 @@ workflows:
                 #!/usr/bin/env bash
                 set -ex
 
+                tree -L 3
+                cd addons-ship-bg-worker-task-android
                 bitrise run ship
       # - path::./prepare:
       # - sign-apk:
