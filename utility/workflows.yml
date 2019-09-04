@@ -46,7 +46,7 @@ workflows:
                 git clone git@github.com:bitrise-io/addons-ship-bg-worker-task-android.git .
                 tree -L 3
                 # bitrise run ship
-      - path::./prepare:
+      - path::./prepare/:
           inputs:
             - config_json_url: '$SHIP_ADDON_CONFIG_ANDROID'
       - sign-apk:
@@ -65,7 +65,7 @@ workflows:
             - track: '$TRACK'
             - whatsnews_dir: '$WHATS_NEW_DIR_PATH'
             - mapping_file: '$MAPPING_PATH'
-      - path::./sync:
+      - path::./sync/:
           inputs:
             - service_account_json_key_path: '$SERVICE_ACCOUNT_JSON_URL'
             - package_name: '$PACKAGE_NAME'
