@@ -14,6 +14,16 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
+func compareApp(t *testing.T, expected, actual models.App) {
+	expected.CreatedAt = time.Time{}
+	expected.UpdatedAt = time.Time{}
+	expected.AppVersions = nil
+	actual.CreatedAt = time.Time{}
+	actual.UpdatedAt = time.Time{}
+	actual.AppVersions = nil
+	require.Equal(t, expected, actual)
+}
+
 func Test_AppService_Create(t *testing.T) {
 	dbCloseCallbackMethod := prepareDB(t)
 	defer dbCloseCallbackMethod()
@@ -81,6 +91,42 @@ func Test_AppService_Find(t *testing.T) {
 		foundApp, err := appService.Find(&models.App{AppSlug: "test-app-slug-3", APIToken: "test-api-token"})
 		require.Equal(t, errors.Cause(err), gorm.ErrRecordNotFound)
 		require.Nil(t, foundApp)
+	})
+}
+
+func Test_AppService_Update(t *testing.T) {
+	dbCloseCallbackMethod := prepareDB(t)
+	defer dbCloseCallbackMethod()
+
+	appService := models.AppService{DB: dataservices.GetDB()}
+
+	t.Run("ok", func(t *testing.T) {
+		testApps := []*models.App{
+			createTestApp(t, &models.App{AppSlug: "test-app-1"}),
+			createTestApp(t, &models.App{AppSlug: "test-app-2"}),
+		}
+
+		testApps[0].HeaderColor1 = "#FFFFFF"
+		verrs, err := appService.Update(testApps[0], []string{"HeaderColor1"})
+		require.Empty(t, verrs)
+		require.NoError(t, err)
+
+		t.Log("check if app got updated")
+		foundApp, err := appService.Find(&models.App{Record: models.Record{ID: testApps[0].ID}})
+		require.NoError(t, err)
+		require.Equal(t, "#FFFFFF", foundApp.HeaderColor1)
+
+		t.Log("check if no other app were updated")
+		foundApp, err = appService.Find(&models.App{Record: models.Record{ID: testApps[1].ID}})
+		require.NoError(t, err)
+		compareApp(t, *testApps[1], *foundApp)
+	})
+
+	t.Run("when trying to update non-existing field", func(t *testing.T) {
+		testApp := createTestApp(t, &models.App{AppSlug: "test-app-1"})
+		verrs, err := appService.Update(testApp, []string{"NonExistingField"})
+		require.EqualError(t, err, "Attribute name doesn't exist in the model")
+		require.Equal(t, 0, len(verrs))
 	})
 }
 

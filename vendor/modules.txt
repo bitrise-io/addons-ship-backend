@@ -85,6 +85,8 @@ github.com/justinas/alice
 github.com/lib/pq
 github.com/lib/pq/oid
 github.com/lib/pq/scram
+# github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
+github.com/nfnt/resize
 # github.com/philhofer/fwd v1.0.0
 github.com/philhofer/fwd
 # github.com/pkg/errors v0.8.1
@@ -99,6 +101,11 @@ github.com/robfig/cron
 github.com/rs/cors
 # github.com/satori/go.uuid v1.2.0
 github.com/satori/go.uuid
+# github.com/simonmarton/common-colors v0.0.0-20190731125827-7108ef0626f9
+github.com/simonmarton/common-colors/processimage
+github.com/simonmarton/common-colors/calculator
+github.com/simonmarton/common-colors/color
+github.com/simonmarton/common-colors/models
 # github.com/stretchr/testify v1.3.0
 github.com/stretchr/testify/require
 github.com/stretchr/testify/assert
