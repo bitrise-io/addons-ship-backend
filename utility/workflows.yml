@@ -35,6 +35,8 @@ workflows:
   resign_android:
     title: Re-sign Android artifact and deploy to store
     steps:
+      - activate-ssh-key@4.0.3:
+          run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
       - git-clone@4.0.14: {}
       - path::./prepare:
       - sign-apk:
