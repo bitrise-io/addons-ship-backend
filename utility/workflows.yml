@@ -40,18 +40,7 @@ workflows:
     steps:
       - activate-ssh-key@4.0.3:
           run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
-      - script@1.1.5:
-          inputs:
-            - content: |-
-                #!/usr/bin/env bash
-                set -ex
-
-                git clone git@github.com:bitrise-io/addons-ship-bg-worker-task-android.git $BITRISE_SOURCE_DIR
-                tree -L 3
-                # bitrise run ship
-      - path::./prepare:
-          inputs:
-            - config_json_url: '$CONFIG_JSON_URL'
+      - git::https://github.com/bitrise-io/addons-ship-bg-worker-task-android-prepare.git@master:
       - sign-apk:
           run_if: true
           inputs:
@@ -68,7 +57,7 @@ workflows:
             - track: '$TRACK'
             - whatsnews_dir: '$WHATS_NEW_DIR_PATH'
             - mapping_file: '$MAPPING_PATH'
-      - path::./sync:
+      - git::https://github.com/bitrise-io/addons-ship-bg-worker-task-android-sync.git@master:
           inputs:
             - service_account_json_key_path: '$SERVICE_ACCOUNT_JSON_URL'
             - package_name: '$PACKAGE_NAME'
