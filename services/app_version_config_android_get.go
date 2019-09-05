@@ -89,7 +89,7 @@ func AppVersionAndroidConfigGetHandler(env *env.AppEnv, w http.ResponseWriter, r
 		return errors.WithStack(err)
 	}
 	config.MetaData.ListingInfo = ListingInfos{
-		"en_US": ListingInfo{
+		"en-GB": ListingInfo{
 			ShortDescription: storeInfo.ShortDescription,
 			FullDescription:  storeInfo.FullDescription,
 			WhatsNew:         storeInfo.WhatsNew,
