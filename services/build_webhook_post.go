@@ -94,15 +94,16 @@ func BuildWebhookHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request
 			colors, err := processimage.FromURL(*appDetails.AvatarURL)
 			if err != nil {
 				env.Logger.Warn("Failed to generate header colors", zap.Any("app_details", appDetails), zap.Error(err))
-			}
-			app.HeaderColor1 = colors[0]
-			app.HeaderColor2 = colors[1]
-			verrs, err := env.AppService.Update(app, []string{"HeaderColor1", "HeaderColor2"})
-			if len(verrs) > 0 {
-				return httpresponse.RespondWithUnprocessableEntity(w, verrs)
-			}
-			if err != nil {
-				return errors.Wrap(err, "SQL Error")
+			} else {
+				app.HeaderColor1 = colors[0]
+				app.HeaderColor2 = colors[1]
+				verrs, err := env.AppService.Update(app, []string{"HeaderColor1", "HeaderColor2"})
+				if len(verrs) > 0 {
+					return httpresponse.RespondWithUnprocessableEntity(w, verrs)
+				}
+				if err != nil {
+					return errors.Wrap(err, "SQL Error")
+				}
 			}
 		}
 
