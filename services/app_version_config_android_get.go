@@ -78,12 +78,25 @@ func AppVersionAndroidConfigGetHandler(env *env.AppEnv, w http.ResponseWriter, r
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	config.MetaData.ListingInfo = ListingInfo{
-		ShortDescription: storeInfo.ShortDescription,
-		FullDescription:  storeInfo.FullDescription,
-		WhatsNew:         storeInfo.WhatsNew,
-		FeatureGraphic:   featureGraphicPresignedURL,
-		Title:            appData.Title,
+
+	screenshots, err := env.ScreenshotService.FindAll(appVersion)
+	if err != nil {
+		return errors.Wrap(err, "SQL Error")
+	}
+
+	scs, err := newScreenshotsResponse(screenshots, env)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	config.MetaData.ListingInfo = ListingInfos{
+		"en-US": ListingInfo{
+			ShortDescription: storeInfo.ShortDescription,
+			FullDescription:  storeInfo.FullDescription,
+			WhatsNew:         storeInfo.WhatsNew,
+			FeatureGraphic:   featureGraphicPresignedURL,
+			Title:            appData.Title,
+			Screenshots:      scs,
+		},
 	}
 
 	appSettings, err := env.AppSettingsService.Find(&models.AppSettings{AppID: appVersion.AppID})
@@ -114,17 +127,6 @@ func AppVersionAndroidConfigGetHandler(env *env.AppEnv, w http.ResponseWriter, r
 		Alias:       selectedAndroidKeystore.ExposedMetadataStore.Alias,
 		KeyPassword: selectedAndroidKeystore.ExposedMetadataStore.PrivateKeyPassword,
 	}
-
-	screenshots, err := env.ScreenshotService.FindAll(appVersion)
-	if err != nil {
-		return errors.Wrap(err, "SQL Error")
-	}
-
-	scs, err := newScreenshotsResponse(screenshots, env)
-	if err != nil {
-		return errors.WithStack(err)
-	}
-	config.MetaData.ListingInfo.Screenshots = scs
 
 	artifacts, err := env.BitriseAPI.GetArtifacts(appVersion.App.BitriseAPIToken, appVersion.App.AppSlug, appVersion.BuildSlug)
 	if err != nil {
@@ -217,6 +219,9 @@ type ListingInfo struct {
 	ShortDescription string      `json:"short_description,omitempty"`
 }
 
+// ListingInfos ...
+type ListingInfos map[string]ListingInfo
+
 // Keystore ...
 type Keystore struct {
 	URL         string `json:"url"`
@@ -227,9 +232,9 @@ type Keystore struct {
 
 // MetaData ...
 type MetaData struct {
-	ListingInfo        ListingInfo `json:"listing_info"`
-	Track              string      `json:"track"`
-	PackageName        string      `json:"package_name"`
-	ServiceAccountJSON string      `json:"service_account_json"`
-	Keystore           Keystore    `json:"keystore"`
+	ListingInfo        ListingInfos `json:"listing_info"`
+	Track              string       `json:"track"`
+	PackageName        string       `json:"package_name"`
+	ServiceAccountJSON string       `json:"service_account_json"`
+	Keystore           Keystore     `json:"keystore"`
 }
