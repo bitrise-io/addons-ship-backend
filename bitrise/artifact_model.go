@@ -32,6 +32,7 @@ type ArtifactMeta struct {
 	AppInfo          AppInfo          `json:"app_info"`
 	ProvisioningInfo ProvisioningInfo `json:"provisioning_info"`
 	Size             string           `json:"file_size_bytes"`
+	Scheme           string           `json:"scheme"`
 }
 
 // ArtifactData ...
