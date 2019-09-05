@@ -271,7 +271,7 @@ func (a *API) GetAndroidKeystoreFiles(authToken, appSlug string) ([]AndroidKeyst
 
 // GetAndroidKeystoreFile ...
 func (a *API) GetAndroidKeystoreFile(authToken, appSlug, keystoreSlug string) (*AndroidKeystoreFile, error) {
-	resp, err := a.doRequest(authToken, "GET", fmt.Sprintf("/apps/%s/android-keystore-files/%s", appSlug, keystoreSlug), nil)
+	resp, err := a.doRequest(authToken, "GET", fmt.Sprintf("/apps/%s/generic-project-files/%s", appSlug, keystoreSlug), nil)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
