@@ -76,7 +76,7 @@ func AppVersionPublishPostHandler(env *env.AppEnv, w http.ResponseWriter, r *htt
 		}
 		secrets = map[string]interface{}{"envs": []bitrise.TaskSecret{
 			bitrise.TaskSecret{"BITRISE_ACCESS_TOKEN": appVersion.App.BitriseAPIToken},
-			bitrise.TaskSecret{"SHIP_ADDON_ACCESS_TOKEN": appVersion.App.APIToken},
+			bitrise.TaskSecret{"ADDON_SHIP_APP_ACCESS_TOKEN": appVersion.App.APIToken},
 			bitrise.TaskSecret{"SSH_RSA_PRIVATE_KEY": os.Getenv("GITHUB_SSH_KEY")},
 		}}
 	case "android":
@@ -90,7 +90,7 @@ func AppVersionPublishPostHandler(env *env.AppEnv, w http.ResponseWriter, r *htt
 		}
 		secrets = map[string]interface{}{"envs": []bitrise.TaskSecret{
 			bitrise.TaskSecret{"ADDON_SHIP_ACCESS_TOKEN": env.AddonAccessToken},
-			bitrise.TaskSecret{"SHIP_ADDON_ACCESS_TOKEN": appVersion.App.APIToken},
+			bitrise.TaskSecret{"ADDON_SHIP_APP_ACCESS_TOKEN": appVersion.App.APIToken},
 			bitrise.TaskSecret{"BITRISE_ACCESS_TOKEN": appVersion.App.BitriseAPIToken},
 		}}
 	}

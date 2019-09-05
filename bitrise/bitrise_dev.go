@@ -91,6 +91,15 @@ func (a *APIDev) GetProvisioningProfiles(authToken, appSlug string) ([]Provision
 	}, nil
 }
 
+// GetProvisioningProfile ...
+func (a *APIDev) GetProvisioningProfile(authToken, appSlug, provProfileSlug string) (*ProvisioningProfile, error) {
+	return &ProvisioningProfile{
+		Filename:    "prov-profile-1.provisionprofile",
+		Slug:        "prov-profile-1-slug",
+		DownloadURL: "https://bit.ly/1LixVJu",
+	}, nil
+}
+
 // GetCodeSigningIdentities ...
 func (a *APIDev) GetCodeSigningIdentities(authToken, appSlug string) ([]CodeSigningIdentity, error) {
 	return []CodeSigningIdentity{
@@ -102,6 +111,15 @@ func (a *APIDev) GetCodeSigningIdentities(authToken, appSlug string) ([]CodeSign
 			Filename: "build-certificate-2.cert",
 			Slug:     "build-certificate-2-slug",
 		},
+	}, nil
+}
+
+// GetCodeSigningIdentity ...
+func (a *APIDev) GetCodeSigningIdentity(authToken, appSlug, codeSigningSlug string) (*CodeSigningIdentity, error) {
+	return &CodeSigningIdentity{
+		Filename:    "build-certificate-1.cert",
+		Slug:        "build-certificate-1-slug",
+		DownloadURL: "https://bit.ly/1LixVJu",
 	}, nil
 }
 

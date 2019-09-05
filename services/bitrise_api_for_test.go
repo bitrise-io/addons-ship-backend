@@ -9,7 +9,9 @@ type testBitriseAPI struct {
 	getArtifactPublicPageURLFn func(string, string, string, string) (string, error)
 	getAppDetailsFn            func(string, string) (*bitrise.AppDetails, error)
 	getProvisioningProfilesFn  func(string, string) ([]bitrise.ProvisioningProfile, error)
+	getProvisioningProfileFn   func(string, string, string) (*bitrise.ProvisioningProfile, error)
 	getCodeSigningIdentitiesFn func(string, string) ([]bitrise.CodeSigningIdentity, error)
+	getCodeSigningIdentityFn   func(string, string, string) (*bitrise.CodeSigningIdentity, error)
 	getAndroidKeystoreFilesFn  func(string, string) ([]bitrise.AndroidKeystoreFile, error)
 	getServiceAccountFilesFn   func(string, string) ([]bitrise.GenericProjectFile, error)
 	triggerDENTaskFn           func(params bitrise.TaskParams) (*bitrise.TriggerResponse, error)
@@ -58,11 +60,25 @@ func (a *testBitriseAPI) GetProvisioningProfiles(authToken, appSlug string) ([]b
 	return a.getProvisioningProfilesFn(authToken, appSlug)
 }
 
+func (a *testBitriseAPI) GetProvisioningProfile(authToken, appSlug, provProfileSlug string) (*bitrise.ProvisioningProfile, error) {
+	if a.getProvisioningProfileFn == nil {
+		panic("You have to override GetProvisioningProfile function in tests")
+	}
+	return a.getProvisioningProfileFn(authToken, appSlug, provProfileSlug)
+}
+
 func (a *testBitriseAPI) GetCodeSigningIdentities(authToken, appSlug string) ([]bitrise.CodeSigningIdentity, error) {
 	if a.getCodeSigningIdentitiesFn == nil {
 		panic("You have to override GetCodeSigningIdentities function in tests")
 	}
 	return a.getCodeSigningIdentitiesFn(authToken, appSlug)
+}
+
+func (a *testBitriseAPI) GetCodeSigningIdentity(authToken, appSlug, codeSigningSlug string) (*bitrise.CodeSigningIdentity, error) {
+	if a.getCodeSigningIdentityFn == nil {
+		panic("You have to override GetCodeSigningIdentity function in tests")
+	}
+	return a.getCodeSigningIdentityFn(authToken, appSlug, codeSigningSlug)
 }
 
 func (a *testBitriseAPI) GetAndroidKeystoreFiles(authToken, appSlug string) ([]bitrise.AndroidKeystoreFile, error) {
