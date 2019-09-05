@@ -224,6 +224,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								require.Equal(t, "test-build-slug", appVersion.BuildSlug)
 								require.NotEqual(t, time.Time{}, appVersion.LastUpdate)
 								require.Equal(t, "12", appVersion.BuildNumber)
+								require.Equal(t, "test-scheme", appVersion.Scheme)
 								artifactData, err := appVersion.ArtifactInfo()
 								require.NoError(t, err)
 								require.Equal(t, "1.0", artifactData.Version)
@@ -272,6 +273,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 												DeviceFamilyList: []int{1, 2, 12},
 											},
 											ProvisioningInfo: bitrise.ProvisioningInfo{DistributionType: "app-store"},
+											Scheme:           "test-scheme",
 										},
 									},
 								}, nil

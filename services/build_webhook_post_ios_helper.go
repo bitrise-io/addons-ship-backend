@@ -55,6 +55,7 @@ func prepareAppVersionForIosPlatform(w http.ResponseWriter, r *http.Request, art
 		Platform:         "ios",
 		BuildSlug:        buildSlug,
 		ArtifactInfoData: artifactInfoData,
+		Scheme:           selectedArtifact.ArtifactMeta.Scheme,
 	}, nil
 }
 
