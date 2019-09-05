@@ -152,27 +152,25 @@ func Test_AppVersionAndroidConfigGetHandler(t *testing.T) {
 						require.Equal(t, "test-api-token", apiToken)
 						return &bitrise.AppDetails{Title: "my-awesome-app"}, nil
 					},
-					getServiceAccountFilesFn: func(apiToken, appSlug string) ([]bitrise.GenericProjectFile, error) {
+					getServiceAccountFileFn: func(apiToken, appSlug, serviceJSONSlug string) (*bitrise.GenericProjectFile, error) {
 						require.Equal(t, "test-app-slug", appSlug)
 						require.Equal(t, "test-api-token", apiToken)
-						return []bitrise.GenericProjectFile{bitrise.GenericProjectFile{
+						return &bitrise.GenericProjectFile{
 							Slug:        "service-account-slug",
 							DownloadURL: "http://service-account-json.url",
-						}}, nil
+						}, nil
 					},
-					getAndroidKeystoreFilesFn: func(apiToken, appSlug string) ([]bitrise.AndroidKeystoreFile, error) {
+					getAndroidKeystoreFileFn: func(apiToken, appSlug, keystoreSlug string) (*bitrise.AndroidKeystoreFile, error) {
 						require.Equal(t, "test-app-slug", appSlug)
 						require.Equal(t, "test-api-token", apiToken)
-						return []bitrise.AndroidKeystoreFile{
-							bitrise.AndroidKeystoreFile{
-								Slug:        "android-keystore-slug",
-								UserEnvKey:  "ANDROID_KEYSTORE",
-								DownloadURL: "http://android.keystore.url",
-								ExposedMetadataStore: bitrise.ExposedMetadataStore{
-									Password:           "my-secret-password",
-									Alias:              "AnDrOID-KeySTore",
-									PrivateKeyPassword: "my-private-key-pass",
-								},
+						return &bitrise.AndroidKeystoreFile{
+							Slug:        "android-keystore-slug",
+							UserEnvKey:  "ANDROID_KEYSTORE",
+							DownloadURL: "http://android.keystore.url",
+							ExposedMetadataStore: bitrise.ExposedMetadataStore{
+								Password:           "my-secret-password",
+								Alias:              "AnDrOID-KeySTore",
+								PrivateKeyPassword: "my-private-key-pass",
 							},
 						}, nil
 					},
@@ -215,18 +213,20 @@ func Test_AppVersionAndroidConfigGetHandler(t *testing.T) {
 			expectedStatusCode: http.StatusOK,
 			expectedResponse: services.AppVersionAndroidConfigGetResponse{
 				MetaData: services.MetaData{
-					ListingInfo: services.ListingInfo{
-						ShortDescription: "Description",
-						FullDescription:  "A bit longer description",
-						WhatsNew:         "This is what is new",
-						Title:            "my-awesome-app",
-						FeatureGraphic:   "http://presigned.url/test-app-slug/1ca9503a-6230-4140-9fca-3867b6640ce3/6154234a-9146-4a20-b43f-f0292d98017a.png",
-						Screenshots: services.Screenshots{
-							Tv:        []string{"http://presigned.url/test-app-slug/1ca9503a-6230-4140-9fca-3867b6640ce3/TV (tv)/17ec78c9-e3a8-41ee-b3bd-2df9b4117aa2.png"},
-							Wear:      []string{"http://presigned.url/test-app-slug/1ca9503a-6230-4140-9fca-3867b6640ce3/Watch (wear)/d5c8564f-eef4-490a-a7fd-8d3050893320.png"},
-							Phone:     []string{"http://presigned.url/test-app-slug/1ca9503a-6230-4140-9fca-3867b6640ce3/Phone (phone)/e4d64d18-e414-4fa3-8583-f94a06b4f9a9.png"},
-							TenInch:   []string{"http://presigned.url/test-app-slug/1ca9503a-6230-4140-9fca-3867b6640ce3/Tablet (ten_inch)/4faa287f-afee-46aa-bd6b-553ab11a959c.png"},
-							SevenInch: []string{"http://presigned.url/test-app-slug/1ca9503a-6230-4140-9fca-3867b6640ce3/Tablet (seven_inch)/27cee0a1-1afd-4280-8d9f-f22526dc3d16.png"},
+					ListingInfo: map[string]services.ListingInfo{
+						"en-US": services.ListingInfo{
+							ShortDescription: "Description",
+							FullDescription:  "A bit longer description",
+							WhatsNew:         "This is what is new",
+							Title:            "my-awesome-app",
+							FeatureGraphic:   "http://presigned.url/test-app-slug/1ca9503a-6230-4140-9fca-3867b6640ce3/6154234a-9146-4a20-b43f-f0292d98017a.png",
+							Screenshots: services.Screenshots{
+								Tv:        []string{"http://presigned.url/test-app-slug/1ca9503a-6230-4140-9fca-3867b6640ce3/TV (tv)/17ec78c9-e3a8-41ee-b3bd-2df9b4117aa2.png"},
+								Wear:      []string{"http://presigned.url/test-app-slug/1ca9503a-6230-4140-9fca-3867b6640ce3/Watch (wear)/d5c8564f-eef4-490a-a7fd-8d3050893320.png"},
+								Phone:     []string{"http://presigned.url/test-app-slug/1ca9503a-6230-4140-9fca-3867b6640ce3/Phone (phone)/e4d64d18-e414-4fa3-8583-f94a06b4f9a9.png"},
+								TenInch:   []string{"http://presigned.url/test-app-slug/1ca9503a-6230-4140-9fca-3867b6640ce3/Tablet (ten_inch)/4faa287f-afee-46aa-bd6b-553ab11a959c.png"},
+								SevenInch: []string{"http://presigned.url/test-app-slug/1ca9503a-6230-4140-9fca-3867b6640ce3/Tablet (seven_inch)/27cee0a1-1afd-4280-8d9f-f22526dc3d16.png"},
+							},
 						},
 					},
 					PackageName:        "myPackage",
@@ -279,27 +279,25 @@ func Test_AppVersionAndroidConfigGetHandler(t *testing.T) {
 						require.Equal(t, "test-api-token", apiToken)
 						return &bitrise.AppDetails{Title: "my-awesome-app"}, nil
 					},
-					getServiceAccountFilesFn: func(apiToken, appSlug string) ([]bitrise.GenericProjectFile, error) {
+					getServiceAccountFileFn: func(apiToken, appSlug, serviceJSONSlug string) (*bitrise.GenericProjectFile, error) {
 						require.Equal(t, "test-app-slug", appSlug)
 						require.Equal(t, "test-api-token", apiToken)
-						return []bitrise.GenericProjectFile{bitrise.GenericProjectFile{
+						return &bitrise.GenericProjectFile{
 							Slug:        "service-account-slug",
 							DownloadURL: "http://service-account-json.url",
-						}}, nil
+						}, nil
 					},
-					getAndroidKeystoreFilesFn: func(apiToken, appSlug string) ([]bitrise.AndroidKeystoreFile, error) {
+					getAndroidKeystoreFileFn: func(apiToken, appSlug, keystoreSlug string) (*bitrise.AndroidKeystoreFile, error) {
 						require.Equal(t, "test-app-slug", appSlug)
 						require.Equal(t, "test-api-token", apiToken)
-						return []bitrise.AndroidKeystoreFile{
-							bitrise.AndroidKeystoreFile{
-								Slug:        "android-keystore-slug",
-								UserEnvKey:  "ANDROID_KEYSTORE",
-								DownloadURL: "http://android.keystore.url",
-								ExposedMetadataStore: bitrise.ExposedMetadataStore{
-									Password:           "my-secret-password",
-									Alias:              "AnDrOID-KeySTore",
-									PrivateKeyPassword: "my-private-key-pass",
-								},
+						return &bitrise.AndroidKeystoreFile{
+							Slug:        "android-keystore-slug",
+							UserEnvKey:  "ANDROID_KEYSTORE",
+							DownloadURL: "http://android.keystore.url",
+							ExposedMetadataStore: bitrise.ExposedMetadataStore{
+								Password:           "my-secret-password",
+								Alias:              "AnDrOID-KeySTore",
+								PrivateKeyPassword: "my-private-key-pass",
 							},
 						}, nil
 					},
@@ -357,18 +355,20 @@ func Test_AppVersionAndroidConfigGetHandler(t *testing.T) {
 			expectedStatusCode: http.StatusOK,
 			expectedResponse: services.AppVersionAndroidConfigGetResponse{
 				MetaData: services.MetaData{
-					ListingInfo: services.ListingInfo{
-						ShortDescription: "Description",
-						FullDescription:  "A bit longer description",
-						WhatsNew:         "This is what is new",
-						Title:            "my-awesome-app",
-						FeatureGraphic:   "http://presigned.url/test-app-slug/1ca9503a-6230-4140-9fca-3867b6640ce3/6154234a-9146-4a20-b43f-f0292d98017a.png",
-						Screenshots: services.Screenshots{
-							Tv:        []string{"http://presigned.url/test-app-slug/1ca9503a-6230-4140-9fca-3867b6640ce3/TV (tv)/17ec78c9-e3a8-41ee-b3bd-2df9b4117aa2.png"},
-							Wear:      []string{"http://presigned.url/test-app-slug/1ca9503a-6230-4140-9fca-3867b6640ce3/Watch (wear)/d5c8564f-eef4-490a-a7fd-8d3050893320.png"},
-							Phone:     []string{"http://presigned.url/test-app-slug/1ca9503a-6230-4140-9fca-3867b6640ce3/Phone (phone)/e4d64d18-e414-4fa3-8583-f94a06b4f9a9.png"},
-							TenInch:   []string{"http://presigned.url/test-app-slug/1ca9503a-6230-4140-9fca-3867b6640ce3/Tablet (ten_inch)/4faa287f-afee-46aa-bd6b-553ab11a959c.png"},
-							SevenInch: []string{"http://presigned.url/test-app-slug/1ca9503a-6230-4140-9fca-3867b6640ce3/Tablet (seven_inch)/27cee0a1-1afd-4280-8d9f-f22526dc3d16.png"},
+					ListingInfo: map[string]services.ListingInfo{
+						"en-US": services.ListingInfo{
+							ShortDescription: "Description",
+							FullDescription:  "A bit longer description",
+							WhatsNew:         "This is what is new",
+							Title:            "my-awesome-app",
+							FeatureGraphic:   "http://presigned.url/test-app-slug/1ca9503a-6230-4140-9fca-3867b6640ce3/6154234a-9146-4a20-b43f-f0292d98017a.png",
+							Screenshots: services.Screenshots{
+								Tv:        []string{"http://presigned.url/test-app-slug/1ca9503a-6230-4140-9fca-3867b6640ce3/TV (tv)/17ec78c9-e3a8-41ee-b3bd-2df9b4117aa2.png"},
+								Wear:      []string{"http://presigned.url/test-app-slug/1ca9503a-6230-4140-9fca-3867b6640ce3/Watch (wear)/d5c8564f-eef4-490a-a7fd-8d3050893320.png"},
+								Phone:     []string{"http://presigned.url/test-app-slug/1ca9503a-6230-4140-9fca-3867b6640ce3/Phone (phone)/e4d64d18-e414-4fa3-8583-f94a06b4f9a9.png"},
+								TenInch:   []string{"http://presigned.url/test-app-slug/1ca9503a-6230-4140-9fca-3867b6640ce3/Tablet (ten_inch)/4faa287f-afee-46aa-bd6b-553ab11a959c.png"},
+								SevenInch: []string{"http://presigned.url/test-app-slug/1ca9503a-6230-4140-9fca-3867b6640ce3/Tablet (seven_inch)/27cee0a1-1afd-4280-8d9f-f22526dc3d16.png"},
+							},
 						},
 					},
 					PackageName:        "myPackage",
