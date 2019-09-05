@@ -19,7 +19,7 @@ workflows:
                 set -ex
 
                 mkdir zip_tmp
-                unzip -o $BITRISE_SHIP_ARTIFACT -d ./zip_tmp
+                unzip -o '$BITRISE_SHIP_ARTIFACT' -d ./zip_tmp
                 mv zip_tmp/*.xcarchive ./ship.xcarchive
       - export-xcarchive@1.0.1:
           inputs:
