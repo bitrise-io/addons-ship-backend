@@ -63,7 +63,7 @@ func (m *SES) SendEmailConfirmation(confirmURL string, contact *models.AppContac
 	return m.sendMail(&Request{
 		To:      []string{contact.Email},
 		From:    m.FromEmail,
-		Subject: "Ship wants to send you notifications about the activity of this app. 🔔",
+		Subject: "🔔 Ship wants to send you notifications about the activity of this app. 🔔",
 	},
 		"email/confirmation.html",
 		map[string]interface{}{
@@ -98,7 +98,7 @@ func (m *SES) SendEmailNewVersion(appVersion *models.AppVersion, contacts []mode
 		err = m.sendMail(&Request{
 			To:      []string{contact.Email},
 			From:    m.FromEmail,
-			Subject: "New app version is available on Ship.",
+			Subject: "🎉 New app version is available on Ship. 🎉",
 		},
 			"email/new_version.html",
 			map[string]interface{}{
@@ -128,6 +128,14 @@ func (m *SES) SendEmailPublish(appVersion *models.AppVersion, contacts []models.
 	if appDetails.AvatarURL != nil {
 		appIconURL = *appDetails.AvatarURL
 	}
+
+	var subject string
+	if publishSucceeded {
+		subject = "🚀🍏 Your app has been successfully published to App Store Connect. 🍏"
+	} else {
+		subject = "🚀🍅 Your app has been failed to publish to App Store Connect. 🍅"
+	}
+
 	var publishTarget string
 	if appVersion.Platform == "ios" {
 		publishTarget = "App Store Connect"
@@ -146,7 +154,7 @@ func (m *SES) SendEmailPublish(appVersion *models.AppVersion, contacts []models.
 		err = m.sendMail(&Request{
 			To:      []string{contact.Email},
 			From:    m.FromEmail,
-			Subject: "App publish notification on Ship.",
+			Subject: subject,
 		},
 			"email/publish.html",
 			map[string]interface{}{
