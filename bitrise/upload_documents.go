@@ -51,6 +51,10 @@ type androidKeystoreFileListResponseModel struct {
 	AndroidKeystoreFiles []AndroidKeystoreFile `json:"data"`
 }
 
+type androidKeystoreFileShowResponseModel struct {
+	Data *AndroidKeystoreFile `json:"data"`
+}
+
 // GenericProjectFile ...
 type GenericProjectFile struct {
 	Filename    string `json:"upload_file_name"`
@@ -60,4 +64,8 @@ type GenericProjectFile struct {
 
 type genericProjectFileListResponseModel struct {
 	GenericProjectFiles []GenericProjectFile `json:"data"`
+}
+
+type genericProjectFileShowResponseModel struct {
+	Data *GenericProjectFile `json:"data"`
 }

@@ -97,35 +97,15 @@ func AppVersionAndroidConfigGetHandler(env *env.AppEnv, w http.ResponseWriter, r
 	}
 	config.MetaData.Track = androidSettings.Track
 
-	var selectedServiceAccount bitrise.GenericProjectFile
-	serviceAccounts, err := env.BitriseAPI.GetServiceAccountFiles(appVersion.App.BitriseAPIToken, appVersion.App.AppSlug)
+	selectedServiceAccount, err := env.BitriseAPI.GetServiceAccountFile(appVersion.App.BitriseAPIToken, appVersion.App.AppSlug, androidSettings.SelectedServiceAccount)
 	if err != nil {
 		return errors.WithStack(err)
-	}
-	for _, serviceAccount := range serviceAccounts {
-		if serviceAccount.Slug == androidSettings.SelectedServiceAccount {
-			selectedServiceAccount = serviceAccount
-			break
-		}
-	}
-	if selectedServiceAccount == (bitrise.GenericProjectFile{}) {
-		return httpresponse.RespondWithNotFoundError(w)
 	}
 	config.MetaData.ServiceAccountJSON = selectedServiceAccount.DownloadURL
 
-	var selectedAndroidKeystore bitrise.AndroidKeystoreFile
-	androidKeystoreFiles, err := env.BitriseAPI.GetAndroidKeystoreFiles(appVersion.App.BitriseAPIToken, appVersion.App.AppSlug)
+	selectedAndroidKeystore, err := env.BitriseAPI.GetAndroidKeystoreFile(appVersion.App.BitriseAPIToken, appVersion.App.AppSlug, androidSettings.SelectedKeystoreFile)
 	if err != nil {
 		return errors.WithStack(err)
-	}
-	for _, keystore := range androidKeystoreFiles {
-		if keystore.Slug == androidSettings.SelectedKeystoreFile && keystore.UserEnvKey == "ANDROID_KEYSTORE" {
-			selectedAndroidKeystore = keystore
-			break
-		}
-	}
-	if selectedAndroidKeystore == (bitrise.AndroidKeystoreFile{}) {
-		return httpresponse.RespondWithNotFoundError(w)
 	}
 
 	config.MetaData.Keystore = Keystore{
