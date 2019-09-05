@@ -136,7 +136,7 @@ func Test_AppVersionPublishPostHandler(t *testing.T) {
 						}, params.InlineEnvs)
 						require.Equal(t, map[string]interface{}{"envs": []bitrise.TaskSecret{
 							bitrise.TaskSecret{"BITRISE_ACCESS_TOKEN": "bitrise-api-addon-token"},
-							bitrise.TaskSecret{"SHIP_ADDON_ACCESS_TOKEN": "addon-access-token"},
+							bitrise.TaskSecret{"ADDON_SHIP_APP_ACCESS_TOKEN": "addon-access-token"},
 							bitrise.TaskSecret{"SSH_RSA_PRIVATE_KEY": ""},
 						}}, params.Secrets)
 						require.Equal(t, "http://ship.addon.url/task-webhook", params.WebhookURL)
@@ -202,7 +202,7 @@ func Test_AppVersionPublishPostHandler(t *testing.T) {
 						require.Equal(t, "resign_android", params.Workflow)
 						require.Equal(t, map[string]interface{}{"envs": []bitrise.TaskSecret{
 							bitrise.TaskSecret{"ADDON_SHIP_ACCESS_TOKEN": "super-secret-token"},
-							bitrise.TaskSecret{"SHIP_ADDON_ACCESS_TOKEN": "addon-access-token"},
+							bitrise.TaskSecret{"ADDON_SHIP_APP_ACCESS_TOKEN": "addon-access-token"},
 							bitrise.TaskSecret{"BITRISE_ACCESS_TOKEN": "bitrise-api-addon-token"},
 						}}, params.Secrets)
 						return &bitrise.TriggerResponse{TaskIdentifier: testTaskIdentifier}, nil

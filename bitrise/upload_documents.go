@@ -11,6 +11,10 @@ type provisioningProfileListResponseModel struct {
 	ProvisioningProfiles []ProvisioningProfile `json:"data"`
 }
 
+type provisioningProfileShowResponseModel struct {
+	Data ProvisioningProfile `json:"data"`
+}
+
 // CodeSigningIdentity ...
 type CodeSigningIdentity struct {
 	Filename            string `json:"upload_file_name"`
@@ -21,6 +25,10 @@ type CodeSigningIdentity struct {
 
 type codeSigningIdentityListResponseModel struct {
 	CodeSigningIdentities []CodeSigningIdentity `json:"data"`
+}
+
+type codeSigningIdentityShowResponseModel struct {
+	Data CodeSigningIdentity `json:"data"`
 }
 
 // ExposedMetadataStore ...

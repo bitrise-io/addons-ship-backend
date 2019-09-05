@@ -92,6 +92,9 @@ func Test_BuildWebhookHandler(t *testing.T) {
 						getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
 							return []bitrise.ArtifactListElementResponseModel{}, nil
 						},
+						getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
+							return &bitrise.AppDetails{}, nil
+						},
 					},
 					AppContactService: &testAppContactService{},
 					WorkerService:     &testWorkerService{},
@@ -543,6 +546,9 @@ func Test_BuildWebhookHandler(t *testing.T) {
 							getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
 								return []bitrise.ArtifactListElementResponseModel{}, nil
 							},
+							getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
+								return &bitrise.AppDetails{}, nil
+							},
 						},
 						AppContactService: &testAppContactService{},
 						WorkerService:     &testWorkerService{},
@@ -602,6 +608,9 @@ func Test_BuildWebhookHandler(t *testing.T) {
 										ArtifactMeta: nil,
 									},
 								}, nil
+							},
+							getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
+								return &bitrise.AppDetails{}, nil
 							},
 						},
 						AppContactService: &testAppContactService{},
@@ -672,6 +681,9 @@ func Test_BuildWebhookHandler(t *testing.T) {
 										},
 									},
 								}, nil
+							},
+							getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
+								return &bitrise.AppDetails{}, nil
 							},
 						},
 						AppContactService: &testAppContactService{},
@@ -796,6 +808,9 @@ func Test_BuildWebhookHandler(t *testing.T) {
 										},
 									},
 								}, nil
+							},
+							getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
+								return &bitrise.AppDetails{}, nil
 							},
 						},
 						AppContactService: &testAppContactService{},
@@ -940,6 +955,9 @@ func Test_BuildWebhookHandler(t *testing.T) {
 										},
 									},
 								}, nil
+							},
+							getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
+								return &bitrise.AppDetails{}, nil
 							},
 						},
 						AppContactService: &testAppContactService{},
@@ -1577,6 +1595,9 @@ func Test_BuildWebhookHandler(t *testing.T) {
 							getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
 								return []bitrise.ArtifactListElementResponseModel{}, nil
 							},
+							getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
+								return &bitrise.AppDetails{}, nil
+							},
 						},
 						AppContactService: &testAppContactService{},
 						WorkerService:     &testWorkerService{},
@@ -1637,6 +1658,9 @@ func Test_BuildWebhookHandler(t *testing.T) {
 										ArtifactMeta: nil,
 									},
 								}, nil
+							},
+							getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
+								return &bitrise.AppDetails{}, nil
 							},
 						},
 						AppContactService: &testAppContactService{},
@@ -1701,6 +1725,9 @@ func Test_BuildWebhookHandler(t *testing.T) {
 									},
 								}, nil
 							},
+							getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
+								return &bitrise.AppDetails{}, nil
+							},
 						},
 						AppContactService: &testAppContactService{},
 						WorkerService:     &testWorkerService{},
@@ -1761,6 +1788,9 @@ func Test_BuildWebhookHandler(t *testing.T) {
 										},
 									},
 								}, nil
+							},
+							getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
+								return &bitrise.AppDetails{}, nil
 							},
 						},
 						AppContactService: &testAppContactService{},
@@ -1893,6 +1923,9 @@ func Test_BuildWebhookHandler(t *testing.T) {
 										},
 									},
 								}, nil
+							},
+							getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
+								return &bitrise.AppDetails{}, nil
 							},
 						},
 						AppContactService: &testAppContactService{},
