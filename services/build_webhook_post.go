@@ -119,7 +119,6 @@ func BuildWebhookHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request
 			}
 			appVersion.LastUpdate = time.Now()
 			appVersion.AppID = authorizedAppID
-			appVersion.BuildNumber = fmt.Sprintf("%d", params.BuildNumber)
 			if latestAppVersion != nil {
 				appVersion.AppStoreInfoData = latestAppVersion.AppStoreInfoData
 			}

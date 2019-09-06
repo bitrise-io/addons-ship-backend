@@ -15,6 +15,7 @@ type AppInfo struct {
 	MinimumOS         string `json:"min_OS_version"`
 	MinimumSDKVersion string `json:"min_sdk_version"`
 	BundleID          string `json:"bundle_id"`
+	BuildNumber       string `json:"build_number"`
 	DeviceFamilyList  []int  `json:"device_family_list"`
 	PackageName       string `json:"package_name"`
 	VersionName       string `json:"version_name"`

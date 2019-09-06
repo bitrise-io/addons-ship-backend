@@ -56,6 +56,7 @@ func prepareAppVersionForIosPlatform(w http.ResponseWriter, r *http.Request, art
 		BuildSlug:        buildSlug,
 		ArtifactInfoData: artifactInfoData,
 		Scheme:           selectedArtifact.ArtifactMeta.Scheme,
+		BuildNumber:      selectedArtifact.ArtifactMeta.AppInfo.BuildNumber,
 	}, nil
 }
 
