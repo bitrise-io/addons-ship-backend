@@ -65,7 +65,7 @@ func AppVersionPublishPostHandler(env *env.AppEnv, w http.ResponseWriter, r *htt
 	var secrets map[string]interface{}
 	switch appVersion.Platform {
 	case "ios":
-		artifactData, _, _, _ := selectIosArtifact(artifactList)
+		artifactData, _, _, _, _ := selectIosArtifact(artifactList)
 		workflowToTrigger = "resign_archive_app_store"
 		stackIDForTrigger = "osx-vs4mac-stable"
 		inlineEnvs = map[string]string{
