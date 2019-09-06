@@ -13,7 +13,9 @@ type testBitriseAPI struct {
 	getCodeSigningIdentitiesFn func(string, string) ([]bitrise.CodeSigningIdentity, error)
 	getCodeSigningIdentityFn   func(string, string, string) (*bitrise.CodeSigningIdentity, error)
 	getAndroidKeystoreFilesFn  func(string, string) ([]bitrise.AndroidKeystoreFile, error)
+	getAndroidKeystoreFileFn   func(string, string, string) (*bitrise.AndroidKeystoreFile, error)
 	getServiceAccountFilesFn   func(string, string) ([]bitrise.GenericProjectFile, error)
+	getServiceAccountFileFn    func(string, string, string) (*bitrise.GenericProjectFile, error)
 	triggerDENTaskFn           func(params bitrise.TaskParams) (*bitrise.TriggerResponse, error)
 	registerWebhookFn          func(string, string, string, string) error
 }
@@ -88,11 +90,25 @@ func (a *testBitriseAPI) GetAndroidKeystoreFiles(authToken, appSlug string) ([]b
 	return a.getAndroidKeystoreFilesFn(authToken, appSlug)
 }
 
+func (a *testBitriseAPI) GetAndroidKeystoreFile(authToken, appSlug, keystoreSlug string) (*bitrise.AndroidKeystoreFile, error) {
+	if a.getAndroidKeystoreFileFn == nil {
+		panic("You have to override GetAndroidKeystoreFile function in tests")
+	}
+	return a.getAndroidKeystoreFileFn(authToken, appSlug, keystoreSlug)
+}
+
 func (a *testBitriseAPI) GetServiceAccountFiles(authToken, appSlug string) ([]bitrise.GenericProjectFile, error) {
 	if a.getServiceAccountFilesFn == nil {
 		panic("You have to override GetServiceAccountFiles function in tests")
 	}
 	return a.getServiceAccountFilesFn(authToken, appSlug)
+}
+
+func (a *testBitriseAPI) GetServiceAccountFile(authToken, appSlug, serviceJSONSLug string) (*bitrise.GenericProjectFile, error) {
+	if a.getServiceAccountFileFn == nil {
+		panic("You have to override GetServiceAccountFile function in tests")
+	}
+	return a.getServiceAccountFileFn(authToken, appSlug, serviceJSONSLug)
 }
 
 func (a *testBitriseAPI) TriggerDENTask(params bitrise.TaskParams) (*bitrise.TriggerResponse, error) {

@@ -196,14 +196,15 @@ func Test_AppVersionPublishPostHandler(t *testing.T) {
 					triggerDENTaskFn: func(params bitrise.TaskParams) (*bitrise.TriggerResponse, error) {
 						require.Equal(t, map[string]string{
 							"CONFIG_JSON_URL":    "http://ship.addon.url/apps/test-app-slug/versions/de438ddc-98e5-4226-a5f4-fd2d53474879/android-config",
-							"GIT_REPOSITORY_URL": "https://git_user:git_pwd@github.com/bitrise-io/addons-ship-bg-worker-task-android",
+							"GIT_REPOSITORY_URL": "git@github.com:bitrise-io/addons-ship-bg-worker-task-android.git",
 						}, params.InlineEnvs)
 						require.Equal(t, "http://ship.addon.url/task-webhook", params.WebhookURL)
 						require.Equal(t, "resign_android", params.Workflow)
 						require.Equal(t, map[string]interface{}{"envs": []bitrise.TaskSecret{
+							bitrise.TaskSecret{"BITRISE_ACCESS_TOKEN": "bitrise-api-addon-token"},
 							bitrise.TaskSecret{"ADDON_SHIP_ACCESS_TOKEN": "super-secret-token"},
 							bitrise.TaskSecret{"ADDON_SHIP_APP_ACCESS_TOKEN": "addon-access-token"},
-							bitrise.TaskSecret{"BITRISE_ACCESS_TOKEN": "bitrise-api-addon-token"},
+							bitrise.TaskSecret{"SSH_RSA_PRIVATE_KEY": ""},
 						}}, params.Secrets)
 						return &bitrise.TriggerResponse{TaskIdentifier: testTaskIdentifier}, nil
 					},

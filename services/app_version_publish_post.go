@@ -82,16 +82,15 @@ func AppVersionPublishPostHandler(env *env.AppEnv, w http.ResponseWriter, r *htt
 	case "android":
 		workflowToTrigger = "resign_android"
 		stackIDForTrigger = "osx-vs4mac-stable"
-		cloneUser := os.Getenv("ANDROID_PUBLISH_WF_GIT_CLONE_USER")
-		clonePwd := os.Getenv("ANDROID_PUBLISH_WF_GIT_CLONE_PWD")
 		inlineEnvs = map[string]string{
 			"CONFIG_JSON_URL":    fmt.Sprintf("%s/apps/%s/versions/%s/android-config", env.AddonHostURL, appVersion.App.AppSlug, authorizedAppVersionID),
-			"GIT_REPOSITORY_URL": fmt.Sprintf("https://%s:%s@github.com/bitrise-io/addons-ship-bg-worker-task-android", cloneUser, clonePwd),
+			"GIT_REPOSITORY_URL": "git@github.com:bitrise-io/addons-ship-bg-worker-task-android.git",
 		}
 		secrets = map[string]interface{}{"envs": []bitrise.TaskSecret{
+			bitrise.TaskSecret{"BITRISE_ACCESS_TOKEN": appVersion.App.BitriseAPIToken},
 			bitrise.TaskSecret{"ADDON_SHIP_ACCESS_TOKEN": env.AddonAccessToken},
 			bitrise.TaskSecret{"ADDON_SHIP_APP_ACCESS_TOKEN": appVersion.App.APIToken},
-			bitrise.TaskSecret{"BITRISE_ACCESS_TOKEN": appVersion.App.BitriseAPIToken},
+			bitrise.TaskSecret{"SSH_RSA_PRIVATE_KEY": os.Getenv("GITHUB_SSH_KEY")},
 		}}
 	}
 

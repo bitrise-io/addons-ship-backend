@@ -78,12 +78,25 @@ func AppVersionAndroidConfigGetHandler(env *env.AppEnv, w http.ResponseWriter, r
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	config.MetaData.ListingInfo = ListingInfo{
-		ShortDescription: storeInfo.ShortDescription,
-		FullDescription:  storeInfo.FullDescription,
-		WhatsNew:         storeInfo.WhatsNew,
-		FeatureGraphic:   featureGraphicPresignedURL,
-		Title:            appData.Title,
+
+	screenshots, err := env.ScreenshotService.FindAll(appVersion)
+	if err != nil {
+		return errors.Wrap(err, "SQL Error")
+	}
+
+	scs, err := newScreenshotsResponse(screenshots, env)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	config.MetaData.ListingInfo = ListingInfos{
+		"en-GB": ListingInfo{
+			ShortDescription: storeInfo.ShortDescription,
+			FullDescription:  storeInfo.FullDescription,
+			WhatsNew:         storeInfo.WhatsNew,
+			FeatureGraphic:   featureGraphicPresignedURL,
+			Title:            appData.Title,
+			Screenshots:      scs,
+		},
 	}
 
 	appSettings, err := env.AppSettingsService.Find(&models.AppSettings{AppID: appVersion.AppID})
@@ -97,35 +110,15 @@ func AppVersionAndroidConfigGetHandler(env *env.AppEnv, w http.ResponseWriter, r
 	}
 	config.MetaData.Track = androidSettings.Track
 
-	var selectedServiceAccount bitrise.GenericProjectFile
-	serviceAccounts, err := env.BitriseAPI.GetServiceAccountFiles(appVersion.App.BitriseAPIToken, appVersion.App.AppSlug)
+	selectedServiceAccount, err := env.BitriseAPI.GetServiceAccountFile(appVersion.App.BitriseAPIToken, appVersion.App.AppSlug, androidSettings.SelectedServiceAccount)
 	if err != nil {
 		return errors.WithStack(err)
-	}
-	for _, serviceAccount := range serviceAccounts {
-		if serviceAccount.Slug == androidSettings.SelectedServiceAccount {
-			selectedServiceAccount = serviceAccount
-			break
-		}
-	}
-	if selectedServiceAccount == (bitrise.GenericProjectFile{}) {
-		return httpresponse.RespondWithNotFoundError(w)
 	}
 	config.MetaData.ServiceAccountJSON = selectedServiceAccount.DownloadURL
 
-	var selectedAndroidKeystore bitrise.AndroidKeystoreFile
-	androidKeystoreFiles, err := env.BitriseAPI.GetAndroidKeystoreFiles(appVersion.App.BitriseAPIToken, appVersion.App.AppSlug)
+	selectedAndroidKeystore, err := env.BitriseAPI.GetAndroidKeystoreFile(appVersion.App.BitriseAPIToken, appVersion.App.AppSlug, androidSettings.SelectedKeystoreFile)
 	if err != nil {
 		return errors.WithStack(err)
-	}
-	for _, keystore := range androidKeystoreFiles {
-		if keystore.Slug == androidSettings.SelectedKeystoreFile && keystore.UserEnvKey == "ANDROID_KEYSTORE" {
-			selectedAndroidKeystore = keystore
-			break
-		}
-	}
-	if selectedAndroidKeystore == (bitrise.AndroidKeystoreFile{}) {
-		return httpresponse.RespondWithNotFoundError(w)
 	}
 
 	config.MetaData.Keystore = Keystore{
@@ -134,17 +127,6 @@ func AppVersionAndroidConfigGetHandler(env *env.AppEnv, w http.ResponseWriter, r
 		Alias:       selectedAndroidKeystore.ExposedMetadataStore.Alias,
 		KeyPassword: selectedAndroidKeystore.ExposedMetadataStore.PrivateKeyPassword,
 	}
-
-	screenshots, err := env.ScreenshotService.FindAll(appVersion)
-	if err != nil {
-		return errors.Wrap(err, "SQL Error")
-	}
-
-	scs, err := newScreenshotsResponse(screenshots, env)
-	if err != nil {
-		return errors.WithStack(err)
-	}
-	config.MetaData.ListingInfo.Screenshots = scs
 
 	artifacts, err := env.BitriseAPI.GetArtifacts(appVersion.App.BitriseAPIToken, appVersion.App.AppSlug, appVersion.BuildSlug)
 	if err != nil {
@@ -237,6 +219,9 @@ type ListingInfo struct {
 	ShortDescription string      `json:"short_description,omitempty"`
 }
 
+// ListingInfos ...
+type ListingInfos map[string]ListingInfo
+
 // Keystore ...
 type Keystore struct {
 	URL         string `json:"url"`
@@ -247,9 +232,9 @@ type Keystore struct {
 
 // MetaData ...
 type MetaData struct {
-	ListingInfo        ListingInfo `json:"listing_info"`
-	Track              string      `json:"track"`
-	PackageName        string      `json:"package_name"`
-	ServiceAccountJSON string      `json:"service_account_json"`
-	Keystore           Keystore    `json:"keystore"`
+	ListingInfo        ListingInfos `json:"listing_info"`
+	Track              string       `json:"track"`
+	PackageName        string       `json:"package_name"`
+	ServiceAccountJSON string       `json:"service_account_json"`
+	Keystore           Keystore     `json:"keystore"`
 }

@@ -1,5 +1,8 @@
 format_version: '7'
 default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
+app:
+  envs:
+    - SHIP_ADDON_CONFIG_ANDROID: $CONFIG_JSON_URL
 workflows:
   resign_archive_app_store:
     steps:
@@ -13,11 +16,10 @@ workflows:
           inputs:
             - content: |-
                 #!/usr/bin/env bash
-                # fail if any commands fails
                 set -ex
 
                 mkdir zip_tmp
-                unzip -o $BITRISE_SHIP_ARTIFACT -d ./zip_tmp
+                unzip -o "$BITRISE_SHIP_ARTIFACT" -d ./zip_tmp
                 mv zip_tmp/*.xcarchive ./ship.xcarchive
       - export-xcarchive@1.0.1:
           inputs:
@@ -35,8 +37,9 @@ workflows:
   resign_android:
     title: Re-sign Android artifact and deploy to store
     steps:
-      - git-clone@4.0.14: {}
-      - path::./prepare:
+      - activate-ssh-key@4.0.3:
+          run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
+      - git::git@github.com:bitrise-io/addons-ship-bg-worker-task-android-prepare.git@master:
       - sign-apk:
           run_if: true
           inputs:
@@ -53,7 +56,7 @@ workflows:
             - track: '$TRACK'
             - whatsnews_dir: '$WHATS_NEW_DIR_PATH'
             - mapping_file: '$MAPPING_PATH'
-      - path::./sync:
+      - git::git@github.com:bitrise-io/addons-ship-bg-worker-task-android-sync.git@master:
           inputs:
             - service_account_json_key_path: '$SERVICE_ACCOUNT_JSON_URL'
             - package_name: '$PACKAGE_NAME'

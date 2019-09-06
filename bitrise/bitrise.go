@@ -30,7 +30,9 @@ type APIInterface interface {
 	GetCodeSigningIdentities(authToken, appSlug string) ([]CodeSigningIdentity, error)
 	GetCodeSigningIdentity(authToken, appSlug, codeSigningSlug string) (*CodeSigningIdentity, error)
 	GetAndroidKeystoreFiles(authToken, appSlug string) ([]AndroidKeystoreFile, error)
+	GetAndroidKeystoreFile(authToken, appSlug, keystoreSlug string) (*AndroidKeystoreFile, error)
 	GetServiceAccountFiles(authToken, appSlug string) ([]GenericProjectFile, error)
+	GetServiceAccountFile(authToken, appSlug, serviceJSONSLug string) (*GenericProjectFile, error)
 	TriggerDENTask(params TaskParams) (*TriggerResponse, error)
 	RegisterWebhook(authToken, appSlug, secret, callbackURL string) error
 }
@@ -267,6 +269,23 @@ func (a *API) GetAndroidKeystoreFiles(authToken, appSlug string) ([]AndroidKeyst
 	return responseModel.AndroidKeystoreFiles, nil
 }
 
+// GetAndroidKeystoreFile ...
+func (a *API) GetAndroidKeystoreFile(authToken, appSlug, keystoreSlug string) (*AndroidKeystoreFile, error) {
+	resp, err := a.doRequest(authToken, "GET", fmt.Sprintf("/apps/%s/generic-project-files/%s", appSlug, keystoreSlug), nil)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	defer httpresponse.BodyCloseWithErrorLog(resp)
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.Errorf("Failed to fetch android keystore files: status: %d", resp.StatusCode)
+	}
+	var responseModel androidKeystoreFileShowResponseModel
+	if err := json.NewDecoder(resp.Body).Decode(&responseModel); err != nil {
+		return nil, errors.WithStack(err)
+	}
+	return responseModel.Data, nil
+}
+
 // GetServiceAccountFiles ...
 func (a *API) GetServiceAccountFiles(authToken, appSlug string) ([]GenericProjectFile, error) {
 	resp, err := a.doRequest(authToken, "GET", fmt.Sprintf("/apps/%s/generic-project-files", appSlug), nil)
@@ -289,6 +308,24 @@ func (a *API) GetServiceAccountFiles(authToken, appSlug string) ([]GenericProjec
 	}
 
 	return serviceAccountFiles, nil
+}
+
+// GetServiceAccountFile ...
+func (a *API) GetServiceAccountFile(authToken, appSlug, serviceJSONSLug string) (*GenericProjectFile, error) {
+	resp, err := a.doRequest(authToken, "GET", fmt.Sprintf("/apps/%s/generic-project-files/%s", appSlug, serviceJSONSLug), nil)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	defer httpresponse.BodyCloseWithErrorLog(resp)
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.Errorf("Failed to fetch service account files: status: %d", resp.StatusCode)
+	}
+	var responseModel genericProjectFileShowResponseModel
+	if err := json.NewDecoder(resp.Body).Decode(&responseModel); err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	return responseModel.Data, nil
 }
 
 // TriggerDENTask ...

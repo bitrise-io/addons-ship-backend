@@ -137,6 +137,14 @@ func (a *APIDev) GetAndroidKeystoreFiles(authToken, appSlug string) ([]AndroidKe
 	}, nil
 }
 
+// GetAndroidKeystoreFile ...
+func (a *APIDev) GetAndroidKeystoreFile(authToken, appSlug, keystoreSlug string) (*AndroidKeystoreFile, error) {
+	return &AndroidKeystoreFile{
+		Filename: "android-keystore-1.keystore",
+		Slug:     "android-keystore-1-slug",
+	}, nil
+}
+
 // GetServiceAccountFiles ...
 func (a *APIDev) GetServiceAccountFiles(authToken, appSlug string) ([]GenericProjectFile, error) {
 	return []GenericProjectFile{
@@ -152,6 +160,15 @@ func (a *APIDev) GetServiceAccountFiles(authToken, appSlug string) ([]GenericPro
 			Filename: "package.json",
 			Slug:     "generic-file-3-slug",
 		},
+	}, nil
+}
+
+// GetServiceAccountFile ...
+func (a *APIDev) GetServiceAccountFile(authToken, appSlug, serviceJSONSLug string) (*GenericProjectFile, error) {
+	return &GenericProjectFile{
+		Filename:    "service-account-1.json",
+		Slug:        "generic-file-1-slug",
+		DownloadURL: "https://bit.ly/1LixVJu",
 	}, nil
 }
 
