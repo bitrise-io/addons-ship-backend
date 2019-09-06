@@ -115,7 +115,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 									AppSlug:         "test-app-slug",
 								},
 								BuildSlug:        "test-build-slug",
-								ArtifactInfoData: json.RawMessage(`{"version":"v1.0","distribution_type":"app-store","size":1024,"minimum_os":"11.1","bundle_id":"test.app"}`),
+								ArtifactInfoData: json.RawMessage(`{"version":"v1.0","size":1024,"minimum_os":"11.1","bundle_id":"test.app"}`),
 							}, nil
 						},
 					},
@@ -269,7 +269,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 								App: models.App{
 									BitriseAPIToken: "test-api-token",
 								},
-								ArtifactInfoData: json.RawMessage(`{"version":"v1.0","distribution_type":"development","minimum_os":"10.1","bundle_id":"test.app"}`),
+								ArtifactInfoData: json.RawMessage(`{"version":"v1.0","minimum_os":"10.1","bundle_id":"test.app"}`),
 							}, nil
 						},
 					},
@@ -337,7 +337,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 								App: models.App{
 									BitriseAPIToken: "test-api-token",
 								},
-								ArtifactInfoData: json.RawMessage(`{"version":"v1.0","distribution_type":"development","minimum_os":"10.1","supported_device_types":["iPhone","iPod Touch","iPad"],"bundle_id":"test.app"}`),
+								ArtifactInfoData: json.RawMessage(`{"version":"v1.0","minimum_os":"10.1","supported_device_types":["iPhone","iPod Touch","iPad"],"bundle_id":"test.app"}`),
 							}, nil
 						},
 					},
@@ -442,6 +442,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 						Version:              "v1.0",
 						MinimumOS:            "10.1",
 						SupportedDeviceTypes: []string{"Unknown"},
+						DistributionType:     "development",
 						PublicInstallPageURL: "http://don.t.go.there",
 						AppInfo: services.AppData{
 							Title:       "The Adventures of Stealy",
