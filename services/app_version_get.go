@@ -27,6 +27,7 @@ type AppVersionGetResponseData struct {
 	AppInfo              AppData             `json:"app_info"`
 	DistributionType     string              `json:"distribution_type,omitempty"`
 	Version              string              `json:"version"`
+	VersionCode          string              `json:"version_code"`
 	MinimumOS            string              `json:"minimum_os,omitempty"`
 	MinimumSDK           string              `json:"minimum_sdk,omitempty"`
 	BundleID             string              `json:"bundle_id,omitempty"`
@@ -137,5 +138,6 @@ func newArtifactVersionGetResponse(appVersion *models.AppVersion, env *env.AppEn
 		SupportedDeviceTypes: artifactInfo.SupportedDeviceTypes,
 		BundleID:             artifactInfo.BundleID,
 		PackageName:          artifactInfo.PackageName,
+		VersionCode:          artifactInfo.VersionCode,
 	}, nil
 }

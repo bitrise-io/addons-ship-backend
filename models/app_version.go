@@ -19,6 +19,7 @@ const (
 // ArtifactInfo ...
 type ArtifactInfo struct {
 	Version              string    `json:"version"`
+	VersionCode          string    `json:"version_code"`
 	MinimumOS            string    `json:"minimum_os"`
 	MinimumSDK           string    `json:"minimum_sdk"`
 	Size                 int64     `json:"size"`
