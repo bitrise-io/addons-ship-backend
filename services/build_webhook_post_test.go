@@ -262,7 +262,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 												Version:          "1.0",
 												DeviceFamilyList: []int{1, 2, 12},
 											},
-											ProvisioningInfo: bitrise.ProvisioningInfo{DistributionType: "app-store"},
+											ProvisioningInfo: bitrise.ProvisioningInfo{IPAExportMethod: "app-store"},
 										},
 									},
 									bitrise.ArtifactListElementResponseModel{
@@ -272,7 +272,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 												Version:          "1.0",
 												DeviceFamilyList: []int{1, 2, 12},
 											},
-											ProvisioningInfo: bitrise.ProvisioningInfo{DistributionType: "app-store"},
+											ProvisioningInfo: bitrise.ProvisioningInfo{IPAExportMethod: "app-store"},
 											Scheme:           "test-scheme",
 										},
 									},
@@ -375,7 +375,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 											AppInfo: bitrise.AppInfo{
 												Version: "1.0",
 											},
-											ProvisioningInfo: bitrise.ProvisioningInfo{DistributionType: "app-store"},
+											ProvisioningInfo: bitrise.ProvisioningInfo{IPAExportMethod: "app-store"},
 										},
 									},
 									bitrise.ArtifactListElementResponseModel{
@@ -385,7 +385,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 												Version:          "1.0",
 												DeviceFamilyList: []int{1, 2, 12},
 											},
-											ProvisioningInfo: bitrise.ProvisioningInfo{DistributionType: "app-store"},
+											ProvisioningInfo: bitrise.ProvisioningInfo{IPAExportMethod: "app-store"},
 										},
 									},
 								}, nil
@@ -672,14 +672,14 @@ func Test_BuildWebhookHandler(t *testing.T) {
 										Title: "my-ios-artifact.ipa",
 										ArtifactMeta: &bitrise.ArtifactMeta{
 											AppInfo:          bitrise.AppInfo{},
-											ProvisioningInfo: bitrise.ProvisioningInfo{DistributionType: "app-store"},
+											ProvisioningInfo: bitrise.ProvisioningInfo{IPAExportMethod: "app-store"},
 										},
 									},
 									bitrise.ArtifactListElementResponseModel{
 										Title: "my-ios-artifact.xcarchive.zip",
 										ArtifactMeta: &bitrise.ArtifactMeta{
 											AppInfo:          bitrise.AppInfo{},
-											ProvisioningInfo: bitrise.ProvisioningInfo{DistributionType: "app-store"},
+											ProvisioningInfo: bitrise.ProvisioningInfo{IPAExportMethod: "app-store"},
 										},
 									},
 								}, nil
@@ -797,7 +797,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 											AppInfo: bitrise.AppInfo{
 												Version: "1.0",
 											},
-											ProvisioningInfo: bitrise.ProvisioningInfo{DistributionType: "app-store"},
+											ProvisioningInfo: bitrise.ProvisioningInfo{IPAExportMethod: "app-store"},
 										},
 									},
 									bitrise.ArtifactListElementResponseModel{
@@ -806,7 +806,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 											AppInfo: bitrise.AppInfo{
 												Version: "1.0",
 											},
-											ProvisioningInfo: bitrise.ProvisioningInfo{DistributionType: "app-store"},
+											ProvisioningInfo: bitrise.ProvisioningInfo{IPAExportMethod: "app-store"},
 										},
 									},
 								}, nil
@@ -871,7 +871,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 											AppInfo: bitrise.AppInfo{
 												Version: "1.0",
 											},
-											ProvisioningInfo: bitrise.ProvisioningInfo{DistributionType: "app-store"},
+											ProvisioningInfo: bitrise.ProvisioningInfo{IPAExportMethod: "app-store"},
 										},
 									},
 									bitrise.ArtifactListElementResponseModel{
@@ -880,7 +880,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 											AppInfo: bitrise.AppInfo{
 												Version: "1.0",
 											},
-											ProvisioningInfo: bitrise.ProvisioningInfo{DistributionType: "app-store"},
+											ProvisioningInfo: bitrise.ProvisioningInfo{IPAExportMethod: "app-store"},
 										},
 									},
 								}, nil
@@ -947,7 +947,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 											AppInfo: bitrise.AppInfo{
 												Version: "1.0",
 											},
-											ProvisioningInfo: bitrise.ProvisioningInfo{DistributionType: "app-store"},
+											ProvisioningInfo: bitrise.ProvisioningInfo{IPAExportMethod: "app-store"},
 										},
 									},
 									bitrise.ArtifactListElementResponseModel{
@@ -956,7 +956,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 											AppInfo: bitrise.AppInfo{
 												Version: "1.0",
 											},
-											ProvisioningInfo: bitrise.ProvisioningInfo{DistributionType: "app-store"},
+											ProvisioningInfo: bitrise.ProvisioningInfo{IPAExportMethod: "app-store"},
 										},
 									},
 								}, nil
@@ -1036,7 +1036,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 												Version:          "1.0",
 												DeviceFamilyList: []int{1, 2, 12},
 											},
-											ProvisioningInfo: bitrise.ProvisioningInfo{DistributionType: "app-store"},
+											ProvisioningInfo: bitrise.ProvisioningInfo{IPAExportMethod: "app-store"},
 										},
 									},
 									bitrise.ArtifactListElementResponseModel{
@@ -1046,7 +1046,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 												Version:          "1.0",
 												DeviceFamilyList: []int{1, 2, 12},
 											},
-											ProvisioningInfo: bitrise.ProvisioningInfo{DistributionType: "app-store"},
+											ProvisioningInfo: bitrise.ProvisioningInfo{IPAExportMethod: "app-store"},
 										},
 									},
 								}, nil
@@ -1142,7 +1142,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 												Version:          "1.0",
 												DeviceFamilyList: []int{1, 2, 12},
 											},
-											ProvisioningInfo: bitrise.ProvisioningInfo{DistributionType: "app-store"},
+											ProvisioningInfo: bitrise.ProvisioningInfo{IPAExportMethod: "app-store"},
 										},
 									},
 									bitrise.ArtifactListElementResponseModel{
@@ -1152,7 +1152,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 												Version:          "1.0",
 												DeviceFamilyList: []int{1, 2, 12},
 											},
-											ProvisioningInfo: bitrise.ProvisioningInfo{DistributionType: "app-store"},
+											ProvisioningInfo: bitrise.ProvisioningInfo{IPAExportMethod: "app-store"},
 										},
 									},
 								}, nil

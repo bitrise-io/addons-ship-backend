@@ -24,7 +24,7 @@ func (a *APIDev) GetArtifactData(authToken, appSlug, buildSlug string) (*Artifac
 			},
 			ProvisioningInfo: ProvisioningInfo{
 				ExpireDate:       expirationDate,
-				DistributionType: "development",
+				IPAExportMethod: "development",
 			},
 		},
 		Slug: "test-app-slug",
@@ -41,7 +41,7 @@ func (a *APIDev) GetArtifacts(authToken, appSlug, buildSlug string) ([]ArtifactL
 				Title: "my-awesome-ios-dev-app.ipa",
 				ArtifactMeta: &ArtifactMeta{
 					ProvisioningInfo: ProvisioningInfo{
-						DistributionType: "development",
+						IPAExportMethod: "development",
 					},
 					AppInfo: AppInfo{},
 				},

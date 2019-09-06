@@ -27,7 +27,7 @@ type ArtifactInfo struct {
 	SupportedDeviceTypes []string  `json:"supported_device_types"`
 	PackageName          string    `json:"package_name"`
 	ExpireDate           time.Time `json:"expire_date"`
-	DistributionType     string    `json:"distribution_type"`
+	IPAExportMethod     string    `json:"ipa_export_method"`
 }
 
 // AppStoreInfo ...

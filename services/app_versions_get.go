@@ -13,7 +13,7 @@ import (
 type AppVersionsGetResponseElement struct {
 	models.AppVersion
 	AppInfo              AppData  `json:"app_info"`
-	DistributionType     string   `json:"distribution_type"`
+	IPAExportMethod     string   `json:"ipa_export_method"`
 	Version              string   `json:"version"`
 	MinimumOS            string   `json:"minimum_os,omitempty"`
 	MinimumSDK           string   `json:"minimum_sdk,omitempty"`
@@ -85,7 +85,7 @@ func newAppVersionsGetResponse(app *models.App, env *env.AppEnv) ([]AppVersionsG
 			MinimumOS:            artifactInfo.MinimumOS,
 			MinimumSDK:           artifactInfo.MinimumSDK,
 			Size:                 artifactInfo.Size,
-			DistributionType:     artifactInfo.DistributionType,
+			IPAExportMethod:     artifactInfo.IPAExportMethod,
 			SupportedDeviceTypes: artifactInfo.SupportedDeviceTypes,
 		})
 	}
