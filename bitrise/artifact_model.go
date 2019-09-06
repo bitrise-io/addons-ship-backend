@@ -18,6 +18,7 @@ type AppInfo struct {
 	DeviceFamilyList  []int  `json:"device_family_list"`
 	PackageName       string `json:"package_name"`
 	VersionName       string `json:"version_name"`
+	VersionCode       string `json:"version_code"`
 	Version           string `json:"version"`
 }
 
