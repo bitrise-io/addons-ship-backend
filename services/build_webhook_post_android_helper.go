@@ -71,6 +71,9 @@ func selectAndroidArtifact(artifacts []bitrise.ArtifactListElementResponseModel)
 			publicInstallPageArtifactSlug = artifact.Slug
 			selectedArtifact = artifact
 		}
+		if selectedArtifact == (bitrise.ArtifactListElementResponseModel{}) && artifact.IsAPK() {
+			selectedArtifact = artifact
+		}
 	}
 	return &selectedArtifact, publishEnabled, publicInstallPageEnabled, publicInstallPageArtifactSlug
 }
