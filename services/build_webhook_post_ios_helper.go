@@ -11,7 +11,7 @@ import (
 )
 
 func prepareAppVersionForIosPlatform(w http.ResponseWriter, r *http.Request, artifacts []bitrise.ArtifactListElementResponseModel, buildSlug string) (*models.AppVersion, error) {
-	selectedArtifact, _, _, _ := selectIosArtifact(artifacts)
+	selectedArtifact, _, _, _, _ := selectIosArtifact(artifacts)
 	if selectedArtifact == nil || reflect.DeepEqual(*selectedArtifact, bitrise.ArtifactListElementResponseModel{}) {
 		return nil, errors.New("No iOS artifact found")
 	}
@@ -44,7 +44,6 @@ func prepareAppVersionForIosPlatform(w http.ResponseWriter, r *http.Request, art
 		BundleID:             selectedArtifact.ArtifactMeta.AppInfo.BundleID,
 		SupportedDeviceTypes: supportedDeviceTypes,
 		// ExpireDate:           selectedArtifact.ArtifactMeta.ProvisioningInfo.ExpireDate,
-		// DistributionType:     selectedArtifact.ArtifactMeta.ProvisioningInfo.DistributionType,
 	}
 	artifactInfoData, err := json.Marshal(artifactInfo)
 	if err != nil {
@@ -69,13 +68,18 @@ func hasIosArtifact(artifacts []bitrise.ArtifactListElementResponseModel) bool {
 	return false
 }
 
-func selectIosArtifact(artifacts []bitrise.ArtifactListElementResponseModel) (*bitrise.ArtifactListElementResponseModel, bool, bool, string) {
+func selectIosArtifact(artifacts []bitrise.ArtifactListElementResponseModel) (*bitrise.ArtifactListElementResponseModel, bool, bool, string, string) {
 	publishEnabled := false
 	publicInstallPageEnabled := false
+	ipaDistributionType := ""
 	publicInstallPageArtifactSlug := ""
 	var selectedArtifact bitrise.ArtifactListElementResponseModel
 	for _, artifact := range artifacts {
 		if artifact.IsIPA() {
+			if artifact.ArtifactMeta != nil && artifact.ArtifactMeta.ProvisioningInfo.DistributionType != "" {
+				ipaDistributionType = artifact.ArtifactMeta.ProvisioningInfo.DistributionType
+			}
+
 			if artifact.HasAppStoreDistributionType() {
 				publishEnabled = true
 			}
@@ -89,5 +93,5 @@ func selectIosArtifact(artifacts []bitrise.ArtifactListElementResponseModel) (*b
 			selectedArtifact = artifact
 		}
 	}
-	return &selectedArtifact, publishEnabled, publicInstallPageEnabled, publicInstallPageArtifactSlug
+	return &selectedArtifact, publishEnabled, publicInstallPageEnabled, ipaDistributionType, publicInstallPageArtifactSlug
 }
