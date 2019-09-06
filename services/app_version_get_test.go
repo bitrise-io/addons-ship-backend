@@ -576,7 +576,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 							return &models.AppVersion{
 								App:              models.App{},
 								AppStoreInfoData: json.RawMessage(`{}`),
-								ArtifactInfoData: json.RawMessage(`{"package_name":"test.package"}`),
+								ArtifactInfoData: json.RawMessage(`{"package_name":"test.package","version_code":"abc123"}`),
 								Platform:         "android",
 							}, nil
 						},
@@ -606,6 +606,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 						AppVersion:     &models.AppVersion{Platform: "android"},
 						PublishEnabled: true,
 						PackageName:    "test.package",
+						VersionCode:    "abc123",
 					},
 				},
 			})
