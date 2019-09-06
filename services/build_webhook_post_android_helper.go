@@ -33,6 +33,7 @@ func prepareAppVersionForAndroidPlatform(w http.ResponseWriter, r *http.Request,
 		MinimumSDK:  selectedArtifact.ArtifactMeta.AppInfo.MinimumSDKVersion,
 		PackageName: selectedArtifact.ArtifactMeta.AppInfo.PackageName,
 		Version:     selectedArtifact.ArtifactMeta.AppInfo.VersionName,
+		VersionCode: selectedArtifact.ArtifactMeta.AppInfo.VersionCode,
 	}
 	artifactInfoData, err := json.Marshal(artifactInfo)
 	if err != nil {
