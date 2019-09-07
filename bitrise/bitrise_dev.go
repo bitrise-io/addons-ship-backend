@@ -23,7 +23,7 @@ func (a *APIDev) GetArtifactData(authToken, appSlug, buildSlug string) (*Artifac
 				PackageName:       "test_package_name",
 			},
 			ProvisioningInfo: ProvisioningInfo{
-				ExpireDate:       expirationDate,
+				ExpireDate:      expirationDate,
 				IPAExportMethod: "development",
 			},
 		},
@@ -75,6 +75,11 @@ func (a *APIDev) GetAppDetails(authToken, appSlug string) (*AppDetails, error) {
 		AvatarURL:   pointers.NewStringPtr("https://bit.ly/1LixVJu"),
 		ProjectType: "other",
 	}, nil
+}
+
+// GetBuildDetails ...
+func (a *APIDev) GetBuildDetails(authToken, appSlug, buildSlug string) (*BuildDetails, error) {
+	return &BuildDetails{CommitMessage: "El commito messago"}, nil
 }
 
 // GetProvisioningProfiles ...
