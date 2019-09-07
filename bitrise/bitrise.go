@@ -25,6 +25,7 @@ type APIInterface interface {
 	GetArtifact(authToken, appSlug, buildSlug, artifactSlug string) (*ArtifactShowResponseItemModel, error)
 	GetArtifactPublicInstallPageURL(string, string, string, string) (string, error)
 	GetAppDetails(authToken, appSlug string) (*AppDetails, error)
+	GetBuildDetails(authToken, appSlug, buildSlug string) (*BuildDetails, error)
 	GetProvisioningProfiles(authToken, appSlug string) ([]ProvisioningProfile, error)
 	GetProvisioningProfile(authToken, appSlug, provProfileSlug string) (*ProvisioningProfile, error)
 	GetCodeSigningIdentities(authToken, appSlug string) ([]CodeSigningIdentity, error)
@@ -178,6 +179,23 @@ func (a *API) GetAppDetails(authToken, appSlug string) (*AppDetails, error) {
 		return nil, errors.Errorf("Failed to fetch app details: status: %d", resp.StatusCode)
 	}
 	var responseModel appShowResponseModel
+	if err := json.NewDecoder(resp.Body).Decode(&responseModel); err != nil {
+		return nil, errors.WithStack(err)
+	}
+	return &responseModel.Data, nil
+}
+
+// GetBuildDetails ...
+func (a *API) GetBuildDetails(authToken, appSlug, buildSlug string) (*BuildDetails, error) {
+	resp, err := a.doRequest(authToken, "GET", fmt.Sprintf("/apps/%s/builds/%s", appSlug, buildSlug), nil)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	defer httpresponse.BodyCloseWithErrorLog(resp)
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.Errorf("Failed to fetch build details: status: %d", resp.StatusCode)
+	}
+	var responseModel buildShowResponseModel
 	if err := json.NewDecoder(resp.Body).Decode(&responseModel); err != nil {
 		return nil, errors.WithStack(err)
 	}

@@ -8,6 +8,7 @@ type testBitriseAPI struct {
 	getArtifactFn              func(string, string, string, string) (*bitrise.ArtifactShowResponseItemModel, error)
 	getArtifactPublicPageURLFn func(string, string, string, string) (string, error)
 	getAppDetailsFn            func(string, string) (*bitrise.AppDetails, error)
+	getBuildDetailsFn          func(string, string, string) (*bitrise.BuildDetails, error)
 	getProvisioningProfilesFn  func(string, string) ([]bitrise.ProvisioningProfile, error)
 	getProvisioningProfileFn   func(string, string, string) (*bitrise.ProvisioningProfile, error)
 	getCodeSigningIdentitiesFn func(string, string) ([]bitrise.CodeSigningIdentity, error)
@@ -53,6 +54,13 @@ func (a *testBitriseAPI) GetAppDetails(authToken, appSlug string) (*bitrise.AppD
 		panic("You have to override GetAppDetails function in tests")
 	}
 	return a.getAppDetailsFn(authToken, appSlug)
+}
+
+func (a *testBitriseAPI) GetBuildDetails(authToken, appSlug, buildSlug string) (*bitrise.BuildDetails, error) {
+	if a.getBuildDetailsFn == nil {
+		panic("You have to override GetBuildDetails function in tests")
+	}
+	return a.getBuildDetailsFn(authToken, appSlug, buildSlug)
 }
 
 func (a *testBitriseAPI) GetProvisioningProfiles(authToken, appSlug string) ([]bitrise.ProvisioningProfile, error) {

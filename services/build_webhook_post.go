@@ -90,6 +90,11 @@ func BuildWebhookHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request
 			return errors.WithStack(err)
 		}
 
+		buildDetails, err := env.BitriseAPI.GetBuildDetails(app.BitriseAPIToken, app.AppSlug, params.BuildSlug)
+		if err != nil {
+			return errors.WithStack(err)
+		}
+
 		if appDetails.AvatarURL != nil {
 			colors, err := processimage.FromURL(*appDetails.AvatarURL)
 			if err != nil {
@@ -119,6 +124,7 @@ func BuildWebhookHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request
 			}
 			appVersion.LastUpdate = time.Now()
 			appVersion.AppID = authorizedAppID
+			appVersion.CommitMessage = buildDetails.CommitMessage
 			if latestAppVersion != nil {
 				appVersion.AppStoreInfoData = latestAppVersion.AppStoreInfoData
 			}
@@ -159,6 +165,7 @@ func BuildWebhookHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request
 			appVersion.LastUpdate = time.Now()
 			appVersion.AppID = authorizedAppID
 			appVersion.BuildNumber = fmt.Sprintf("%d", params.BuildNumber)
+			appVersion.CommitMessage = buildDetails.CommitMessage
 			if latestAppVersion != nil {
 				appVersion.AppStoreInfoData = latestAppVersion.AppStoreInfoData
 			}
