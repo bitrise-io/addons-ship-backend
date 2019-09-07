@@ -1268,7 +1268,9 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								require.Equal(t, "Some commit message", appVersion.CommitMessage)
 								appInfo, err := appVersion.ArtifactInfo()
 								require.NoError(t, err)
-								require.Equal(t, models.ArtifactInfo{Version: "1.0", MinimumSDK: "1.23", PackageName: "myPackage", VersionCode: "abc123"}, appInfo)
+								require.Equal(t, models.ArtifactInfo{Version: "1.0", MinimumSDK: "1.23", PackageName: "myPackage", VersionCode: "abc123", Module: "test-module",
+									ProductFlavour: "test-product-flavour",
+									BuildType:      "test-build-type"}, appInfo)
 								appVersion.ID = testAppVersionID
 								appVersion.App = models.App{
 									BitriseAPIToken: "test-api-token",
@@ -1301,6 +1303,9 @@ func Test_BuildWebhookHandler(t *testing.T) {
 												PackageName:       "myPackage",
 												VersionCode:       "abc123",
 											},
+											Module:         "test-module",
+											ProductFlavour: "test-product-flavour",
+											BuildType:      "test-build-type",
 										},
 									},
 								}, nil
