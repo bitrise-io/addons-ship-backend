@@ -95,6 +95,9 @@ func Test_BuildWebhookHandler(t *testing.T) {
 						getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
 							return &bitrise.AppDetails{}, nil
 						},
+						getBuildDetailsFn: func(apiToken string, appSlug string, buildSlug string) (*bitrise.BuildDetails, error) {
+							return &bitrise.BuildDetails{}, nil
+						},
 					},
 					AppContactService: &testAppContactService{},
 					WorkerService:     &testWorkerService{},
@@ -224,6 +227,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								require.Equal(t, "test-build-slug", appVersion.BuildSlug)
 								require.NotEqual(t, time.Time{}, appVersion.LastUpdate)
 								require.Equal(t, "12", appVersion.BuildNumber)
+								require.Equal(t, "The detailed commit message", appVersion.CommitMessage)
 								require.Equal(t, "test-scheme", appVersion.Scheme)
 								artifactData, err := appVersion.ArtifactInfo()
 								require.NoError(t, err)
@@ -283,6 +287,12 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								require.Equal(t, "test-api-token", apiToken)
 								require.Equal(t, "test-app-slug", appSlug)
 								return &bitrise.AppDetails{Title: "My awesome app"}, nil
+							},
+							getBuildDetailsFn: func(apiToken string, appSlug string, buildSlug string) (*bitrise.BuildDetails, error) {
+								require.Equal(t, "test-api-token", apiToken)
+								require.Equal(t, "test-app-slug", appSlug)
+								require.Equal(t, "test-build-slug", buildSlug)
+								return &bitrise.BuildDetails{CommitMessage: "The detailed commit message"}, nil
 							},
 						},
 						AppContactService: &testAppContactService{
@@ -394,6 +404,12 @@ func Test_BuildWebhookHandler(t *testing.T) {
 							getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
 								return &bitrise.AppDetails{}, nil
 							},
+							getBuildDetailsFn: func(apiToken string, appSlug string, buildSlug string) (*bitrise.BuildDetails, error) {
+								require.Equal(t, "test-api-token", apiToken)
+								require.Equal(t, "test-app-slug", appSlug)
+								require.Equal(t, "test-build-slug", buildSlug)
+								return &bitrise.BuildDetails{CommitMessage: "The detailed commit message"}, nil
+							},
 						},
 						AppContactService: &testAppContactService{
 							findAllFn: func(app *models.App) ([]models.AppContact, error) {
@@ -494,6 +510,9 @@ func Test_BuildWebhookHandler(t *testing.T) {
 							getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
 								return nil, errors.New("SOME-BITRISE-API-ERROR")
 							},
+							getBuildDetailsFn: func(apiToken string, appSlug string, buildSlug string) (*bitrise.BuildDetails, error) {
+								return &bitrise.BuildDetails{CommitMessage: "The detailed commit message"}, nil
+							},
 						},
 						AppContactService: &testAppContactService{},
 						WorkerService:     &testWorkerService{},
@@ -551,6 +570,9 @@ func Test_BuildWebhookHandler(t *testing.T) {
 							},
 							getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
 								return &bitrise.AppDetails{}, nil
+							},
+							getBuildDetailsFn: func(apiToken string, appSlug string, buildSlug string) (*bitrise.BuildDetails, error) {
+								return &bitrise.BuildDetails{}, nil
 							},
 						},
 						AppContactService: &testAppContactService{},
@@ -614,6 +636,9 @@ func Test_BuildWebhookHandler(t *testing.T) {
 							},
 							getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
 								return &bitrise.AppDetails{}, nil
+							},
+							getBuildDetailsFn: func(apiToken string, appSlug string, buildSlug string) (*bitrise.BuildDetails, error) {
+								return &bitrise.BuildDetails{}, nil
 							},
 						},
 						AppContactService: &testAppContactService{},
@@ -687,6 +712,9 @@ func Test_BuildWebhookHandler(t *testing.T) {
 							},
 							getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
 								return &bitrise.AppDetails{}, nil
+							},
+							getBuildDetailsFn: func(apiToken string, appSlug string, buildSlug string) (*bitrise.BuildDetails, error) {
+								return &bitrise.BuildDetails{}, nil
 							},
 						},
 						AppContactService: &testAppContactService{},
@@ -815,6 +843,9 @@ func Test_BuildWebhookHandler(t *testing.T) {
 							getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
 								return &bitrise.AppDetails{}, nil
 							},
+							getBuildDetailsFn: func(apiToken string, appSlug string, buildSlug string) (*bitrise.BuildDetails, error) {
+								return &bitrise.BuildDetails{}, nil
+							},
 						},
 						AppContactService: &testAppContactService{},
 						WorkerService:     &testWorkerService{},
@@ -888,6 +919,9 @@ func Test_BuildWebhookHandler(t *testing.T) {
 							},
 							getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
 								return &bitrise.AppDetails{}, nil
+							},
+							getBuildDetailsFn: func(apiToken string, appSlug string, buildSlug string) (*bitrise.BuildDetails, error) {
+								return &bitrise.BuildDetails{}, nil
 							},
 						},
 						AppContactService: &testAppContactService{},
@@ -964,6 +998,9 @@ func Test_BuildWebhookHandler(t *testing.T) {
 							},
 							getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
 								return &bitrise.AppDetails{}, nil
+							},
+							getBuildDetailsFn: func(apiToken string, appSlug string, buildSlug string) (*bitrise.BuildDetails, error) {
+								return &bitrise.BuildDetails{}, nil
 							},
 						},
 						AppContactService: &testAppContactService{},
@@ -1057,6 +1094,9 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								require.Equal(t, "test-api-token", apiToken)
 								require.Equal(t, "test-app-slug", appSlug)
 								return &bitrise.AppDetails{Title: "My awesome app"}, nil
+							},
+							getBuildDetailsFn: func(apiToken string, appSlug string, buildSlug string) (*bitrise.BuildDetails, error) {
+								return &bitrise.BuildDetails{}, nil
 							},
 						},
 						AppContactService: &testAppContactService{
@@ -1163,6 +1203,9 @@ func Test_BuildWebhookHandler(t *testing.T) {
 							getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
 								return nil, errors.New("SOME-BITRISE-API-ERROR")
 							},
+							getBuildDetailsFn: func(apiToken string, appSlug string, buildSlug string) (*bitrise.BuildDetails, error) {
+								return &bitrise.BuildDetails{}, nil
+							},
 						},
 						AppContactService: &testAppContactService{
 							findAllFn: func(app *models.App) ([]models.AppContact, error) {
@@ -1222,6 +1265,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 							createFn: func(appVersion *models.AppVersion) (*models.AppVersion, []error, error) {
 								require.Equal(t, "android", appVersion.Platform)
 								require.Equal(t, "test-build-slug", appVersion.BuildSlug)
+								require.Equal(t, "Some commit message", appVersion.CommitMessage)
 								appInfo, err := appVersion.ArtifactInfo()
 								require.NoError(t, err)
 								require.Equal(t, models.ArtifactInfo{Version: "1.0", MinimumSDK: "1.23", PackageName: "myPackage", VersionCode: "abc123"}, appInfo)
@@ -1265,6 +1309,9 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								require.Equal(t, "test-api-token", apiToken)
 								require.Equal(t, "test-app-slug", appSlug)
 								return &bitrise.AppDetails{Title: "My awesome app"}, nil
+							},
+							getBuildDetailsFn: func(apiToken string, appSlug string, buildSlug string) (*bitrise.BuildDetails, error) {
+								return &bitrise.BuildDetails{CommitMessage: "Some commit message"}, nil
 							},
 						},
 						AppContactService: &testAppContactService{
@@ -1362,6 +1409,9 @@ func Test_BuildWebhookHandler(t *testing.T) {
 							},
 							getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
 								return &bitrise.AppDetails{}, nil
+							},
+							getBuildDetailsFn: func(apiToken string, appSlug string, buildSlug string) (*bitrise.BuildDetails, error) {
+								return &bitrise.BuildDetails{}, nil
 							},
 						},
 						AppContactService: &testAppContactService{
@@ -1469,6 +1519,9 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								require.Equal(t, "test-app-slug", appSlug)
 								return &bitrise.AppDetails{Title: "My awesome app"}, nil
 							},
+							getBuildDetailsFn: func(apiToken string, appSlug string, buildSlug string) (*bitrise.BuildDetails, error) {
+								return &bitrise.BuildDetails{}, nil
+							},
 						},
 						AppContactService: &testAppContactService{
 							findAllFn: func(app *models.App) ([]models.AppContact, error) {
@@ -1548,6 +1601,9 @@ func Test_BuildWebhookHandler(t *testing.T) {
 							getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
 								return nil, errors.New("SOME-BITRISE-API-ERROR")
 							},
+							getBuildDetailsFn: func(apiToken string, appSlug string, buildSlug string) (*bitrise.BuildDetails, error) {
+								return &bitrise.BuildDetails{}, nil
+							},
 						},
 						AppContactService: &testAppContactService{},
 						WorkerService:     &testWorkerService{},
@@ -1606,6 +1662,9 @@ func Test_BuildWebhookHandler(t *testing.T) {
 							},
 							getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
 								return &bitrise.AppDetails{}, nil
+							},
+							getBuildDetailsFn: func(apiToken string, appSlug string, buildSlug string) (*bitrise.BuildDetails, error) {
+								return &bitrise.BuildDetails{}, nil
 							},
 						},
 						AppContactService: &testAppContactService{},
@@ -1670,6 +1729,9 @@ func Test_BuildWebhookHandler(t *testing.T) {
 							},
 							getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
 								return &bitrise.AppDetails{}, nil
+							},
+							getBuildDetailsFn: func(apiToken string, appSlug string, buildSlug string) (*bitrise.BuildDetails, error) {
+								return &bitrise.BuildDetails{}, nil
 							},
 						},
 						AppContactService: &testAppContactService{},
@@ -1737,6 +1799,9 @@ func Test_BuildWebhookHandler(t *testing.T) {
 							getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
 								return &bitrise.AppDetails{}, nil
 							},
+							getBuildDetailsFn: func(apiToken string, appSlug string, buildSlug string) (*bitrise.BuildDetails, error) {
+								return &bitrise.BuildDetails{}, nil
+							},
 						},
 						AppContactService: &testAppContactService{},
 						WorkerService:     &testWorkerService{},
@@ -1800,6 +1865,9 @@ func Test_BuildWebhookHandler(t *testing.T) {
 							},
 							getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
 								return &bitrise.AppDetails{}, nil
+							},
+							getBuildDetailsFn: func(apiToken string, appSlug string, buildSlug string) (*bitrise.BuildDetails, error) {
+								return &bitrise.BuildDetails{}, nil
 							},
 						},
 						AppContactService: &testAppContactService{},
@@ -1868,6 +1936,9 @@ func Test_BuildWebhookHandler(t *testing.T) {
 							},
 							getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
 								return &bitrise.AppDetails{}, nil
+							},
+							getBuildDetailsFn: func(apiToken string, appSlug string, buildSlug string) (*bitrise.BuildDetails, error) {
+								return &bitrise.BuildDetails{}, nil
 							},
 						},
 						AppContactService: &testAppContactService{},
@@ -1938,6 +2009,9 @@ func Test_BuildWebhookHandler(t *testing.T) {
 							},
 							getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
 								return &bitrise.AppDetails{}, nil
+							},
+							getBuildDetailsFn: func(apiToken string, appSlug string, buildSlug string) (*bitrise.BuildDetails, error) {
+								return &bitrise.BuildDetails{}, nil
 							},
 						},
 						AppContactService: &testAppContactService{},
@@ -2015,6 +2089,9 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								require.Equal(t, "test-api-token", apiToken)
 								require.Equal(t, "test-app-slug", appSlug)
 								return &bitrise.AppDetails{Title: "My awesome app"}, nil
+							},
+							getBuildDetailsFn: func(apiToken string, appSlug string, buildSlug string) (*bitrise.BuildDetails, error) {
+								return &bitrise.BuildDetails{}, nil
 							},
 						},
 						AppContactService: &testAppContactService{
@@ -2105,6 +2182,9 @@ func Test_BuildWebhookHandler(t *testing.T) {
 							},
 							getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
 								return nil, errors.New("SOME-BITRISE-API-ERROR")
+							},
+							getBuildDetailsFn: func(apiToken string, appSlug string, buildSlug string) (*bitrise.BuildDetails, error) {
+								return &bitrise.BuildDetails{}, nil
 							},
 						},
 						AppContactService: &testAppContactService{
