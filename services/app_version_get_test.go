@@ -161,10 +161,10 @@ func Test_AppVersionGetHandler(t *testing.T) {
 							Platform:  "ios",
 							BuildSlug: "test-build-slug",
 						},
-						MinimumOS:        "11.1",
-						Size:             1024,
+						MinimumOS:       "11.1",
+						Size:            1024,
 						IPAExportMethod: "app-store",
-						Version:          "v1.0",
+						Version:         "v1.0",
 						AppInfo: services.AppData{
 							Title:       "The Adventures of Stealy",
 							AppIconURL:  pointers.NewStringPtr("https://bit.ly/1LixVJu"),
@@ -307,7 +307,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 						},
 						Version:              "v1.0",
 						MinimumOS:            "10.1",
-						IPAExportMethod:     "development",
+						IPAExportMethod:      "development",
 						PublicInstallPageURL: "http://don.t.go.there",
 						AppInfo: services.AppData{
 							Title:       "The Adventures of Stealy",
@@ -376,7 +376,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 						Version:              "v1.0",
 						MinimumOS:            "10.1",
 						SupportedDeviceTypes: []string{"iPhone", "iPod Touch", "iPad"},
-						IPAExportMethod:     "development",
+						IPAExportMethod:      "development",
 						PublicInstallPageURL: "http://don.t.go.there",
 						AppInfo: services.AppData{
 							Title:       "The Adventures of Stealy",
@@ -442,7 +442,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 						Version:              "v1.0",
 						MinimumOS:            "10.1",
 						SupportedDeviceTypes: []string{"Unknown"},
-						IPAExportMethod:     "development",
+						IPAExportMethod:      "development",
 						PublicInstallPageURL: "http://don.t.go.there",
 						AppInfo: services.AppData{
 							Title:       "The Adventures of Stealy",
@@ -625,7 +625,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 							return &models.AppVersion{
 								App:              models.App{},
 								AppStoreInfoData: json.RawMessage(`{}`),
-								ArtifactInfoData: json.RawMessage(`{}`),
+								ArtifactInfoData: json.RawMessage(`{"module":"test-module","product_flavour":"test-product-flavour","build_type":"test-build-type"}`),
 								Platform:         "android",
 							}, nil
 						},
@@ -655,6 +655,9 @@ func Test_AppVersionGetHandler(t *testing.T) {
 						AppVersion:           &models.AppVersion{Platform: "android"},
 						PublicInstallPageURL: "http://don.t.go.there",
 						PublishEnabled:       false,
+						Module:               "test-module",
+						ProductFlavour:       "test-product-flavour",
+						BuildType:            "test-build-type",
 					},
 				},
 			})

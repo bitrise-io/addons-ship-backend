@@ -28,6 +28,9 @@ type ArtifactInfo struct {
 	PackageName          string    `json:"package_name"`
 	ExpireDate           time.Time `json:"expire_date"`
 	IPAExportMethod      string    `json:"ipa_export_method"`
+	Module               string    `json:"module"`
+	ProductFlavour       string    `json:"product_flavour"`
+	BuildType            string    `json:"build_type"`
 }
 
 // AppStoreInfo ...
