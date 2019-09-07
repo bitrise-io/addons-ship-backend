@@ -72,6 +72,9 @@ func selectAndroidArtifact(artifacts []bitrise.ArtifactListElementResponseModel)
 			publicInstallPageArtifactSlug = artifact.Slug
 			selectedArtifact = artifact
 		}
+		if selectedArtifact == (bitrise.ArtifactListElementResponseModel{}) && artifact.IsAPK() {
+			selectedArtifact = artifact
+		}
 	}
 	return &selectedArtifact, publishEnabled, publicInstallPageEnabled, publicInstallPageArtifactSlug
 }
@@ -81,7 +84,7 @@ func checkForSplitAPKs(artifacts []bitrise.ArtifactListElementResponseModel) []b
 	maxNumber := 0
 	maxNumberKey := ""
 	for _, artifact := range artifacts {
-		if artifact.ArtifactMeta != nil && !artifact.IsUniversalAPK() {
+		if artifact.ArtifactMeta != nil && artifact.IsAPK() && !artifact.IsUniversalAPK() {
 			key := artifact.ArtifactMeta.AppInfo.AppName + artifact.ArtifactMeta.AppInfo.PackageName + artifact.ArtifactMeta.AppInfo.VersionName
 			selectedArtifacts[key] = append(selectedArtifacts[key], artifact)
 			if len(selectedArtifacts[key]) > maxNumber {
