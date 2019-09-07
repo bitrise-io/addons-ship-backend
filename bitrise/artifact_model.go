@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-var debugDistributionTypes = [...]string{"development", "ad-hoc"}
+var debugIPAExportMethods = [...]string{"development", "ad-hoc"}
 
 // AppInfo ...
 type AppInfo struct {
@@ -24,8 +24,8 @@ type AppInfo struct {
 
 // ProvisioningInfo ...
 type ProvisioningInfo struct {
-	ExpireDate       time.Time `json:"expire_date"`
-	DistributionType string    `json:"distribution_type"`
+	ExpireDate      time.Time `json:"expire_date"`
+	IPAExportMethod string    `json:"ipa_export_method"`
 }
 
 // ArtifactMeta ...
@@ -73,27 +73,27 @@ type artifactShowResponseModel struct {
 	Data ArtifactShowResponseItemModel `json:"data"`
 }
 
-// HasDebugDistributionType ...
-func (a ArtifactListElementResponseModel) HasDebugDistributionType() bool {
+// HasDebugIPAExportMethod ...
+func (a ArtifactListElementResponseModel) HasDebugIPAExportMethod() bool {
 	if a.ArtifactMeta == nil ||
 		a.ArtifactMeta.ProvisioningInfo == (ProvisioningInfo{}) ||
-		a.ArtifactMeta.ProvisioningInfo.DistributionType == "" {
+		a.ArtifactMeta.ProvisioningInfo.IPAExportMethod == "" {
 		return false
 	}
-	for _, artifactType := range debugDistributionTypes {
-		if a.ArtifactMeta.ProvisioningInfo.DistributionType == artifactType {
+	for _, artifactType := range debugIPAExportMethods {
+		if a.ArtifactMeta.ProvisioningInfo.IPAExportMethod == artifactType {
 			return true
 		}
 	}
 	return false
 }
 
-// HasAppStoreDistributionType ...
-func (a ArtifactListElementResponseModel) HasAppStoreDistributionType() bool {
+// HasAppStoreIPAExportMethod ...
+func (a ArtifactListElementResponseModel) HasAppStoreIPAExportMethod() bool {
 	if a.ArtifactMeta == nil || a.ArtifactMeta.ProvisioningInfo == (ProvisioningInfo{}) {
 		return false
 	}
-	return a.ArtifactMeta.ProvisioningInfo.DistributionType == "app-store"
+	return a.ArtifactMeta.ProvisioningInfo.IPAExportMethod == "app-store"
 }
 
 // IsIPA ...

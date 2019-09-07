@@ -71,19 +71,19 @@ func hasIosArtifact(artifacts []bitrise.ArtifactListElementResponseModel) bool {
 func selectIosArtifact(artifacts []bitrise.ArtifactListElementResponseModel) (*bitrise.ArtifactListElementResponseModel, bool, bool, string, string) {
 	publishEnabled := false
 	publicInstallPageEnabled := false
-	ipaDistributionType := ""
+	ipaIPAExportMethod := ""
 	publicInstallPageArtifactSlug := ""
 	var selectedArtifact bitrise.ArtifactListElementResponseModel
 	for _, artifact := range artifacts {
 		if artifact.IsIPA() {
-			if artifact.ArtifactMeta != nil && artifact.ArtifactMeta.ProvisioningInfo.DistributionType != "" {
-				ipaDistributionType = artifact.ArtifactMeta.ProvisioningInfo.DistributionType
+			if artifact.ArtifactMeta != nil && artifact.ArtifactMeta.ProvisioningInfo.IPAExportMethod != "" {
+				ipaIPAExportMethod = artifact.ArtifactMeta.ProvisioningInfo.IPAExportMethod
 			}
 
-			if artifact.HasAppStoreDistributionType() {
+			if artifact.HasAppStoreIPAExportMethod() {
 				publishEnabled = true
 			}
-			if artifact.HasDebugDistributionType() {
+			if artifact.HasDebugIPAExportMethod() {
 				publicInstallPageEnabled = true
 				publicInstallPageArtifactSlug = artifact.Slug
 			}
@@ -93,5 +93,5 @@ func selectIosArtifact(artifacts []bitrise.ArtifactListElementResponseModel) (*b
 			selectedArtifact = artifact
 		}
 	}
-	return &selectedArtifact, publishEnabled, publicInstallPageEnabled, ipaDistributionType, publicInstallPageArtifactSlug
+	return &selectedArtifact, publishEnabled, publicInstallPageEnabled, ipaIPAExportMethod, publicInstallPageArtifactSlug
 }
