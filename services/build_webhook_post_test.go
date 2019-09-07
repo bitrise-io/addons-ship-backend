@@ -270,6 +270,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 										ArtifactMeta: &bitrise.ArtifactMeta{
 											AppInfo: bitrise.AppInfo{
 												Version:          "1.0",
+												BuildNumber:      "12",
 												DeviceFamilyList: []int{1, 2, 12},
 											},
 											ProvisioningInfo: bitrise.ProvisioningInfo{IPAExportMethod: "app-store"},
@@ -1044,6 +1045,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 										ArtifactMeta: &bitrise.ArtifactMeta{
 											AppInfo: bitrise.AppInfo{
 												Version:          "1.0",
+												BuildNumber:      "12",
 												DeviceFamilyList: []int{1, 2, 12},
 											},
 											ProvisioningInfo: bitrise.ProvisioningInfo{IPAExportMethod: "app-store"},
@@ -1141,6 +1143,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 											AppInfo: bitrise.AppInfo{
 												Version:          "1.0",
 												DeviceFamilyList: []int{1, 2, 12},
+												BuildNumber:      "12",
 											},
 											ProvisioningInfo: bitrise.ProvisioningInfo{IPAExportMethod: "app-store"},
 										},
