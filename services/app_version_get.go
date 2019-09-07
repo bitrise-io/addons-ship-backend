@@ -25,7 +25,7 @@ type AppVersionGetResponseData struct {
 	AppStoreInfo         models.AppStoreInfo `json:"app_store_info"`
 	PublishEnabled       bool                `json:"publish_enabled"`
 	AppInfo              AppData             `json:"app_info"`
-	DistributionType     string              `json:"distribution_type,omitempty"`
+	IPAExportMethod      string              `json:"ipa_export_method,omitempty"`
 	Version              string              `json:"version"`
 	VersionCode          string              `json:"version_code"`
 	MinimumOS            string              `json:"minimum_os,omitempty"`
@@ -82,10 +82,11 @@ func AppVersionGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Reques
 
 func newArtifactVersionGetResponse(appVersion *models.AppVersion, env *env.AppEnv, artifacts []bitrise.ArtifactListElementResponseModel) (AppVersionGetResponseData, error) {
 	var publishEnabled, publicInstallPageEnabled bool
+	var ipaExportMethod string
 	var publicInstallPageArtifactSlug string
 	switch appVersion.Platform {
 	case "ios":
-		_, publishEnabled, publicInstallPageEnabled, publicInstallPageArtifactSlug = selectIosArtifact(artifacts)
+		_, publishEnabled, publicInstallPageEnabled, ipaExportMethod, publicInstallPageArtifactSlug = selectIosArtifact(artifacts)
 	case "android":
 		_, publishEnabled, publicInstallPageEnabled, publicInstallPageArtifactSlug = selectAndroidArtifact(artifacts)
 	default:
@@ -130,7 +131,7 @@ func newArtifactVersionGetResponse(appVersion *models.AppVersion, env *env.AppEn
 		AppStoreInfo:         appStoreInfo,
 		PublishEnabled:       publishEnabled,
 		AppInfo:              appData,
-		DistributionType:     artifactInfo.DistributionType,
+		IPAExportMethod:      ipaExportMethod,
 		Version:              artifactInfo.Version,
 		MinimumOS:            artifactInfo.MinimumOS,
 		MinimumSDK:           artifactInfo.MinimumSDK,

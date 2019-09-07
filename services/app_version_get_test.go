@@ -60,7 +60,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 							return &models.AppVersion{
 								App:              models.App{},
 								AppStoreInfoData: json.RawMessage(`{}`),
-								ArtifactInfoData: json.RawMessage(`{"distribution_type":"development"}`),
+								ArtifactInfoData: json.RawMessage(`{"ipa_export_method":"development"}`),
 								Platform:         "ios",
 							}, nil
 						},
@@ -72,7 +72,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 									Title: "my-awesome-app.ipa",
 									ArtifactMeta: &bitrise.ArtifactMeta{
 										ProvisioningInfo: bitrise.ProvisioningInfo{
-											DistributionType: "development",
+											IPAExportMethod: "development",
 										},
 										AppInfo: bitrise.AppInfo{},
 									},
@@ -93,7 +93,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 						AppVersion: &models.AppVersion{
 							Platform: "ios",
 						},
-						DistributionType: "development",
+						IPAExportMethod: "development",
 					},
 				},
 			})
@@ -115,7 +115,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 									AppSlug:         "test-app-slug",
 								},
 								BuildSlug:        "test-build-slug",
-								ArtifactInfoData: json.RawMessage(`{"version":"v1.0","distribution_type":"app-store","size":1024,"minimum_os":"11.1","bundle_id":"test.app"}`),
+								ArtifactInfoData: json.RawMessage(`{"version":"v1.0","size":1024,"minimum_os":"11.1","bundle_id":"test.app"}`),
 							}, nil
 						},
 					},
@@ -129,7 +129,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 									Title: "my-awesome-app.ipa",
 									ArtifactMeta: &bitrise.ArtifactMeta{
 										ProvisioningInfo: bitrise.ProvisioningInfo{
-											DistributionType: "app-store",
+											IPAExportMethod: "app-store",
 										},
 										AppInfo: bitrise.AppInfo{MinimumOS: "11.1"},
 									},
@@ -163,7 +163,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 						},
 						MinimumOS:        "11.1",
 						Size:             1024,
-						DistributionType: "app-store",
+						IPAExportMethod: "app-store",
 						Version:          "v1.0",
 						AppInfo: services.AppData{
 							Title:       "The Adventures of Stealy",
@@ -269,7 +269,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 								App: models.App{
 									BitriseAPIToken: "test-api-token",
 								},
-								ArtifactInfoData: json.RawMessage(`{"version":"v1.0","distribution_type":"development","minimum_os":"10.1","bundle_id":"test.app"}`),
+								ArtifactInfoData: json.RawMessage(`{"version":"v1.0","minimum_os":"10.1","bundle_id":"test.app"}`),
 							}, nil
 						},
 					},
@@ -280,7 +280,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 									Title: "my-awesome-dev-app.ipa",
 									ArtifactMeta: &bitrise.ArtifactMeta{
 										ProvisioningInfo: bitrise.ProvisioningInfo{
-											DistributionType: "development",
+											IPAExportMethod: "development",
 										},
 										AppInfo: bitrise.AppInfo{MinimumOS: "10.1"},
 									},
@@ -307,7 +307,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 						},
 						Version:              "v1.0",
 						MinimumOS:            "10.1",
-						DistributionType:     "development",
+						IPAExportMethod:     "development",
 						PublicInstallPageURL: "http://don.t.go.there",
 						AppInfo: services.AppData{
 							Title:       "The Adventures of Stealy",
@@ -337,7 +337,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 								App: models.App{
 									BitriseAPIToken: "test-api-token",
 								},
-								ArtifactInfoData: json.RawMessage(`{"version":"v1.0","distribution_type":"development","minimum_os":"10.1","supported_device_types":["iPhone","iPod Touch","iPad"],"bundle_id":"test.app"}`),
+								ArtifactInfoData: json.RawMessage(`{"version":"v1.0","minimum_os":"10.1","supported_device_types":["iPhone","iPod Touch","iPad"],"bundle_id":"test.app"}`),
 							}, nil
 						},
 					},
@@ -348,7 +348,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 									Title: "my-awesome-dev-app.ipa",
 									ArtifactMeta: &bitrise.ArtifactMeta{
 										ProvisioningInfo: bitrise.ProvisioningInfo{
-											DistributionType: "development",
+											IPAExportMethod: "development",
 										},
 										AppInfo: bitrise.AppInfo{MinimumOS: "10.1", DeviceFamilyList: []int{1, 2}},
 									},
@@ -376,7 +376,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 						Version:              "v1.0",
 						MinimumOS:            "10.1",
 						SupportedDeviceTypes: []string{"iPhone", "iPod Touch", "iPad"},
-						DistributionType:     "development",
+						IPAExportMethod:     "development",
 						PublicInstallPageURL: "http://don.t.go.there",
 						AppInfo: services.AppData{
 							Title:       "The Adventures of Stealy",
@@ -414,7 +414,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 									Title: "my-awesome-dev-app.ipa",
 									ArtifactMeta: &bitrise.ArtifactMeta{
 										ProvisioningInfo: bitrise.ProvisioningInfo{
-											DistributionType: "development",
+											IPAExportMethod: "development",
 										},
 										AppInfo: bitrise.AppInfo{MinimumOS: "10.1", DeviceFamilyList: []int{12}},
 									},
@@ -442,6 +442,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 						Version:              "v1.0",
 						MinimumOS:            "10.1",
 						SupportedDeviceTypes: []string{"Unknown"},
+						IPAExportMethod:     "development",
 						PublicInstallPageURL: "http://don.t.go.there",
 						AppInfo: services.AppData{
 							Title:       "The Adventures of Stealy",
@@ -473,7 +474,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 									Title: "my-awesome-dev-app.ipa",
 									ArtifactMeta: &bitrise.ArtifactMeta{
 										ProvisioningInfo: bitrise.ProvisioningInfo{
-											DistributionType: "development",
+											IPAExportMethod: "development",
 										},
 										AppInfo: bitrise.AppInfo{MinimumOS: "10.1", DeviceFamilyList: []int{1, 2}},
 									},
@@ -543,7 +544,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 									Title: "my-awesome-dev-app.ipa",
 									ArtifactMeta: &bitrise.ArtifactMeta{
 										ProvisioningInfo: bitrise.ProvisioningInfo{
-											DistributionType: "development",
+											IPAExportMethod: "development",
 										},
 										AppInfo: bitrise.AppInfo{MinimumOS: "10.1", DeviceFamilyList: []int{1, 2}},
 									},
@@ -785,7 +786,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 								Title: "my-awesome-app.ipa",
 								ArtifactMeta: &bitrise.ArtifactMeta{
 									ProvisioningInfo: bitrise.ProvisioningInfo{
-										DistributionType: "development",
+										IPAExportMethod: "development",
 									},
 									AppInfo: bitrise.AppInfo{},
 								},
@@ -851,7 +852,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 								Title: "my-awesome-dev-app.ipa",
 								ArtifactMeta: &bitrise.ArtifactMeta{
 									ProvisioningInfo: bitrise.ProvisioningInfo{
-										DistributionType: "development",
+										IPAExportMethod: "development",
 									},
 									AppInfo: bitrise.AppInfo{MinimumOS: "10.1", DeviceFamilyList: []int{1, 2}},
 								},
