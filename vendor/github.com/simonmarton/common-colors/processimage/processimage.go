@@ -1,11 +1,13 @@
 package processimage
 
 import (
+	"bytes"
 	"fmt"
 	"image"
 	"image/jpeg"
 	"image/png"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"path"
 
@@ -64,6 +66,13 @@ func openImage(file io.Reader, imageType string) (image.Image, error) {
 	var img image.Image
 	var err error
 
+	// save original bytes for the future
+	originalBytes, err := ioutil.ReadAll(file)
+	if err != nil {
+		return nil, err
+	}
+	file = ioutil.NopCloser(bytes.NewReader(originalBytes)) // reset file stream
+
 	switch imageType {
 	case ".jpg":
 		fallthrough
@@ -74,7 +83,11 @@ func openImage(file io.Reader, imageType string) (image.Image, error) {
 	case "image/jpeg":
 		img, err = jpeg.Decode(file)
 		if err != nil {
-			return nil, err
+			file = ioutil.NopCloser(bytes.NewReader(originalBytes)) // reset file stream
+			img, err = png.Decode(file)
+			if err != nil {
+				return nil, err
+			}
 		}
 	case ".png":
 		fallthrough

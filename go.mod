@@ -26,7 +26,7 @@ require (
 	github.com/robfig/cron v1.2.0 // indirect
 	github.com/rs/cors v1.6.0 // indirect
 	github.com/satori/go.uuid v1.2.0
-	github.com/simonmarton/common-colors v0.0.0-20190731125827-7108ef0626f9
+	github.com/simonmarton/common-colors v0.0.0-20190907120037-58fe7a5367fe
 	github.com/stretchr/testify v1.3.0
 	github.com/tinylib/msgp v1.1.0 // indirect
 	go.uber.org/atomic v1.4.0 // indirect
