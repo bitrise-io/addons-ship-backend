@@ -27,7 +27,7 @@ type ArtifactInfo struct {
 	SupportedDeviceTypes []string  `json:"supported_device_types"`
 	PackageName          string    `json:"package_name"`
 	ExpireDate           time.Time `json:"expire_date"`
-	IPAExportMethod     string    `json:"ipa_export_method"`
+	IPAExportMethod      string    `json:"ipa_export_method"`
 }
 
 // AppStoreInfo ...
@@ -51,6 +51,7 @@ type AppVersion struct {
 	LastUpdate       time.Time       `json:"last_update"`
 	Scheme           string          `json:"scheme"`
 	Configuration    string          `json:"configuration"`
+	CommitMessage    string          `json:"commit_message"`
 	ArtifactInfoData json.RawMessage `json:"-" db:"artifact_info" gorm:"column:artifact_info;type:json"`
 	AppStoreInfoData json.RawMessage `json:"-" db:"app_store_info" gorm:"column:app_store_info;type:json"`
 
