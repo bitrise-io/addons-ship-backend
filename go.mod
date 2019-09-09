@@ -26,9 +26,11 @@ require (
 	github.com/robfig/cron v1.2.0 // indirect
 	github.com/rs/cors v1.6.0 // indirect
 	github.com/satori/go.uuid v1.2.0
+	github.com/segmentio/backo-go v0.0.0-20160424052352-204274ad699c // indirect
 	github.com/simonmarton/common-colors v0.0.0-20190907120037-58fe7a5367fe
 	github.com/stretchr/testify v1.3.0
 	github.com/tinylib/msgp v1.1.0 // indirect
+	github.com/xtgo/uuid v0.0.0-20140804021211-a0b114877d4c // indirect
 	go.uber.org/atomic v1.4.0 // indirect
 	go.uber.org/multierr v1.1.0 // indirect
 	go.uber.org/zap v1.10.0
@@ -37,5 +39,6 @@ require (
 	golang.org/x/sys v0.0.0-20190509141414-a5b02f93d862 // indirect
 	golang.org/x/text v0.3.2 // indirect
 	gopkg.in/DataDog/dd-trace-go.v1 v1.13.0
+	gopkg.in/segmentio/analytics-go.v3 v3.0.1
 	gopkg.in/yaml.v2 v2.2.2
 )
