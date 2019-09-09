@@ -7,7 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/bitrise-io/addons-ship-backend/analytics"
 	"github.com/bitrise-io/addons-ship-backend/bitrise"
 	"github.com/bitrise-io/addons-ship-backend/env"
 	"github.com/bitrise-io/addons-ship-backend/models"
@@ -145,12 +144,7 @@ func BuildWebhookHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request
 					return errors.Wrap(err, "Worker Error")
 				}
 			} else {
-				c, err := analytics.NewClient(env.Logger)
-				if err != nil {
-					env.Logger.Warn("Failed to create analytics client", zap.Error(err))
-				} else {
-					c.FirstVersionCreated(app.AppSlug, params.BuildSlug, "ios")
-				}
+				env.AnalyticsClient.FirstVersionCreated(app.AppSlug, params.BuildSlug, "ios")
 			}
 
 			_, err = env.AppVersionEventService.Create(&models.AppVersionEvent{AppVersionID: appVersion.ID, Text: "New version was created"})
@@ -193,12 +187,7 @@ func BuildWebhookHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request
 					return errors.Wrap(err, "Worker Error")
 				}
 			} else if !iosVersionCreated {
-				c, err := analytics.NewClient(env.Logger)
-				if err != nil {
-					env.Logger.Warn("Failed to create analytics client", zap.Error(err))
-				} else {
-					c.FirstVersionCreated(app.AppSlug, params.BuildSlug, "android")
-				}
+				env.AnalyticsClient.FirstVersionCreated(app.AppSlug, params.BuildSlug, "android")
 			}
 			_, err = env.AppVersionEventService.Create(&models.AppVersionEvent{AppVersionID: appVersion.ID, Text: "New version was created"})
 			if err != nil {

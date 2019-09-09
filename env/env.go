@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/bitrise-io/addons-ship-backend/analytics"
 	"github.com/bitrise-io/addons-ship-backend/bitrise"
 	"github.com/bitrise-io/addons-ship-backend/dataservices"
 	"github.com/bitrise-io/addons-ship-backend/mailer"
@@ -54,6 +55,7 @@ type AppEnv struct {
 	EmailConfirmLandingURL string
 	SsoTokenVerifier       security.SsoTokenVerifierInterface
 	BitriseAPIRootURL      *url.URL
+	AnalyticsClient        analytics.Interface
 }
 
 // New ...
@@ -143,6 +145,11 @@ func New(db *gorm.DB) (*AppEnv, error) {
 		return nil, errors.WithStack(err)
 	}
 	env.BitriseAPIRootURL = apiURL
+	analyticsClient, err := analytics.NewClient(env.Logger)
+	if err != nil {
+		env.Logger.Warn("Failed to create analytics client", zap.Error(err))
+	}
+	env.AnalyticsClient = &analyticsClient
 
 	return env, nil
 }

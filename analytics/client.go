@@ -9,6 +9,11 @@ import (
 	segment "gopkg.in/segmentio/analytics-go.v3"
 )
 
+// Interface ...
+type Interface interface {
+	FirstVersionCreated(appSlug, buildSlug, platform string)
+}
+
 // Client ...
 type Client struct {
 	client segment.Client
