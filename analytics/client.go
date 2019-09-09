@@ -28,17 +28,18 @@ func NewClient(logger *zap.Logger) (Client, error) {
 	}, nil
 }
 
-// NewVersionCreated ...
-func (c *Client) NewVersionCreated(appSlug, buildSlug string, time time.Time) {
+// FirstVersionCreated ...
+func (c *Client) FirstVersionCreated(appSlug, buildSlug, platform string) {
 	err := c.client.Enqueue(segment.Track{
 		UserId: appSlug,
-		Event:  "New app version created",
+		Event:  "First app version was created",
 		Properties: segment.NewProperties().
 			Set("app_slug", appSlug).
 			Set("build_slug", buildSlug).
-			Set("datetime", time),
+			Set("platform", platform).
+			Set("datetime", time.Now()),
 	})
 	if err != nil {
-		c.logger.Warn("Failed to track analytics (NewVersionCreated)", zap.Error(err))
+		c.logger.Warn("Failed to track analytics (FirstVersionCreated)", zap.Error(err))
 	}
 }
