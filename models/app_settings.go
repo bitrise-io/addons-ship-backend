@@ -27,6 +27,7 @@ type AndroidSettings struct {
 	Track                  string `json:"track"`
 	SelectedKeystoreFile   string `json:"selected_keystore_file"`
 	SelectedServiceAccount string `json:"selected_service_account"`
+	Module                 string `json:"module"`
 }
 
 // Valid ...
