@@ -13,12 +13,18 @@ import (
 type AppVersionsGetResponseElement struct {
 	models.AppVersion
 	AppInfo              AppData  `json:"app_info"`
-	IPAExportMethod     string   `json:"ipa_export_method"`
+	IPAExportMethod      string   `json:"ipa_export_method"`
 	Version              string   `json:"version"`
 	MinimumOS            string   `json:"minimum_os,omitempty"`
 	MinimumSDK           string   `json:"minimum_sdk,omitempty"`
 	Size                 int64    `json:"size"`
 	SupportedDeviceTypes []string `json:"supported_device_types"`
+	VersionCode          string   `json:"version_code"`
+	BundleID             string   `json:"bundle_id,omitempty"`
+	PackageName          string   `json:"package_name,omitempty"`
+	Module               string   `json:"module"`
+	ProductFlavour       string   `json:"product_flavour"`
+	BuildType            string   `json:"build_type"`
 }
 
 // AppVersionsGetResponse ...
@@ -81,12 +87,18 @@ func newAppVersionsGetResponse(app *models.App, env *env.AppEnv) ([]AppVersionsG
 		elements = append(elements, AppVersionsGetResponseElement{
 			AppInfo:              appData,
 			AppVersion:           appVersion,
+			IPAExportMethod:      artifactInfo.IPAExportMethod,
 			Version:              artifactInfo.Version,
 			MinimumOS:            artifactInfo.MinimumOS,
 			MinimumSDK:           artifactInfo.MinimumSDK,
 			Size:                 artifactInfo.Size,
-			IPAExportMethod:     artifactInfo.IPAExportMethod,
 			SupportedDeviceTypes: artifactInfo.SupportedDeviceTypes,
+			BundleID:             artifactInfo.BundleID,
+			PackageName:          artifactInfo.PackageName,
+			VersionCode:          artifactInfo.VersionCode,
+			Module:               artifactInfo.Module,
+			ProductFlavour:       artifactInfo.ProductFlavour,
+			BuildType:            artifactInfo.BuildType,
 		})
 	}
 	return elements, nil

@@ -1003,6 +1003,11 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								return &bitrise.BuildDetails{}, nil
 							},
 						},
+						AnalyticsClient: &testAnalyticsClient{
+							firstVersionCreatedFn: func(appSlug, buildSlug, platform string) {
+								require.Equal(t, "ios", platform)
+							},
+						},
 						AppContactService: &testAppContactService{},
 						WorkerService:     &testWorkerService{},
 					},
@@ -1097,6 +1102,11 @@ func Test_BuildWebhookHandler(t *testing.T) {
 							},
 							getBuildDetailsFn: func(apiToken string, appSlug string, buildSlug string) (*bitrise.BuildDetails, error) {
 								return &bitrise.BuildDetails{}, nil
+							},
+						},
+						AnalyticsClient: &testAnalyticsClient{
+							firstVersionCreatedFn: func(appSlug, buildSlug, platform string) {
+								require.Equal(t, "ios", platform)
 							},
 						},
 						AppContactService: &testAppContactService{
@@ -1953,6 +1963,11 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								return &bitrise.BuildDetails{}, nil
 							},
 						},
+						AnalyticsClient: &testAnalyticsClient{
+							firstVersionCreatedFn: func(appSlug, buildSlug, platform string) {
+								require.Equal(t, "android", platform)
+							},
+						},
 						AppContactService: &testAppContactService{},
 						WorkerService:     &testWorkerService{},
 					},
@@ -2031,6 +2046,11 @@ func Test_BuildWebhookHandler(t *testing.T) {
 							},
 							getBuildDetailsFn: func(apiToken string, appSlug string, buildSlug string) (*bitrise.BuildDetails, error) {
 								return &bitrise.BuildDetails{}, nil
+							},
+						},
+						AnalyticsClient: &testAnalyticsClient{
+							firstVersionCreatedFn: func(appSlug, buildSlug, platform string) {
+								require.Equal(t, "android", platform)
 							},
 						},
 						AppContactService: &testAppContactService{
