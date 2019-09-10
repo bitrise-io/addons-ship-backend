@@ -36,13 +36,12 @@ func (s *ArtifactSelector) PrepareAndroidAppVersions(buildSlug, buildNumber, bui
 			buildType = group[0].ArtifactMeta.BuildType
 		}
 		artifactInfo := models.ArtifactInfo{
-			MinimumSDK:     group[0].ArtifactMeta.AppInfo.MinimumSDKVersion,
-			PackageName:    group[0].ArtifactMeta.AppInfo.PackageName,
-			Version:        group[0].ArtifactMeta.AppInfo.VersionName,
-			VersionCode:    group[0].ArtifactMeta.AppInfo.VersionCode,
-			Module:         group[0].ArtifactMeta.Module,
-			ProductFlavour: group[0].ArtifactMeta.ProductFlavour,
-			BuildType:      buildType,
+			MinimumSDK:  group[0].ArtifactMeta.AppInfo.MinimumSDKVersion,
+			PackageName: group[0].ArtifactMeta.AppInfo.PackageName,
+			Version:     group[0].ArtifactMeta.AppInfo.VersionName,
+			VersionCode: group[0].ArtifactMeta.AppInfo.VersionCode,
+			Module:      group[0].ArtifactMeta.Module,
+			BuildType:   buildType,
 		}
 		artifactInfoData, err := json.Marshal(artifactInfo)
 		if err != nil {
@@ -55,6 +54,7 @@ func (s *ArtifactSelector) PrepareAndroidAppVersions(buildSlug, buildNumber, bui
 			ArtifactInfoData: artifactInfoData,
 			LastUpdate:       time.Now(),
 			CommitMessage:    buildCommitMessage,
+			ProductFlavour:   group[0].ArtifactMeta.ProductFlavour,
 		}
 		appVersions = append(appVersions, appVersion)
 	}

@@ -29,7 +29,6 @@ type ArtifactInfo struct {
 	ExpireDate           time.Time `json:"expire_date"`
 	IPAExportMethod      string    `json:"ipa_export_method"`
 	Module               string    `json:"module"`
-	ProductFlavour       string    `json:"product_flavour"`
 	BuildType            string    `json:"build_type"`
 }
 
@@ -55,6 +54,7 @@ type AppVersion struct {
 	Scheme           string          `json:"scheme"`
 	Configuration    string          `json:"configuration"`
 	CommitMessage    string          `json:"commit_message"`
+	ProductFlavour   string          `json:"product_flavour"`
 	ArtifactInfoData json.RawMessage `json:"-" db:"artifact_info" gorm:"column:artifact_info;type:json"`
 	AppStoreInfoData json.RawMessage `json:"-" db:"app_store_info" gorm:"column:app_store_info;type:json"`
 

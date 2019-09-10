@@ -144,7 +144,7 @@ func newArtifactVersionGetResponse(appVersion *models.AppVersion, env *env.AppEn
 		PackageName:          artifactInfo.PackageName,
 		VersionCode:          artifactInfo.VersionCode,
 		Module:               artifactInfo.Module,
-		ProductFlavour:       artifactInfo.ProductFlavour,
+		ProductFlavour:       appVersion.ProductFlavour,
 		BuildType:            artifactInfo.BuildType,
 	}, nil
 }
