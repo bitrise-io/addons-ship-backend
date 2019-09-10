@@ -101,6 +101,8 @@ github.com/robfig/cron
 github.com/rs/cors
 # github.com/satori/go.uuid v1.2.0
 github.com/satori/go.uuid
+# github.com/segmentio/backo-go v0.0.0-20160424052352-204274ad699c
+github.com/segmentio/backo-go
 # github.com/simonmarton/common-colors v0.0.0-20190907120037-58fe7a5367fe
 github.com/simonmarton/common-colors/processimage
 github.com/simonmarton/common-colors/calculator
@@ -111,6 +113,8 @@ github.com/stretchr/testify/require
 github.com/stretchr/testify/assert
 # github.com/tinylib/msgp v1.1.0
 github.com/tinylib/msgp/msgp
+# github.com/xtgo/uuid v0.0.0-20140804021211-a0b114877d4c
+github.com/xtgo/uuid
 # go.uber.org/atomic v1.4.0
 go.uber.org/atomic
 # go.uber.org/multierr v1.1.0
@@ -132,5 +136,7 @@ gopkg.in/DataDog/dd-trace-go.v1/ddtrace/ext
 gopkg.in/DataDog/dd-trace-go.v1/ddtrace/internal
 gopkg.in/DataDog/dd-trace-go.v1/internal/globalconfig
 gopkg.in/DataDog/dd-trace-go.v1/contrib/internal/httputil
+# gopkg.in/segmentio/analytics-go.v3 v3.0.1
+gopkg.in/segmentio/analytics-go.v3
 # gopkg.in/yaml.v2 v2.2.2
 gopkg.in/yaml.v2

@@ -112,6 +112,8 @@ func BuildWebhookHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request
 			}
 		}
 
+		iosVersionCreated := false
+
 		workflowInWhitelist := params.BuildTriggeredWorkflow != "" && strings.Contains(appSettings.IosWorkflow, params.BuildTriggeredWorkflow)
 		if (appSettings.IosWorkflow == "" || workflowInWhitelist) && hasIosArtifact(artifacts) {
 			latestAppVersion, err := env.AppVersionService.Latest(&models.AppVersion{AppID: app.ID, Platform: "ios"})
@@ -135,11 +137,14 @@ func BuildWebhookHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request
 			if err != nil {
 				return errors.Wrap(err, "SQL Error")
 			}
+			iosVersionCreated = true
 			if latestAppVersion != nil {
 				err := env.WorkerService.EnqueueCopyUploadablesToNewAppVersion(latestAppVersion.ID.String(), appVersion.ID.String())
 				if err != nil {
 					return errors.Wrap(err, "Worker Error")
 				}
+			} else {
+				env.AnalyticsClient.FirstVersionCreated(app.AppSlug, params.BuildSlug, "ios")
 			}
 
 			_, err = env.AppVersionEventService.Create(&models.AppVersionEvent{AppVersionID: appVersion.ID, Text: "New version was created"})
@@ -181,6 +186,8 @@ func BuildWebhookHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request
 				if err != nil {
 					return errors.Wrap(err, "Worker Error")
 				}
+			} else if !iosVersionCreated {
+				env.AnalyticsClient.FirstVersionCreated(app.AppSlug, params.BuildSlug, "android")
 			}
 			_, err = env.AppVersionEventService.Create(&models.AppVersionEvent{AppVersionID: appVersion.ID, Text: "New version was created"})
 			if err != nil {
