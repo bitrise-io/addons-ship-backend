@@ -30,13 +30,13 @@ func prepareAppVersionForAndroidPlatform(w http.ResponseWriter, r *http.Request,
 	}
 
 	artifactInfo := models.ArtifactInfo{
-		MinimumSDK:     selectedArtifact.ArtifactMeta.AppInfo.MinimumSDKVersion,
-		PackageName:    selectedArtifact.ArtifactMeta.AppInfo.PackageName,
-		Version:        selectedArtifact.ArtifactMeta.AppInfo.VersionName,
-		VersionCode:    selectedArtifact.ArtifactMeta.AppInfo.VersionCode,
-		Module:         selectedArtifact.ArtifactMeta.Module,
-		ProductFlavour: selectedArtifact.ArtifactMeta.ProductFlavour,
-		BuildType:      selectedArtifact.ArtifactMeta.BuildType,
+		MinimumSDK:  selectedArtifact.ArtifactMeta.AppInfo.MinimumSDKVersion,
+		PackageName: selectedArtifact.ArtifactMeta.AppInfo.PackageName,
+		Version:     selectedArtifact.ArtifactMeta.AppInfo.VersionName,
+		VersionCode: selectedArtifact.ArtifactMeta.AppInfo.VersionCode,
+		Module:      selectedArtifact.ArtifactMeta.Module,
+		// ProductFlavour: selectedArtifact.ArtifactMeta.ProductFlavour,
+		BuildType: selectedArtifact.ArtifactMeta.BuildType,
 	}
 	artifactInfoData, err := json.Marshal(artifactInfo)
 	if err != nil {

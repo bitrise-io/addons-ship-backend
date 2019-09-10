@@ -159,43 +159,46 @@ func BuildWebhookHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request
 
 		workflowInWhitelist = params.BuildTriggeredWorkflow != "" && strings.Contains(appSettings.AndroidWorkflow, params.BuildTriggeredWorkflow)
 		if (appSettings.AndroidWorkflow == "" || workflowInWhitelist) && hasAndroidArtifact(artifacts) {
-			latestAppVersion, err := env.AppVersionService.Latest(&models.AppVersion{AppID: app.ID, Platform: "android"})
-			if err != nil && errors.Cause(err) != gorm.ErrRecordNotFound {
-				return errors.Wrap(err, "SQL Error")
-			}
-			appVersion, err := prepareAppVersionForAndroidPlatform(w, r, artifacts, params.BuildSlug)
+			artifactSelector := bitrise.NewArtifactSelector(artifacts)
+			appVersions, err := artifactSelector.PrepareAndroidAppVersions(params.BuildSlug, fmt.Sprintf("%d", params.BuildNumber), buildDetails.CommitMessage)
 			if err != nil {
-				return err
-			}
-			appVersion.LastUpdate = time.Now()
-			appVersion.AppID = authorizedAppID
-			appVersion.BuildNumber = fmt.Sprintf("%d", params.BuildNumber)
-			appVersion.CommitMessage = buildDetails.CommitMessage
-			if latestAppVersion != nil {
-				appVersion.AppStoreInfoData = latestAppVersion.AppStoreInfoData
-			}
-			appVersion, verrs, err := env.AppVersionService.Create(appVersion)
-			if len(verrs) > 0 {
-				return httpresponse.RespondWithUnprocessableEntity(w, verrs)
-			}
-			if err != nil {
-				return errors.Wrap(err, "SQL Error")
-			}
-			if latestAppVersion != nil {
-				err := env.WorkerService.EnqueueCopyUploadablesToNewAppVersion(latestAppVersion.ID.String(), appVersion.ID.String())
-				if err != nil {
-					return errors.Wrap(err, "Worker Error")
-				}
-			} else if !iosVersionCreated {
-				env.AnalyticsClient.FirstVersionCreated(app.AppSlug, params.BuildSlug, "android")
-			}
-			_, err = env.AppVersionEventService.Create(&models.AppVersionEvent{AppVersionID: appVersion.ID, Text: "New version was created"})
-			if err != nil {
-				return errors.Wrap(err, "SQL Error")
-			}
-
-			if err := sendNotification(env, appVersion, app, appDetails); err != nil {
 				return errors.WithStack(err)
+			}
+			for _, version := range appVersions {
+				latestAppVersion, err := env.AppVersionService.Latest(&models.AppVersion{
+					AppID:          app.ID,
+					Platform:       "android",
+					ProductFlavour: version.ProductFlavour,
+				})
+				if err != nil && errors.Cause(err) != gorm.ErrRecordNotFound {
+					return errors.Wrap(err, "SQL Error")
+				}
+				version.AppID = authorizedAppID
+				appVersion, verrs, err := env.AppVersionService.Create(&version)
+				if len(verrs) > 0 {
+					return httpresponse.RespondWithUnprocessableEntity(w, verrs)
+				}
+				if err != nil {
+					return errors.Wrap(err, "SQL Error")
+				}
+
+				if latestAppVersion != nil {
+					err := env.WorkerService.EnqueueCopyUploadablesToNewAppVersion(latestAppVersion.ID.String(), appVersion.ID.String())
+					if err != nil {
+						return errors.Wrap(err, "Worker Error")
+					}
+				} else if !iosVersionCreated {
+					env.AnalyticsClient.FirstVersionCreated(app.AppSlug, params.BuildSlug, "android")
+				}
+
+				_, err = env.AppVersionEventService.Create(&models.AppVersionEvent{AppVersionID: appVersion.ID, Text: "New version was created"})
+				if err != nil {
+					return errors.Wrap(err, "SQL Error")
+				}
+
+				if err := sendNotification(env, appVersion, app, appDetails); err != nil {
+					return errors.WithStack(err)
+				}
 			}
 		}
 

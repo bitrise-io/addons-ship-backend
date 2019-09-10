@@ -1276,11 +1276,14 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								require.Equal(t, "android", appVersion.Platform)
 								require.Equal(t, "test-build-slug", appVersion.BuildSlug)
 								require.Equal(t, "Some commit message", appVersion.CommitMessage)
+								require.Equal(t, "test-product-flavour", appVersion.ProductFlavour)
 								appInfo, err := appVersion.ArtifactInfo()
 								require.NoError(t, err)
-								require.Equal(t, models.ArtifactInfo{Version: "1.0", MinimumSDK: "1.23", PackageName: "myPackage", VersionCode: "abc123", Module: "test-module",
-									ProductFlavour: "test-product-flavour",
-									BuildType:      "test-build-type"}, appInfo)
+								require.Equal(t, models.ArtifactInfo{
+									Version: "1.0", MinimumSDK: "1.23", PackageName: "myPackage",
+									VersionCode: "abc123", Module: "test-module",
+									BuildType: "test-build-type",
+								}, appInfo)
 								appVersion.ID = testAppVersionID
 								appVersion.App = models.App{
 									BitriseAPIToken: "test-api-token",
@@ -1754,75 +1757,6 @@ func Test_BuildWebhookHandler(t *testing.T) {
 					},
 					requestBody:         `{"build_slug":"test-build-slug"}`,
 					expectedInternalErr: "No artifact meta data found for artifact",
-				})
-			})
-
-			t.Run("when selected artifact has no app info", func(t *testing.T) {
-				performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
-					contextElements: map[ctxpkg.RequestContextKey]interface{}{
-						services.ContextKeyAuthorizedAppID: uuid.NewV4(),
-					},
-					requestHeaders: map[string]string{"Bitrise-Event-Type": "build/finished"},
-					env: &env.AppEnv{
-						AppService: &testAppService{
-							findFn: func(app *models.App) (*models.App, error) {
-								return app, nil
-							},
-						},
-						AppSettingsService: &testAppSettingsService{
-							findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
-								return &models.AppSettings{
-									AndroidWorkflow: "",
-									IosWorkflow:     "some-ios-wf",
-									App: &models.App{
-										BitriseAPIToken: "test-api-token",
-										AppSlug:         "test-app-slug",
-									},
-								}, nil
-							},
-						},
-						AppVersionService: &testAppVersionService{
-							createFn: func(appVersion *models.AppVersion) (*models.AppVersion, []error, error) {
-								require.Equal(t, "android", appVersion.Platform)
-								require.Equal(t, "test-build-slug", appVersion.BuildSlug)
-								require.NotEqual(t, time.Time{}, appVersion.LastUpdate)
-								artifactData, err := appVersion.ArtifactInfo()
-								require.NoError(t, err)
-								require.Equal(t, "1.0", artifactData.Version)
-								return appVersion, nil, nil
-							},
-							latestFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
-								return nil, nil
-							},
-						},
-						AppVersionEventService: &testAppVersionEventService{
-							createFn: func(appVersionEvent *models.AppVersionEvent) (*models.AppVersionEvent, error) {
-								return nil, nil
-							},
-						},
-						BitriseAPI: &testBitriseAPI{
-							getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
-								return []bitrise.ArtifactListElementResponseModel{
-									bitrise.ArtifactListElementResponseModel{
-										Title: "my-android.aab",
-										ArtifactMeta: &bitrise.ArtifactMeta{
-											AppInfo: bitrise.AppInfo{},
-										},
-									},
-								}, nil
-							},
-							getAppDetailsFn: func(apiToken, appSlug string) (*bitrise.AppDetails, error) {
-								return &bitrise.AppDetails{}, nil
-							},
-							getBuildDetailsFn: func(apiToken string, appSlug string, buildSlug string) (*bitrise.BuildDetails, error) {
-								return &bitrise.BuildDetails{}, nil
-							},
-						},
-						AppContactService: &testAppContactService{},
-						WorkerService:     &testWorkerService{},
-					},
-					requestBody:         `{"build_slug":"test-build-slug"}`,
-					expectedInternalErr: "No artifact app info found for artifact",
 				})
 			})
 
