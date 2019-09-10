@@ -2,6 +2,7 @@ package bitrise
 
 import (
 	"encoding/json"
+	"strings"
 	"time"
 
 	"github.com/bitrise-io/addons-ship-backend/models"
@@ -32,10 +33,10 @@ func (s *ArtifactSelector) PrepareAndroidAppVersions(buildSlug, buildNumber, bui
 		}
 	}
 	for _, group := range flavorGroups {
-		var buildType string
 		buildTypeGroups := groupByBuildType(group)
-		if len(buildTypeGroups) == 1 {
-			buildType = group[0].ArtifactMeta.BuildType
+		keys := []string{}
+		for key := range buildTypeGroups {
+			keys = append(keys, key)
 		}
 		artifactInfo := models.ArtifactInfo{
 			MinimumSDK:  group[0].ArtifactMeta.AppInfo.MinimumSDKVersion,
@@ -43,7 +44,7 @@ func (s *ArtifactSelector) PrepareAndroidAppVersions(buildSlug, buildNumber, bui
 			Version:     group[0].ArtifactMeta.AppInfo.VersionName,
 			VersionCode: group[0].ArtifactMeta.AppInfo.VersionCode,
 			Module:      group[0].ArtifactMeta.Module,
-			BuildType:   buildType,
+			BuildType:   strings.Join(keys, ", "),
 		}
 		artifactInfoData, err := json.Marshal(artifactInfo)
 		if err != nil {

@@ -123,7 +123,7 @@ func Test_ArtifactSelector_PrepareAndroidAppVersions(t *testing.T) {
 				BuildSlug:        testBuildSlug,
 				BuildNumber:      testBuildNumber,
 				CommitMessage:    testCommitMessage,
-				ArtifactInfoData: json.RawMessage(fmt.Sprintf(expectedArtifactInfo, "")),
+				ArtifactInfoData: json.RawMessage(fmt.Sprintf(expectedArtifactInfo, "release, debug")),
 				ProductFlavour:   "sweet",
 			},
 		}, appVersions)
