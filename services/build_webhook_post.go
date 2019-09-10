@@ -164,7 +164,7 @@ func BuildWebhookHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request
 			if err != nil {
 				return errors.WithStack(err)
 			}
-			for i, version := range appVersions {
+			for _, version := range appVersions {
 				latestAppVersion, err := env.AppVersionService.Latest(&models.AppVersion{
 					AppID:          app.ID,
 					Platform:       "android",

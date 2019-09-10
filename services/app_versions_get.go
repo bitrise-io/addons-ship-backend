@@ -97,7 +97,6 @@ func newAppVersionsGetResponse(app *models.App, env *env.AppEnv) ([]AppVersionsG
 			PackageName:          artifactInfo.PackageName,
 			VersionCode:          artifactInfo.VersionCode,
 			Module:               artifactInfo.Module,
-			ProductFlavour:       artifactInfo.ProductFlavour,
 			BuildType:            artifactInfo.BuildType,
 		})
 	}
