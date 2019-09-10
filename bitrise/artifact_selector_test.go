@@ -54,8 +54,8 @@ func Test_ArtifactSelector_PrepareAndroidAppVersions(t *testing.T) {
 		}
 		artifactSelector := bitrise.NewArtifactSelector(testArtifacts)
 
-		expectedArtifactInfo := `{"version":"","version_code":"","minimum_os":"","minimum_sdk":"","size":0,"bundle_id":"","supported_device_types":null,"package_name":"","expire_date":"0001-01-01T00:00:00Z","ipa_export_method":"","module":"","product_flavour":"%s","build_type":""}`
-		appVersions, err := artifactSelector.PrepareAndroidAppVersions(testBuildSlug, testBuildNumber, testCommitMessage, nil)
+		expectedArtifactInfo := `{"version":"","version_code":"","minimum_os":"","minimum_sdk":"","size":0,"bundle_id":"","supported_device_types":null,"package_name":"","expire_date":"0001-01-01T00:00:00Z","ipa_export_method":"","module":"","build_type":""}`
+		appVersions, err := artifactSelector.PrepareAndroidAppVersions(testBuildSlug, testBuildNumber, testCommitMessage)
 		require.NoError(t, err)
 		compareAppVersionArrays(t, []models.AppVersion{
 			models.AppVersion{
@@ -63,14 +63,16 @@ func Test_ArtifactSelector_PrepareAndroidAppVersions(t *testing.T) {
 				BuildSlug:        testBuildSlug,
 				BuildNumber:      testBuildNumber,
 				CommitMessage:    testCommitMessage,
-				ArtifactInfoData: json.RawMessage(fmt.Sprintf(expectedArtifactInfo, "salty")),
+				ArtifactInfoData: json.RawMessage(expectedArtifactInfo),
+				ProductFlavour:   "salty",
 			},
 			models.AppVersion{
 				Platform:         "android",
 				BuildSlug:        testBuildSlug,
 				BuildNumber:      testBuildNumber,
 				CommitMessage:    testCommitMessage,
-				ArtifactInfoData: json.RawMessage(fmt.Sprintf(expectedArtifactInfo, "sweet")),
+				ArtifactInfoData: json.RawMessage(expectedArtifactInfo),
+				ProductFlavour:   "sweet",
 			},
 		}, appVersions)
 	})
@@ -104,8 +106,8 @@ func Test_ArtifactSelector_PrepareAndroidAppVersions(t *testing.T) {
 		}
 		artifactSelector := bitrise.NewArtifactSelector(testArtifacts)
 
-		expectedArtifactInfo := `{"version":"","version_code":"","minimum_os":"","minimum_sdk":"","size":0,"bundle_id":"","supported_device_types":null,"package_name":"","expire_date":"0001-01-01T00:00:00Z","ipa_export_method":"","module":"","product_flavour":"%s","build_type":"%s"}`
-		appVersions, err := artifactSelector.PrepareAndroidAppVersions(testBuildSlug, testBuildNumber, testCommitMessage, nil)
+		expectedArtifactInfo := `{"version":"","version_code":"","minimum_os":"","minimum_sdk":"","size":0,"bundle_id":"","supported_device_types":null,"package_name":"","expire_date":"0001-01-01T00:00:00Z","ipa_export_method":"","module":"","build_type":"%s"}`
+		appVersions, err := artifactSelector.PrepareAndroidAppVersions(testBuildSlug, testBuildNumber, testCommitMessage)
 		require.NoError(t, err)
 		compareAppVersionArrays(t, []models.AppVersion{
 			models.AppVersion{
@@ -113,14 +115,16 @@ func Test_ArtifactSelector_PrepareAndroidAppVersions(t *testing.T) {
 				BuildSlug:        testBuildSlug,
 				BuildNumber:      testBuildNumber,
 				CommitMessage:    testCommitMessage,
-				ArtifactInfoData: json.RawMessage(fmt.Sprintf(expectedArtifactInfo, "salty", "release")),
+				ArtifactInfoData: json.RawMessage(fmt.Sprintf(expectedArtifactInfo, "release")),
+				ProductFlavour:   "salty",
 			},
 			models.AppVersion{
 				Platform:         "android",
 				BuildSlug:        testBuildSlug,
 				BuildNumber:      testBuildNumber,
 				CommitMessage:    testCommitMessage,
-				ArtifactInfoData: json.RawMessage(fmt.Sprintf(expectedArtifactInfo, "sweet", "")),
+				ArtifactInfoData: json.RawMessage(fmt.Sprintf(expectedArtifactInfo, "")),
+				ProductFlavour:   "sweet",
 			},
 		}, appVersions)
 	})
