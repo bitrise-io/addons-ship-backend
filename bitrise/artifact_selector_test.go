@@ -19,6 +19,7 @@ func compareAppVersions(t *testing.T, expected, actual models.AppVersion) {
 }
 
 func compareAppVersionArrays(t *testing.T, expecteds, actuals []models.AppVersion) {
+	require.Len(t, actuals, len(expecteds))
 	for i, expected := range expecteds {
 		compareAppVersions(t, expected, actuals[i])
 	}
@@ -34,29 +35,34 @@ func Test_ArtifactSelector_PrepareAndroidAppVersions(t *testing.T) {
 			bitrise.ArtifactListElementResponseModel{
 				ArtifactMeta: &bitrise.ArtifactMeta{
 					ProductFlavour: "salty",
+					Module:         "test-module",
 				},
 			},
 			bitrise.ArtifactListElementResponseModel{
 				ArtifactMeta: &bitrise.ArtifactMeta{
 					ProductFlavour: "salty",
+					Module:         "test-module",
 				},
 			},
 			bitrise.ArtifactListElementResponseModel{
 				ArtifactMeta: &bitrise.ArtifactMeta{
 					ProductFlavour: "sweet",
+					Module:         "test-module",
 				},
 			},
 			bitrise.ArtifactListElementResponseModel{
 				ArtifactMeta: &bitrise.ArtifactMeta{
 					ProductFlavour: "sweet",
+					Module:         "test-module",
 				},
 			},
 		}
 		artifactSelector := bitrise.NewArtifactSelector(testArtifacts)
 
-		expectedArtifactInfo := `{"version":"","version_code":"","minimum_os":"","minimum_sdk":"","size":0,"bundle_id":"","supported_device_types":null,"package_name":"","expire_date":"0001-01-01T00:00:00Z","ipa_export_method":"","module":"","build_type":""}`
-		appVersions, err := artifactSelector.PrepareAndroidAppVersions(testBuildSlug, testBuildNumber, testCommitMessage)
+		expectedArtifactInfo := `{"version":"","version_code":"","minimum_os":"","minimum_sdk":"","size":0,"bundle_id":"","supported_device_types":null,"package_name":"","expire_date":"0001-01-01T00:00:00Z","ipa_export_method":"","module":"test-module","build_type":""}`
+		appVersions, settingsErr, err := artifactSelector.PrepareAndroidAppVersions(testBuildSlug, testBuildNumber, testCommitMessage, "")
 		require.NoError(t, err)
+		require.NoError(t, settingsErr)
 		compareAppVersionArrays(t, []models.AppVersion{
 			models.AppVersion{
 				Platform:         "android",
@@ -107,8 +113,9 @@ func Test_ArtifactSelector_PrepareAndroidAppVersions(t *testing.T) {
 		artifactSelector := bitrise.NewArtifactSelector(testArtifacts)
 
 		expectedArtifactInfo := `{"version":"","version_code":"","minimum_os":"","minimum_sdk":"","size":0,"bundle_id":"","supported_device_types":null,"package_name":"","expire_date":"0001-01-01T00:00:00Z","ipa_export_method":"","module":"","build_type":"%s"}`
-		appVersions, err := artifactSelector.PrepareAndroidAppVersions(testBuildSlug, testBuildNumber, testCommitMessage)
+		appVersions, settingsErr, err := artifactSelector.PrepareAndroidAppVersions(testBuildSlug, testBuildNumber, testCommitMessage, "")
 		require.NoError(t, err)
+		require.NoError(t, settingsErr)
 		compareAppVersionArrays(t, []models.AppVersion{
 			models.AppVersion{
 				Platform:         "android",
