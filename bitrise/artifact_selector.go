@@ -2,6 +2,7 @@ package bitrise
 
 import (
 	"encoding/json"
+	"sort"
 	"strings"
 	"time"
 
@@ -26,7 +27,7 @@ func (s *ArtifactSelector) PrepareAndroidAppVersions(buildSlug, buildNumber, bui
 	appVersions := []models.AppVersion{}
 	artifacts, settingErr, err := pickArtifactsByModule(s.artifacts, module)
 	if settingErr != nil {
-		return nil, err, nil
+		return nil, settingErr, nil
 	}
 	if err != nil {
 		return nil, nil, err
@@ -39,12 +40,21 @@ func (s *ArtifactSelector) PrepareAndroidAppVersions(buildSlug, buildNumber, bui
 			return nil, nil, errors.New("No artifact meta data found for artifact")
 		}
 	}
-	for _, group := range flavorGroups {
+	groupKeys := []string{}
+	for key := range flavorGroups {
+		groupKeys = append(groupKeys, key)
+	}
+	sort.Strings(groupKeys)
+
+	for _, key := range groupKeys {
+		group := flavorGroups[key]
 		buildTypeGroups := groupByBuildType(group)
 		keys := []string{}
 		for key := range buildTypeGroups {
 			keys = append(keys, key)
 		}
+		sort.Strings(keys)
+
 		artifactInfo := models.ArtifactInfo{
 			MinimumSDK:  group[0].ArtifactMeta.AppInfo.MinimumSDKVersion,
 			PackageName: group[0].ArtifactMeta.AppInfo.PackageName,

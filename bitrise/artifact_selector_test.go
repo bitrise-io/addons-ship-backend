@@ -35,31 +35,27 @@ func Test_ArtifactSelector_PrepareAndroidAppVersions(t *testing.T) {
 			bitrise.ArtifactListElementResponseModel{
 				ArtifactMeta: &bitrise.ArtifactMeta{
 					ProductFlavour: "salty",
-					Module:         "test-module",
 				},
 			},
 			bitrise.ArtifactListElementResponseModel{
 				ArtifactMeta: &bitrise.ArtifactMeta{
 					ProductFlavour: "salty",
-					Module:         "test-module",
 				},
 			},
 			bitrise.ArtifactListElementResponseModel{
 				ArtifactMeta: &bitrise.ArtifactMeta{
 					ProductFlavour: "sweet",
-					Module:         "test-module",
 				},
 			},
 			bitrise.ArtifactListElementResponseModel{
 				ArtifactMeta: &bitrise.ArtifactMeta{
 					ProductFlavour: "sweet",
-					Module:         "test-module",
 				},
 			},
 		}
 		artifactSelector := bitrise.NewArtifactSelector(testArtifacts)
 
-		expectedArtifactInfo := `{"version":"","version_code":"","minimum_os":"","minimum_sdk":"","size":0,"bundle_id":"","supported_device_types":null,"package_name":"","expire_date":"0001-01-01T00:00:00Z","ipa_export_method":"","module":"test-module","build_type":""}`
+		expectedArtifactInfo := `{"version":"","version_code":"","minimum_os":"","minimum_sdk":"","size":0,"bundle_id":"","supported_device_types":null,"package_name":"","expire_date":"0001-01-01T00:00:00Z","ipa_export_method":"","module":"","build_type":""}`
 		appVersions, settingsErr, err := artifactSelector.PrepareAndroidAppVersions(testBuildSlug, testBuildNumber, testCommitMessage, "")
 		require.NoError(t, err)
 		require.NoError(t, settingsErr)
@@ -83,7 +79,7 @@ func Test_ArtifactSelector_PrepareAndroidAppVersions(t *testing.T) {
 		}, appVersions)
 	})
 
-	t.Run("ok", func(t *testing.T) {
+	t.Run("ok - multiple build type", func(t *testing.T) {
 		testArtifacts := []bitrise.ArtifactListElementResponseModel{
 			bitrise.ArtifactListElementResponseModel{
 				ArtifactMeta: &bitrise.ArtifactMeta{
@@ -130,9 +126,96 @@ func Test_ArtifactSelector_PrepareAndroidAppVersions(t *testing.T) {
 				BuildSlug:        testBuildSlug,
 				BuildNumber:      testBuildNumber,
 				CommitMessage:    testCommitMessage,
-				ArtifactInfoData: json.RawMessage(fmt.Sprintf(expectedArtifactInfo, "release, debug")),
+				ArtifactInfoData: json.RawMessage(fmt.Sprintf(expectedArtifactInfo, "debug, release")),
 				ProductFlavour:   "sweet",
 			},
 		}, appVersions)
+	})
+
+	t.Run("ok - multiple module", func(t *testing.T) {
+		testArtifacts := []bitrise.ArtifactListElementResponseModel{
+			bitrise.ArtifactListElementResponseModel{
+				ArtifactMeta: &bitrise.ArtifactMeta{
+					ProductFlavour: "salty",
+					Module:         "test-module-1",
+				},
+			},
+			bitrise.ArtifactListElementResponseModel{
+				ArtifactMeta: &bitrise.ArtifactMeta{
+					ProductFlavour: "salty",
+					Module:         "test-module-2",
+				},
+			},
+			bitrise.ArtifactListElementResponseModel{
+				ArtifactMeta: &bitrise.ArtifactMeta{
+					ProductFlavour: "sweet",
+					Module:         "test-module-1",
+				},
+			},
+			bitrise.ArtifactListElementResponseModel{
+				ArtifactMeta: &bitrise.ArtifactMeta{
+					ProductFlavour: "sweet",
+					Module:         "test-module-2",
+				},
+			},
+		}
+		artifactSelector := bitrise.NewArtifactSelector(testArtifacts)
+
+		expectedArtifactInfo := `{"version":"","version_code":"","minimum_os":"","minimum_sdk":"","size":0,"bundle_id":"","supported_device_types":null,"package_name":"","expire_date":"0001-01-01T00:00:00Z","ipa_export_method":"","module":"test-module-1","build_type":""}`
+		appVersions, settingsErr, err := artifactSelector.PrepareAndroidAppVersions(testBuildSlug, testBuildNumber, testCommitMessage, "test-module-1")
+		require.NoError(t, err)
+		require.NoError(t, settingsErr)
+		compareAppVersionArrays(t, []models.AppVersion{
+			models.AppVersion{
+				Platform:         "android",
+				BuildSlug:        testBuildSlug,
+				BuildNumber:      testBuildNumber,
+				CommitMessage:    testCommitMessage,
+				ArtifactInfoData: json.RawMessage(expectedArtifactInfo),
+				ProductFlavour:   "salty",
+			},
+			models.AppVersion{
+				Platform:         "android",
+				BuildSlug:        testBuildSlug,
+				BuildNumber:      testBuildNumber,
+				CommitMessage:    testCommitMessage,
+				ArtifactInfoData: json.RawMessage(expectedArtifactInfo),
+				ProductFlavour:   "sweet",
+			},
+		}, appVersions)
+	})
+
+	t.Run("error - multiple module - no module set in settings", func(t *testing.T) {
+		testArtifacts := []bitrise.ArtifactListElementResponseModel{
+			bitrise.ArtifactListElementResponseModel{
+				ArtifactMeta: &bitrise.ArtifactMeta{
+					ProductFlavour: "salty",
+					Module:         "test-module-1",
+				},
+			},
+			bitrise.ArtifactListElementResponseModel{
+				ArtifactMeta: &bitrise.ArtifactMeta{
+					ProductFlavour: "salty",
+					Module:         "test-module-2",
+				},
+			},
+			bitrise.ArtifactListElementResponseModel{
+				ArtifactMeta: &bitrise.ArtifactMeta{
+					ProductFlavour: "sweet",
+					Module:         "test-module-1",
+				},
+			},
+			bitrise.ArtifactListElementResponseModel{
+				ArtifactMeta: &bitrise.ArtifactMeta{
+					ProductFlavour: "sweet",
+					Module:         "test-module-2",
+				},
+			},
+		}
+		artifactSelector := bitrise.NewArtifactSelector(testArtifacts)
+		appVersions, settingsErr, err := artifactSelector.PrepareAndroidAppVersions(testBuildSlug, testBuildNumber, testCommitMessage, "")
+		require.NoError(t, err)
+		require.EqualError(t, settingsErr, "No module setting found")
+		require.Nil(t, appVersions)
 	})
 }
