@@ -1,6 +1,7 @@
 package services_test
 
 import (
+	"encoding/json"
 	"net/http"
 	"testing"
 	"time"
@@ -1262,8 +1263,9 @@ func Test_BuildWebhookHandler(t *testing.T) {
 						AppSettingsService: &testAppSettingsService{
 							findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
 								return &models.AppSettings{
-									AndroidWorkflow: "",
-									IosWorkflow:     "some-ios-wf",
+									AndroidWorkflow:     "",
+									AndroidSettingsData: json.RawMessage(`{}`),
+									IosWorkflow:         "some-ios-wf",
 									App: &models.App{
 										BitriseAPIToken: "test-api-token",
 										AppSlug:         "test-app-slug",
@@ -1378,8 +1380,9 @@ func Test_BuildWebhookHandler(t *testing.T) {
 						AppSettingsService: &testAppSettingsService{
 							findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
 								return &models.AppSettings{
-									AndroidWorkflow: "android-wf,android-wf2",
-									IosWorkflow:     "some-ios-wf",
+									AndroidWorkflow:     "android-wf,android-wf2",
+									AndroidSettingsData: json.RawMessage(`{}`),
+									IosWorkflow:         "some-ios-wf",
 									App: &models.App{
 										BitriseAPIToken: "test-api-token",
 										AppSlug:         "test-app-slug",
@@ -1471,8 +1474,9 @@ func Test_BuildWebhookHandler(t *testing.T) {
 						AppSettingsService: &testAppSettingsService{
 							findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
 								return &models.AppSettings{
-									AndroidWorkflow: "",
-									IosWorkflow:     "some-ios-wf",
+									AndroidWorkflow:     "",
+									AndroidSettingsData: json.RawMessage(`{}`),
+									IosWorkflow:         "some-ios-wf",
 									App: &models.App{
 										BitriseAPIToken: "test-api-token",
 										AppSlug:         "test-app-slug",
@@ -1708,8 +1712,9 @@ func Test_BuildWebhookHandler(t *testing.T) {
 						AppSettingsService: &testAppSettingsService{
 							findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
 								return &models.AppSettings{
-									AndroidWorkflow: "",
-									IosWorkflow:     "some-ios-wf",
+									AndroidWorkflow:     "",
+									AndroidSettingsData: json.RawMessage(`{}`),
+									IosWorkflow:         "some-ios-wf",
 									App: &models.App{
 										BitriseAPIToken: "test-api-token",
 										AppSlug:         "test-app-slug",
@@ -1775,8 +1780,9 @@ func Test_BuildWebhookHandler(t *testing.T) {
 						AppSettingsService: &testAppSettingsService{
 							findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
 								return &models.AppSettings{
-									AndroidWorkflow: "",
-									IosWorkflow:     "some-ios-wf",
+									AndroidWorkflow:     "",
+									AndroidSettingsData: json.RawMessage(`{}`),
+									IosWorkflow:         "some-ios-wf",
 									App: &models.App{
 										BitriseAPIToken: "test-api-token",
 										AppSlug:         "test-app-slug",
@@ -1846,8 +1852,9 @@ func Test_BuildWebhookHandler(t *testing.T) {
 						AppSettingsService: &testAppSettingsService{
 							findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
 								return &models.AppSettings{
-									AndroidWorkflow: "",
-									IosWorkflow:     "some-ios-wf",
+									AndroidWorkflow:     "",
+									AndroidSettingsData: json.RawMessage(`{}`),
+									IosWorkflow:         "some-ios-wf",
 									App: &models.App{
 										BitriseAPIToken: "test-api-token",
 										AppSlug:         "test-app-slug",
@@ -1913,8 +1920,9 @@ func Test_BuildWebhookHandler(t *testing.T) {
 						AppSettingsService: &testAppSettingsService{
 							findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
 								return &models.AppSettings{
-									AndroidWorkflow: "",
-									IosWorkflow:     "some-ios-wf",
+									AndroidWorkflow:     "",
+									AndroidSettingsData: json.RawMessage(`{}`),
+									IosWorkflow:         "some-ios-wf",
 									App: &models.App{
 										BitriseAPIToken: "test-api-token",
 										AppSlug:         "test-app-slug",
@@ -1992,8 +2000,9 @@ func Test_BuildWebhookHandler(t *testing.T) {
 						AppSettingsService: &testAppSettingsService{
 							findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
 								return &models.AppSettings{
-									AndroidWorkflow: "",
-									IosWorkflow:     "some-ios-wf",
+									AndroidWorkflow:     "",
+									AndroidSettingsData: json.RawMessage(`{}`),
+									IosWorkflow:         "some-ios-wf",
 									App: &models.App{
 										BitriseAPIToken: "test-api-token",
 										AppSlug:         "test-app-slug",
