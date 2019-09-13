@@ -2,7 +2,6 @@ package services
 
 import (
 	"net/http"
-	"reflect"
 
 	"github.com/bitrise-io/addons-ship-backend/bitrise"
 	"github.com/bitrise-io/addons-ship-backend/env"
@@ -133,7 +132,7 @@ func AppVersionAndroidConfigGetHandler(env *env.AppEnv, w http.ResponseWriter, r
 		return errors.WithStack(err)
 	}
 
-	artifactList, err := newArtifactResponse(env, appVersion.App.BitriseAPIToken, appVersion.App.AppSlug, appVersion.BuildSlug, artifacts)
+	artifactList, err := newArtifactResponse(env, appVersion.App.BitriseAPIToken, appVersion.App.AppSlug, appVersion.BuildSlug, artifacts, androidSettings.Module)
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -165,25 +164,12 @@ func newScreenshotsResponse(screenshotData []models.Screenshot, env *env.AppEnv)
 	return scs, nil
 }
 
-func newArtifactResponse(env *env.AppEnv, apiToken, appSlug, buildSlug string, artifacts []bitrise.ArtifactListElementResponseModel) ([]string, error) {
+func newArtifactResponse(env *env.AppEnv, apiToken, appSlug, buildSlug string, artifacts []bitrise.ArtifactListElementResponseModel, module string) ([]string, error) {
 	artifactURLs := []string{}
-	splitAPKs := checkForSplitAPKs(artifacts)
-	if len(splitAPKs) != 0 {
-		for _, artifact := range splitAPKs {
-			artifactData, err := env.BitriseAPI.GetArtifact(apiToken, appSlug, buildSlug, artifact.Slug)
-			if err != nil {
-				return []string{}, errors.WithStack(err)
-			}
-			if artifactData.DownloadPath == nil {
-				return []string{}, errors.New("Failed to get download URL for artifact")
-			}
-			artifactURLs = append(artifactURLs, *artifactData.DownloadPath)
-		}
-		return artifactURLs, nil
-	}
-	selectedArtifact, _, _, _ := selectAndroidArtifact(artifacts)
-	if selectedArtifact != nil && !reflect.DeepEqual(*selectedArtifact, bitrise.ArtifactListElementResponseModel{}) {
-		artifactData, err := env.BitriseAPI.GetArtifact(apiToken, appSlug, buildSlug, selectedArtifact.Slug)
+	artifactSelector := bitrise.NewArtifactSelector(artifacts)
+	artifactSlugs, err := artifactSelector.Select(module)
+	for _, artifactSlug := range artifactSlugs {
+		artifactData, err := env.BitriseAPI.GetArtifact(apiToken, appSlug, buildSlug, artifactSlug)
 		if err != nil {
 			return []string{}, errors.WithStack(err)
 		}
