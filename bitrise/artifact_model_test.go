@@ -22,16 +22,23 @@ func Test_ArtifactListElementResponseModel_IsIPA(t *testing.T) {
 }
 
 func Test_ArtifactListElementResponseModel_IsAAB(t *testing.T) {
-	require.True(t, bitrise.ArtifactListElementResponseModel{Title: "app.aab"}.IsAAB())
+	require.True(t, bitrise.ArtifactListElementResponseModel{
+		Title:        "app.aab",
+		ArtifactMeta: &bitrise.ArtifactMeta{Aab: "/somewhere/over/the-rainbow/app.aab"}}.IsAAB())
 	require.False(t, bitrise.ArtifactListElementResponseModel{Title: "app.apk"}.IsAAB())
 }
 
-func Test_ArtifactListElementResponseModel_IsAPK(t *testing.T) {
-	require.True(t, bitrise.ArtifactListElementResponseModel{Title: "app.apk"}.IsAPK())
-	require.False(t, bitrise.ArtifactListElementResponseModel{Title: "app.exe"}.IsAPK())
+func Test_ArtifactListElementResponseModel_IsStandaloneAPK(t *testing.T) {
+	require.True(t, bitrise.ArtifactListElementResponseModel{
+		Title:        "app.apk",
+		ArtifactMeta: &bitrise.ArtifactMeta{Apk: "/somewhere/over/the-rainbow/app.apk"}}.IsStandaloneAPK())
+	require.False(t, bitrise.ArtifactListElementResponseModel{Title: "app.apk"}.IsStandaloneAPK())
+	require.False(t, bitrise.ArtifactListElementResponseModel{Title: "app.exe"}.IsStandaloneAPK())
 }
 
 func Test_ArtifactListElementResponseModel_IsUniversalAPK(t *testing.T) {
-	require.True(t, bitrise.ArtifactListElementResponseModel{Title: "app.universal.apk"}.IsUniversalAPK())
+	require.True(t, bitrise.ArtifactListElementResponseModel{
+		Title:        "app.universal.apk",
+		ArtifactMeta: &bitrise.ArtifactMeta{Universal: "/somewhere/over/the-rainbow/app.universal.apk"}}.IsUniversalAPK())
 	require.False(t, bitrise.ArtifactListElementResponseModel{Title: "app.apk"}.IsUniversalAPK())
 }
