@@ -25,29 +25,26 @@ func NewArtifactSelector(artifacts []ArtifactListElementResponseModel) ArtifactS
 // PrepareAndroidAppVersions ...
 func (s *ArtifactSelector) PrepareAndroidAppVersions(buildSlug, buildNumber, buildCommitMessage, module string) ([]models.AppVersion, error, error) {
 	appVersions := []models.AppVersion{}
-	artifacts, settingErr, err := pickArtifactsByModule(s.artifacts, module)
+	artifacts, settingErr := pickArtifactsByModule(s.artifacts, module)
 	if settingErr != nil {
 		return nil, settingErr, nil
 	}
-	if err != nil {
-		return nil, nil, err
-	}
-	flavorGroups := map[string][]ArtifactListElementResponseModel{}
+	flavourGroups := map[string][]ArtifactListElementResponseModel{}
 	for _, artifact := range artifacts {
 		if artifact.ArtifactMeta != nil {
-			flavorGroups[artifact.ArtifactMeta.ProductFlavour] = append(flavorGroups[artifact.ArtifactMeta.ProductFlavour], artifact)
+			flavourGroups[artifact.ArtifactMeta.ProductFlavour] = append(flavourGroups[artifact.ArtifactMeta.ProductFlavour], artifact)
 		} else {
 			return nil, nil, errors.New("No artifact meta data found for artifact")
 		}
 	}
 	groupKeys := []string{}
-	for key := range flavorGroups {
+	for key := range flavourGroups {
 		groupKeys = append(groupKeys, key)
 	}
 	sort.Strings(groupKeys)
 
 	for _, key := range groupKeys {
-		group := flavorGroups[key]
+		group := flavourGroups[key]
 		buildTypeGroups := groupByBuildType(group)
 		keys := []string{}
 		for key := range buildTypeGroups {
@@ -81,6 +78,31 @@ func (s *ArtifactSelector) PrepareAndroidAppVersions(buildSlug, buildNumber, bui
 	return appVersions, nil, nil
 }
 
+// Select ...
+func (s *ArtifactSelector) Select(module string) ([]string, error) {
+	artifactSlugs := []string{}
+	artifacts, settingErr := pickArtifactsByModule(s.artifacts, module)
+	if settingErr != nil {
+		return nil, settingErr
+	}
+	buildTypeGroups := groupByBuildType(artifacts)
+	artifacts = buildTypeGroups["release"]
+	flavourGroups := groupByFlavour(artifacts)
+	for _, group := range flavourGroups {
+		for _, artifact := range group {
+			if artifact.IsStandaloneAPK() || artifact.IsUniversalAPK() || artifact.IsAAB() {
+				artifactSlugs = append(artifactSlugs, artifact.Slug)
+				continue
+			}
+			if len(artifact.ArtifactMeta.Split) > 0 && artifact.ArtifactMeta.Aab == "" {
+				artifactSlugs = append(artifactSlugs, artifact.Slug)
+				continue
+			}
+		}
+	}
+	return artifactSlugs, nil
+}
+
 func groupByBuildType(artifacts []ArtifactListElementResponseModel) map[string][]ArtifactListElementResponseModel {
 	buildTypeGroups := map[string][]ArtifactListElementResponseModel{}
 	for _, artifact := range artifacts {
@@ -88,34 +110,38 @@ func groupByBuildType(artifacts []ArtifactListElementResponseModel) map[string][
 	}
 	return buildTypeGroups
 }
+func groupByFlavour(artifacts []ArtifactListElementResponseModel) map[string][]ArtifactListElementResponseModel {
+	flavourGroups := map[string][]ArtifactListElementResponseModel{}
+	for _, artifact := range artifacts {
+		if artifact.ArtifactMeta != nil {
+			flavourGroups[artifact.ArtifactMeta.ProductFlavour] = append(flavourGroups[artifact.ArtifactMeta.ProductFlavour], artifact)
+		}
+	}
+	return flavourGroups
+}
 
-func groupByModule(artifacts []ArtifactListElementResponseModel) (map[string][]ArtifactListElementResponseModel, error) {
+func groupByModule(artifacts []ArtifactListElementResponseModel) map[string][]ArtifactListElementResponseModel {
 	moduleGroups := map[string][]ArtifactListElementResponseModel{}
 	for _, artifact := range artifacts {
 		if artifact.ArtifactMeta != nil {
 			moduleGroups[artifact.ArtifactMeta.Module] = append(moduleGroups[artifact.ArtifactMeta.Module], artifact)
-		} else {
-			return nil, errors.New("No artifact meta data found for artifact")
 		}
 	}
-	return moduleGroups, nil
+	return moduleGroups
 }
 
-func pickArtifactsByModule(artifacts []ArtifactListElementResponseModel, module string) ([]ArtifactListElementResponseModel, error, error) {
+func pickArtifactsByModule(artifacts []ArtifactListElementResponseModel, module string) ([]ArtifactListElementResponseModel, error) {
 	pickedArtifacts := []ArtifactListElementResponseModel{}
-	moduleGroups, err := groupByModule(artifacts)
-	if err != nil {
-		return nil, nil, errors.WithStack(err)
-	}
+	moduleGroups := groupByModule(artifacts)
 	if len(moduleGroups) == 1 {
 		for key := range moduleGroups {
 			pickedArtifacts = moduleGroups[key]
 			break
 		}
 	} else if len(moduleGroups) > 1 && module == "" {
-		return nil, errors.New("No module setting found"), nil
+		return nil, errors.New("No module setting found")
 	} else if len(moduleGroups) > 1 {
 		pickedArtifacts = moduleGroups[module]
 	}
-	return pickedArtifacts, nil, nil
+	return pickedArtifacts, nil
 }

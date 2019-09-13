@@ -219,3 +219,697 @@ func Test_ArtifactSelector_PrepareAndroidAppVersions(t *testing.T) {
 		require.Nil(t, appVersions)
 	})
 }
+
+func Test_ArtifactSelector_Select(t *testing.T) {
+	for _, tc := range []struct {
+		testName            string
+		artifacts           []bitrise.ArtifactListElementResponseModel
+		moduleName          string
+		expectedSlugs       []string
+		expectedSettingsErr string
+	}{
+		{
+			testName:      "ok - minimal",
+			artifacts:     []bitrise.ArtifactListElementResponseModel{},
+			expectedSlugs: []string{},
+		},
+		{
+			testName: "ok - release build type - standalone apk",
+			artifacts: []bitrise.ArtifactListElementResponseModel{
+				bitrise.ArtifactListElementResponseModel{
+					Title: "my-awesome.apk",
+					Slug:  "test-apk-1",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Apk:            "/bitrise/my-project/my-awesome.apk",
+						ProductFlavour: "",
+						Module:         "",
+						BuildType:      "release",
+					},
+				},
+			},
+			expectedSlugs: []string{"test-apk-1"},
+		},
+		{
+			testName: "ok - debug build type - standalone apk",
+			artifacts: []bitrise.ArtifactListElementResponseModel{
+				bitrise.ArtifactListElementResponseModel{
+					Title: "my-awesome.apk",
+					Slug:  "test-apk-1",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Apk:            "/bitrise/my-project/my-awesome.apk",
+						ProductFlavour: "",
+						Module:         "",
+						BuildType:      "debug",
+					},
+				},
+			},
+			expectedSlugs: []string{},
+		},
+		{
+			testName: "ok - release build type - split apk",
+			artifacts: []bitrise.ArtifactListElementResponseModel{
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-hdpi.apk",
+					Slug:  "test-apk-1",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Apk:            "",
+						Split:          []string{"app-hdpi.apk", "app-mdpi.apk", "app-xhdpi.apk", "app-xxhdpi.apk"},
+						ProductFlavour: "",
+						Module:         "",
+						BuildType:      "release",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-mdpi.apk",
+					Slug:  "test-apk-2",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Apk:            "",
+						Split:          []string{"app-hdpi.apk", "app-mdpi.apk", "app-xhdpi.apk", "app-xxhdpi.apk"},
+						ProductFlavour: "",
+						Module:         "",
+						BuildType:      "release",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-xhdpi.apk",
+					Slug:  "test-apk-3",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Apk:            "",
+						Split:          []string{"app-hdpi.apk", "app-mdpi.apk", "app-xhdpi.apk", "app-xxhdpi.apk"},
+						ProductFlavour: "",
+						Module:         "",
+						BuildType:      "release",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-xxhdpi.apk",
+					Slug:  "test-apk-4",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Apk:            "",
+						Split:          []string{"app-hdpi.apk", "app-mdpi.apk", "app-xhdpi.apk", "app-xxhdpi.apk"},
+						ProductFlavour: "",
+						Module:         "",
+						BuildType:      "release",
+					},
+				},
+			},
+			expectedSlugs: []string{"test-apk-1", "test-apk-2", "test-apk-3", "test-apk-4"},
+		},
+		{
+			testName: "ok - release build type - split apk with universal apk",
+			artifacts: []bitrise.ArtifactListElementResponseModel{
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-hdpi.apk",
+					Slug:  "test-apk-1",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Apk:            "",
+						Split:          []string{"app-hdpi.apk", "app-mdpi.apk", "app-xhdpi.apk", "app-xxhdpi.apk"},
+						ProductFlavour: "",
+						Module:         "",
+						BuildType:      "release",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-mdpi.apk",
+					Slug:  "test-apk-2",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Apk:            "",
+						Split:          []string{"app-hdpi.apk", "app-mdpi.apk", "app-xhdpi.apk", "app-xxhdpi.apk"},
+						ProductFlavour: "",
+						Module:         "",
+						BuildType:      "release",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-xhdpi.apk",
+					Slug:  "test-apk-3",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Apk:            "",
+						Split:          []string{"app-hdpi.apk", "app-mdpi.apk", "app-xhdpi.apk", "app-xxhdpi.apk"},
+						ProductFlavour: "",
+						Module:         "",
+						BuildType:      "release",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-xxhdpi.apk",
+					Slug:  "test-apk-4",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Apk:            "",
+						Split:          []string{"app-hdpi.apk", "app-mdpi.apk", "app-xhdpi.apk", "app-xxhdpi.apk"},
+						ProductFlavour: "",
+						Module:         "",
+						BuildType:      "release",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-hdpi-universal.apk",
+					Slug:  "test-apk-5",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Apk:            "",
+						Split:          []string{"app-hdpi.apk", "app-mdpi.apk", "app-xhdpi.apk", "app-xxhdpi.apk"},
+						ProductFlavour: "",
+						Module:         "",
+						BuildType:      "release",
+						Universal:      "/bitrise/my-project/app-hdpi-universal.apk",
+					},
+				},
+			},
+			expectedSlugs: []string{"test-apk-1", "test-apk-2", "test-apk-3", "test-apk-4", "test-apk-5"},
+		},
+		{
+			testName: "ok - release build type - split apk with aab",
+			artifacts: []bitrise.ArtifactListElementResponseModel{
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-hdpi.apk",
+					Slug:  "test-apk-1",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Aab:            "/bitrise/my-project/app.aab",
+						Apk:            "",
+						Split:          []string{"app-hdpi.apk", "app-mdpi.apk", "app-xhdpi.apk", "app-xxhdpi.apk"},
+						ProductFlavour: "",
+						Module:         "",
+						BuildType:      "release",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-mdpi.apk",
+					Slug:  "test-apk-2",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Aab:            "/bitrise/my-project/app.aab",
+						Apk:            "",
+						Split:          []string{"app-hdpi.apk", "app-mdpi.apk", "app-xhdpi.apk", "app-xxhdpi.apk"},
+						ProductFlavour: "",
+						Module:         "",
+						BuildType:      "release",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-xhdpi.apk",
+					Slug:  "test-apk-3",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Aab:            "/bitrise/my-project/app.aab",
+						Apk:            "",
+						Split:          []string{"app-hdpi.apk", "app-mdpi.apk", "app-xhdpi.apk", "app-xxhdpi.apk"},
+						ProductFlavour: "",
+						Module:         "",
+						BuildType:      "release",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-xxhdpi.apk",
+					Slug:  "test-apk-4",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Aab:            "/bitrise/my-project/app.aab",
+						Apk:            "",
+						Split:          []string{"app-hdpi.apk", "app-mdpi.apk", "app-xhdpi.apk", "app-xxhdpi.apk"},
+						ProductFlavour: "",
+						Module:         "",
+						BuildType:      "release",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app.aab",
+					Slug:  "test-apk-5",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Aab:            "/bitrise/my-project/app.aab",
+						Apk:            "",
+						Split:          []string{"app-hdpi.apk", "app-mdpi.apk", "app-xhdpi.apk", "app-xxhdpi.apk"},
+						ProductFlavour: "",
+						Module:         "",
+						BuildType:      "release",
+					},
+				},
+			},
+			expectedSlugs: []string{"test-apk-5"},
+		},
+		{
+			testName: "ok - release build type - multiple flavour - split apk",
+			artifacts: []bitrise.ArtifactListElementResponseModel{
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-sweet-hdpi.apk",
+					Slug:  "test-apk-1",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Apk:            "",
+						Split:          []string{"app-sweet-hdpi.apk", "app-sweet-mdpi.apk", "app-sweet-xhdpi.apk", "app-sweet-xxhdpi.apk"},
+						ProductFlavour: "sweet",
+						Module:         "",
+						BuildType:      "release",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-sweet-mdpi.apk",
+					Slug:  "test-apk-2",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Apk:            "",
+						Split:          []string{"app-sweet-hdpi.apk", "app-sweet-mdpi.apk", "app-sweet-xhdpi.apk", "app-sweet-xxhdpi.apk"},
+						ProductFlavour: "sweet",
+						Module:         "",
+						BuildType:      "release",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-sweet-xhdpi.apk",
+					Slug:  "test-apk-3",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Apk:            "",
+						Split:          []string{"app-sweet-hdpi.apk", "app-sweet-mdpi.apk", "app-sweet-xhdpi.apk", "app-sweet-xxhdpi.apk"},
+						ProductFlavour: "sweet",
+						Module:         "",
+						BuildType:      "release",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-sweet-xxhdpi.apk",
+					Slug:  "test-apk-4",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Apk:            "",
+						Split:          []string{"app-sweet-hdpi.apk", "app-sweet-mdpi.apk", "app-sweet-xhdpi.apk", "app-sweet-xxhdpi.apk"},
+						ProductFlavour: "sweet",
+						Module:         "",
+						BuildType:      "release",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-salty-hdpi.apk",
+					Slug:  "test-apk-5",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Apk:            "",
+						Split:          []string{"app-salty-hdpi.apk", "app-salty-mdpi.apk", "app-salty-xhdpi.apk", "app-salty-xxhdpi.apk"},
+						ProductFlavour: "salty",
+						Module:         "",
+						BuildType:      "release",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-salty-mdpi.apk",
+					Slug:  "test-apk-6",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Apk:            "",
+						Split:          []string{"app-salty-hdpi.apk", "app-salty-mdpi.apk", "app-salty-xhdpi.apk", "app-salty-xxhdpi.apk"},
+						ProductFlavour: "salty",
+						Module:         "",
+						BuildType:      "release",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-salty-xhdpi.apk",
+					Slug:  "test-apk-7",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Apk:            "",
+						Split:          []string{"app-salty-hdpi.apk", "app-salty-mdpi.apk", "app-salty-xhdpi.apk", "app-salty-xxhdpi.apk"},
+						ProductFlavour: "salty",
+						Module:         "",
+						BuildType:      "release",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-salty-xxhdpi.apk",
+					Slug:  "test-apk-8",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Apk:            "",
+						Split:          []string{"app-salty-hdpi.apk", "app-salty-mdpi.apk", "app-salty-xhdpi.apk", "app-salty-xxhdpi.apk"},
+						ProductFlavour: "salty",
+						Module:         "",
+						BuildType:      "release",
+					},
+				},
+			},
+			expectedSlugs: []string{"test-apk-1", "test-apk-2", "test-apk-3", "test-apk-4", "test-apk-5", "test-apk-6", "test-apk-7", "test-apk-8"},
+		},
+		{
+			testName: "ok - release build type - multiple flavour, multiple module - split apk",
+			artifacts: []bitrise.ArtifactListElementResponseModel{
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-sweet-hdpi.apk",
+					Slug:  "test-apk-1",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Apk:            "",
+						Split:          []string{"app-sweet-hdpi.apk", "app-sweet-mdpi.apk", "app-sweet-xhdpi.apk", "app-sweet-xxhdpi.apk"},
+						ProductFlavour: "sweet",
+						Module:         "module-1",
+						BuildType:      "release",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-sweet-mdpi.apk",
+					Slug:  "test-apk-2",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Apk:            "",
+						Split:          []string{"app-sweet-hdpi.apk", "app-sweet-mdpi.apk", "app-sweet-xhdpi.apk", "app-sweet-xxhdpi.apk"},
+						ProductFlavour: "sweet",
+						Module:         "module-1",
+						BuildType:      "release",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-sweet-xhdpi.apk",
+					Slug:  "test-apk-3",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Apk:            "",
+						Split:          []string{"app-sweet-hdpi.apk", "app-sweet-mdpi.apk", "app-sweet-xhdpi.apk", "app-sweet-xxhdpi.apk"},
+						ProductFlavour: "sweet",
+						Module:         "module-1",
+						BuildType:      "release",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-sweet-xxhdpi.apk",
+					Slug:  "test-apk-4",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Apk:            "",
+						Split:          []string{"app-sweet-hdpi.apk", "app-sweet-mdpi.apk", "app-sweet-xhdpi.apk", "app-sweet-xxhdpi.apk"},
+						ProductFlavour: "sweet",
+						Module:         "module-1",
+						BuildType:      "release",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-salty-hdpi.apk",
+					Slug:  "test-apk-5",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Apk:            "",
+						Split:          []string{"app-salty-hdpi.apk", "app-salty-mdpi.apk", "app-salty-xhdpi.apk", "app-salty-xxhdpi.apk"},
+						ProductFlavour: "salty",
+						Module:         "module-1",
+						BuildType:      "release",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-salty-mdpi.apk",
+					Slug:  "test-apk-6",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Apk:            "",
+						Split:          []string{"app-salty-hdpi.apk", "app-salty-mdpi.apk", "app-salty-xhdpi.apk", "app-salty-xxhdpi.apk"},
+						ProductFlavour: "salty",
+						Module:         "module-1",
+						BuildType:      "release",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-salty-xhdpi.apk",
+					Slug:  "test-apk-7",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Apk:            "",
+						Split:          []string{"app-salty-hdpi.apk", "app-salty-mdpi.apk", "app-salty-xhdpi.apk", "app-salty-xxhdpi.apk"},
+						ProductFlavour: "salty",
+						Module:         "module-1",
+						BuildType:      "release",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-salty-xxhdpi.apk",
+					Slug:  "test-apk-8",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Apk:            "",
+						Split:          []string{"app-salty-hdpi.apk", "app-salty-mdpi.apk", "app-salty-xhdpi.apk", "app-salty-xxhdpi.apk"},
+						ProductFlavour: "salty",
+						Module:         "module-1",
+						BuildType:      "release",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-sweet-hdpi.apk",
+					Slug:  "test-apk-9",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Apk:            "",
+						Split:          []string{"app-sweet-hdpi.apk", "app-sweet-mdpi.apk", "app-sweet-xhdpi.apk", "app-sweet-xxhdpi.apk"},
+						ProductFlavour: "sweet",
+						Module:         "module-2",
+						BuildType:      "release",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-sweet-mdpi.apk",
+					Slug:  "test-apk-10",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Apk:            "",
+						Split:          []string{"app-sweet-hdpi.apk", "app-sweet-mdpi.apk", "app-sweet-xhdpi.apk", "app-sweet-xxhdpi.apk"},
+						ProductFlavour: "sweet",
+						Module:         "module-2",
+						BuildType:      "release",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-sweet-xhdpi.apk",
+					Slug:  "test-apk-11",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Apk:            "",
+						Split:          []string{"app-sweet-hdpi.apk", "app-sweet-mdpi.apk", "app-sweet-xhdpi.apk", "app-sweet-xxhdpi.apk"},
+						ProductFlavour: "sweet",
+						Module:         "module-2",
+						BuildType:      "release",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-sweet-xxhdpi.apk",
+					Slug:  "test-apk-12",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Apk:            "",
+						Split:          []string{"app-sweet-hdpi.apk", "app-sweet-mdpi.apk", "app-sweet-xhdpi.apk", "app-sweet-xxhdpi.apk"},
+						ProductFlavour: "sweet",
+						Module:         "module-2",
+						BuildType:      "release",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-salty-hdpi.apk",
+					Slug:  "test-apk-13",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Apk:            "",
+						Split:          []string{"app-salty-hdpi.apk", "app-salty-mdpi.apk", "app-salty-xhdpi.apk", "app-salty-xxhdpi.apk"},
+						ProductFlavour: "salty",
+						Module:         "module-2",
+						BuildType:      "release",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-salty-mdpi.apk",
+					Slug:  "test-apk-14",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Apk:            "",
+						Split:          []string{"app-salty-hdpi.apk", "app-salty-mdpi.apk", "app-salty-xhdpi.apk", "app-salty-xxhdpi.apk"},
+						ProductFlavour: "salty",
+						Module:         "module-2",
+						BuildType:      "release",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-salty-xhdpi.apk",
+					Slug:  "test-apk-15",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Apk:            "",
+						Split:          []string{"app-salty-hdpi.apk", "app-salty-mdpi.apk", "app-salty-xhdpi.apk", "app-salty-xxhdpi.apk"},
+						ProductFlavour: "salty",
+						Module:         "module-2",
+						BuildType:      "release",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-salty-xxhdpi.apk",
+					Slug:  "test-apk-16",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Apk:            "",
+						Split:          []string{"app-salty-hdpi.apk", "app-salty-mdpi.apk", "app-salty-xhdpi.apk", "app-salty-xxhdpi.apk"},
+						ProductFlavour: "salty",
+						Module:         "module-2",
+						BuildType:      "release",
+					},
+				},
+			},
+			moduleName:    "module-1",
+			expectedSlugs: []string{"test-apk-1", "test-apk-2", "test-apk-3", "test-apk-4", "test-apk-5", "test-apk-6", "test-apk-7", "test-apk-8"},
+		},
+		{
+			testName: "error - release build type - multiple flavour, multiple module - split apk, without module settings",
+			artifacts: []bitrise.ArtifactListElementResponseModel{
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-sweet-hdpi.apk",
+					Slug:  "test-apk-1",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Apk:            "",
+						Split:          []string{"app-sweet-hdpi.apk", "app-sweet-mdpi.apk", "app-sweet-xhdpi.apk", "app-sweet-xxhdpi.apk"},
+						ProductFlavour: "sweet",
+						Module:         "module-1",
+						BuildType:      "release",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-sweet-mdpi.apk",
+					Slug:  "test-apk-2",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Apk:            "",
+						Split:          []string{"app-sweet-hdpi.apk", "app-sweet-mdpi.apk", "app-sweet-xhdpi.apk", "app-sweet-xxhdpi.apk"},
+						ProductFlavour: "sweet",
+						Module:         "module-1",
+						BuildType:      "release",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-sweet-xhdpi.apk",
+					Slug:  "test-apk-3",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Apk:            "",
+						Split:          []string{"app-sweet-hdpi.apk", "app-sweet-mdpi.apk", "app-sweet-xhdpi.apk", "app-sweet-xxhdpi.apk"},
+						ProductFlavour: "sweet",
+						Module:         "module-1",
+						BuildType:      "release",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-sweet-xxhdpi.apk",
+					Slug:  "test-apk-4",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Apk:            "",
+						Split:          []string{"app-sweet-hdpi.apk", "app-sweet-mdpi.apk", "app-sweet-xhdpi.apk", "app-sweet-xxhdpi.apk"},
+						ProductFlavour: "sweet",
+						Module:         "module-1",
+						BuildType:      "release",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-salty-hdpi.apk",
+					Slug:  "test-apk-5",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Apk:            "",
+						Split:          []string{"app-salty-hdpi.apk", "app-salty-mdpi.apk", "app-salty-xhdpi.apk", "app-salty-xxhdpi.apk"},
+						ProductFlavour: "salty",
+						Module:         "module-1",
+						BuildType:      "release",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-salty-mdpi.apk",
+					Slug:  "test-apk-6",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Apk:            "",
+						Split:          []string{"app-salty-hdpi.apk", "app-salty-mdpi.apk", "app-salty-xhdpi.apk", "app-salty-xxhdpi.apk"},
+						ProductFlavour: "salty",
+						Module:         "module-1",
+						BuildType:      "release",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-salty-xhdpi.apk",
+					Slug:  "test-apk-7",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Apk:            "",
+						Split:          []string{"app-salty-hdpi.apk", "app-salty-mdpi.apk", "app-salty-xhdpi.apk", "app-salty-xxhdpi.apk"},
+						ProductFlavour: "salty",
+						Module:         "module-1",
+						BuildType:      "release",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-salty-xxhdpi.apk",
+					Slug:  "test-apk-8",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Apk:            "",
+						Split:          []string{"app-salty-hdpi.apk", "app-salty-mdpi.apk", "app-salty-xhdpi.apk", "app-salty-xxhdpi.apk"},
+						ProductFlavour: "salty",
+						Module:         "module-1",
+						BuildType:      "release",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-sweet-hdpi.apk",
+					Slug:  "test-apk-9",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Apk:            "",
+						Split:          []string{"app-sweet-hdpi.apk", "app-sweet-mdpi.apk", "app-sweet-xhdpi.apk", "app-sweet-xxhdpi.apk"},
+						ProductFlavour: "sweet",
+						Module:         "module-2",
+						BuildType:      "release",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-sweet-mdpi.apk",
+					Slug:  "test-apk-10",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Apk:            "",
+						Split:          []string{"app-sweet-hdpi.apk", "app-sweet-mdpi.apk", "app-sweet-xhdpi.apk", "app-sweet-xxhdpi.apk"},
+						ProductFlavour: "sweet",
+						Module:         "module-2",
+						BuildType:      "release",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-sweet-xhdpi.apk",
+					Slug:  "test-apk-11",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Apk:            "",
+						Split:          []string{"app-sweet-hdpi.apk", "app-sweet-mdpi.apk", "app-sweet-xhdpi.apk", "app-sweet-xxhdpi.apk"},
+						ProductFlavour: "sweet",
+						Module:         "module-2",
+						BuildType:      "release",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-sweet-xxhdpi.apk",
+					Slug:  "test-apk-12",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Apk:            "",
+						Split:          []string{"app-sweet-hdpi.apk", "app-sweet-mdpi.apk", "app-sweet-xhdpi.apk", "app-sweet-xxhdpi.apk"},
+						ProductFlavour: "sweet",
+						Module:         "module-2",
+						BuildType:      "release",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-salty-hdpi.apk",
+					Slug:  "test-apk-13",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Apk:            "",
+						Split:          []string{"app-salty-hdpi.apk", "app-salty-mdpi.apk", "app-salty-xhdpi.apk", "app-salty-xxhdpi.apk"},
+						ProductFlavour: "salty",
+						Module:         "module-2",
+						BuildType:      "release",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-salty-mdpi.apk",
+					Slug:  "test-apk-14",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Apk:            "",
+						Split:          []string{"app-salty-hdpi.apk", "app-salty-mdpi.apk", "app-salty-xhdpi.apk", "app-salty-xxhdpi.apk"},
+						ProductFlavour: "salty",
+						Module:         "module-2",
+						BuildType:      "release",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-salty-xhdpi.apk",
+					Slug:  "test-apk-15",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Apk:            "",
+						Split:          []string{"app-salty-hdpi.apk", "app-salty-mdpi.apk", "app-salty-xhdpi.apk", "app-salty-xxhdpi.apk"},
+						ProductFlavour: "salty",
+						Module:         "module-2",
+						BuildType:      "release",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-salty-xxhdpi.apk",
+					Slug:  "test-apk-16",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Apk:            "",
+						Split:          []string{"app-salty-hdpi.apk", "app-salty-mdpi.apk", "app-salty-xhdpi.apk", "app-salty-xxhdpi.apk"},
+						ProductFlavour: "salty",
+						Module:         "module-2",
+						BuildType:      "release",
+					},
+				},
+			},
+			expectedSettingsErr: "No module setting found",
+		},
+	} {
+		t.Run(tc.testName, func(t *testing.T) {
+			selector := bitrise.NewArtifactSelector(tc.artifacts)
+			selectedSlugs, err := selector.Select(tc.moduleName)
+			if tc.expectedSettingsErr != "" {
+				require.EqualError(t, err, tc.expectedSettingsErr)
+			}
+			require.Equal(t, tc.expectedSlugs, selectedSlugs)
+		})
+	}
+}
