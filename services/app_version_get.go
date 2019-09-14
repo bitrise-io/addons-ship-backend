@@ -24,6 +24,8 @@ type AppVersionGetResponseData struct {
 	PublicInstallPageURL string              `json:"public_install_page_url"`
 	AppStoreInfo         models.AppStoreInfo `json:"app_store_info"`
 	PublishEnabled       bool                `json:"publish_enabled"`
+	Split                bool                `json:"split"`
+	UniversalAvailable   bool                `json:"universal_available"`
 	AppInfo              AppData             `json:"app_info"`
 	IPAExportMethod      string              `json:"ipa_export_method,omitempty"`
 	Version              string              `json:"version"`
@@ -84,14 +86,19 @@ func AppVersionGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Reques
 }
 
 func newArtifactVersionGetResponse(appVersion *models.AppVersion, env *env.AppEnv, artifacts []bitrise.ArtifactListElementResponseModel) (AppVersionGetResponseData, error) {
-	var publishEnabled, publicInstallPageEnabled bool
+	var publishEnabled, publicInstallPageEnabled, androidSplit, androidUniversalAvailable bool
 	var ipaExportMethod string
 	var publicInstallPageArtifactSlug string
 	switch appVersion.Platform {
 	case "ios":
 		_, publishEnabled, publicInstallPageEnabled, ipaExportMethod, publicInstallPageArtifactSlug = selectIosArtifact(artifacts)
 	case "android":
-		_, publishEnabled, publicInstallPageEnabled, publicInstallPageArtifactSlug = selectAndroidArtifact(artifacts)
+		var err error
+		artifactSelector := bitrise.NewArtifactSelector(artifacts)
+		publishEnabled, publicInstallPageEnabled, publicInstallPageArtifactSlug, androidSplit, androidUniversalAvailable, err = artifactSelector.PublishAndShareInfo(appVersion)
+		if err != nil {
+			return AppVersionGetResponseData{}, errors.WithStack(err)
+		}
 	default:
 		return AppVersionGetResponseData{}, errors.Errorf("Invalid platform type of app version: %s", appVersion.Platform)
 	}
@@ -133,6 +140,8 @@ func newArtifactVersionGetResponse(appVersion *models.AppVersion, env *env.AppEn
 		PublicInstallPageURL: artifactPublicInstallPageURL,
 		AppStoreInfo:         appStoreInfo,
 		PublishEnabled:       publishEnabled,
+		Split:                androidSplit,
+		UniversalAvailable:   androidUniversalAvailable,
 		AppInfo:              appData,
 		IPAExportMethod:      ipaExportMethod,
 		Version:              artifactInfo.Version,

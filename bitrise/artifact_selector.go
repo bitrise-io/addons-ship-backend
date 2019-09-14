@@ -2,6 +2,7 @@ package bitrise
 
 import (
 	"encoding/json"
+	"path/filepath"
 	"sort"
 	"strings"
 	"time"
@@ -142,6 +143,19 @@ func (s *ArtifactSelector) PublishAndShareInfo(appVersion *models.AppVersion) (b
 		}
 	}
 	return publishEnabled, publicInstallPageEnabled, publicInstallPageArtifactSlug, split, universalAvailable, nil
+}
+
+// HasAndroidArtifact ...
+func (s *ArtifactSelector) HasAndroidArtifact() bool {
+	for _, artifact := range s.artifacts {
+		ext := filepath.Ext(artifact.Title)
+		for _, androidExt := range []string{".apk", ".aab"} {
+			if ext == androidExt {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func groupByBuildType(artifacts []ArtifactListElementResponseModel) map[string][]ArtifactListElementResponseModel {

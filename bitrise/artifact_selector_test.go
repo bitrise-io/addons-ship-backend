@@ -1138,3 +1138,26 @@ func Test_ArtifactSelector_PublishAndShareInfo(t *testing.T) {
 		})
 	}
 }
+
+func Test_ArtifactSelector_HasAndroidArtifact(t *testing.T) {
+	t.Run("ok when there's apk", func(t *testing.T) {
+		artifactSelector := bitrise.NewArtifactSelector([]bitrise.ArtifactListElementResponseModel{
+			bitrise.ArtifactListElementResponseModel{Title: "app.apk"},
+		})
+		require.True(t, artifactSelector.HasAndroidArtifact())
+	})
+
+	t.Run("ok when there's aab", func(t *testing.T) {
+		artifactSelector := bitrise.NewArtifactSelector([]bitrise.ArtifactListElementResponseModel{
+			bitrise.ArtifactListElementResponseModel{Title: "app.aab"},
+		})
+		require.True(t, artifactSelector.HasAndroidArtifact())
+	})
+
+	t.Run("ok when there's no android artifact", func(t *testing.T) {
+		artifactSelector := bitrise.NewArtifactSelector([]bitrise.ArtifactListElementResponseModel{
+			bitrise.ArtifactListElementResponseModel{Title: "app.ipa"},
+		})
+		require.False(t, artifactSelector.HasAndroidArtifact())
+	})
+}
