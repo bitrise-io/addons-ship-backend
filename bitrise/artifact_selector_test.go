@@ -327,6 +327,7 @@ func Test_ArtifactSelector_Select(t *testing.T) {
 						ProductFlavour: "",
 						Module:         "",
 						BuildType:      "release",
+						Universal:      "/bitrise/my-project/app-hdpi-universal.apk",
 					},
 				},
 				bitrise.ArtifactListElementResponseModel{
@@ -338,6 +339,7 @@ func Test_ArtifactSelector_Select(t *testing.T) {
 						ProductFlavour: "",
 						Module:         "",
 						BuildType:      "release",
+						Universal:      "/bitrise/my-project/app-hdpi-universal.apk",
 					},
 				},
 				bitrise.ArtifactListElementResponseModel{
@@ -349,6 +351,7 @@ func Test_ArtifactSelector_Select(t *testing.T) {
 						ProductFlavour: "",
 						Module:         "",
 						BuildType:      "release",
+						Universal:      "/bitrise/my-project/app-hdpi-universal.apk",
 					},
 				},
 				bitrise.ArtifactListElementResponseModel{
@@ -360,6 +363,7 @@ func Test_ArtifactSelector_Select(t *testing.T) {
 						ProductFlavour: "",
 						Module:         "",
 						BuildType:      "release",
+						Universal:      "/bitrise/my-project/app-hdpi-universal.apk",
 					},
 				},
 				bitrise.ArtifactListElementResponseModel{
@@ -908,8 +912,229 @@ func Test_ArtifactSelector_Select(t *testing.T) {
 			selectedSlugs, err := selector.Select(tc.moduleName)
 			if tc.expectedSettingsErr != "" {
 				require.EqualError(t, err, tc.expectedSettingsErr)
+			} else {
+				require.NoError(t, err)
 			}
 			require.Equal(t, tc.expectedSlugs, selectedSlugs)
+		})
+	}
+}
+
+func Test_ArtifactSelector_PublishAndShareInfo(t *testing.T) {
+	for _, tc := range []struct {
+		testName                              string
+		appVersion                            models.AppVersion
+		artifacts                             []bitrise.ArtifactListElementResponseModel
+		expectedPublishEnabled                bool
+		expectedPublicInstallPageEnabled      bool
+		expectedPublicInstallPageArtifactSlug string
+		expectedSplit                         bool
+		expectedUniversalAvailable            bool
+		expectedErr                           string
+	}{
+		{
+			testName: "ok - build type is release",
+			appVersion: models.AppVersion{
+				ArtifactInfoData: json.RawMessage(`{"build_type":"release"}`),
+			},
+			expectedPublishEnabled: true,
+		},
+		{
+			testName: "ok - build type is debug",
+			appVersion: models.AppVersion{
+				ArtifactInfoData: json.RawMessage(`{"build_type":"debug"}`),
+			},
+			expectedPublishEnabled: false,
+		},
+		{
+			testName: "ok - split without universal",
+			appVersion: models.AppVersion{
+				ProductFlavour:   "sweet",
+				ArtifactInfoData: json.RawMessage(`{"build_type":"release","module":"module-1"}`),
+			},
+			artifacts: []bitrise.ArtifactListElementResponseModel{
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-hdpi.apk",
+					Slug:  "test-apk-1",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Split:          []string{"app-hdpi.apk", "app-mdpi.apk", "app-xhdpi.apk", "app-xxhdpi.apk"},
+						ProductFlavour: "sweet",
+						Module:         "module-1",
+						BuildType:      "release",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-mdpi.apk",
+					Slug:  "test-apk-2",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Split:          []string{"app-hdpi.apk", "app-mdpi.apk", "app-xhdpi.apk", "app-xxhdpi.apk"},
+						ProductFlavour: "sweet",
+						Module:         "module-1",
+						BuildType:      "release",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-xhdpi.apk",
+					Slug:  "test-apk-3",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Split:          []string{"app-hdpi.apk", "app-mdpi.apk", "app-xhdpi.apk", "app-xxhdpi.apk"},
+						ProductFlavour: "sweet",
+						Module:         "module-1",
+						BuildType:      "release",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-xxhdpi.apk",
+					Slug:  "test-apk-4",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Split:          []string{"app-hdpi.apk", "app-mdpi.apk", "app-xhdpi.apk", "app-xxhdpi.apk"},
+						ProductFlavour: "sweet",
+						Module:         "module-1",
+						BuildType:      "release",
+					},
+				},
+			},
+			expectedSplit:                         true,
+			expectedPublicInstallPageEnabled:      false,
+			expectedPublicInstallPageArtifactSlug: "",
+			expectedUniversalAvailable:            false,
+			expectedPublishEnabled:                true,
+		},
+		{
+			testName: "ok - split with universal",
+			appVersion: models.AppVersion{
+				ProductFlavour:   "sweet",
+				ArtifactInfoData: json.RawMessage(`{"build_type":"release","module":"module-1"}`),
+			},
+			artifacts: []bitrise.ArtifactListElementResponseModel{
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-hdpi.apk",
+					Slug:  "test-apk-1",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Split:          []string{"app-hdpi.apk", "app-mdpi.apk", "app-xhdpi.apk", "app-xxhdpi.apk"},
+						ProductFlavour: "sweet",
+						Module:         "module-1",
+						BuildType:      "release",
+						Universal:      "/bitrise/my-project/app-universal.apk",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-mdpi.apk",
+					Slug:  "test-apk-2",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Split:          []string{"app-hdpi.apk", "app-mdpi.apk", "app-xhdpi.apk", "app-xxhdpi.apk"},
+						ProductFlavour: "sweet",
+						Module:         "module-1",
+						BuildType:      "release",
+						Universal:      "/bitrise/my-project/app-universal.apk",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-xhdpi.apk",
+					Slug:  "test-apk-3",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Split:          []string{"app-hdpi.apk", "app-mdpi.apk", "app-xhdpi.apk", "app-xxhdpi.apk"},
+						ProductFlavour: "sweet",
+						Module:         "module-1",
+						BuildType:      "release",
+						Universal:      "/bitrise/my-project/app-universal.apk",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title: "app-xxhdpi.apk",
+					Slug:  "test-apk-4",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Split:          []string{"app-hdpi.apk", "app-mdpi.apk", "app-xhdpi.apk", "app-xxhdpi.apk"},
+						ProductFlavour: "sweet",
+						Module:         "module-1",
+						BuildType:      "release",
+						Universal:      "/bitrise/my-project/app-universal.apk",
+					},
+				},
+				bitrise.ArtifactListElementResponseModel{
+					Title:               "app-universal.apk",
+					IsPublicPageEnabled: true,
+					Slug:                "test-apk-5",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Split:          []string{"app-hdpi.apk", "app-mdpi.apk", "app-xhdpi.apk", "app-xxhdpi.apk"},
+						ProductFlavour: "sweet",
+						Module:         "module-1",
+						BuildType:      "release",
+						Universal:      "/bitrise/my-project/app-universal.apk",
+					},
+				},
+			},
+			expectedSplit:                         true,
+			expectedPublicInstallPageEnabled:      true,
+			expectedPublicInstallPageArtifactSlug: "test-apk-5",
+			expectedUniversalAvailable:            true,
+			expectedPublishEnabled:                true,
+		},
+		{
+			testName: "ok - universal with public install page disabled",
+			appVersion: models.AppVersion{
+				ProductFlavour:   "sweet",
+				ArtifactInfoData: json.RawMessage(`{"build_type":"release","module":"module-1"}`),
+			},
+			artifacts: []bitrise.ArtifactListElementResponseModel{
+				bitrise.ArtifactListElementResponseModel{
+					Title:               "app-universal.apk",
+					IsPublicPageEnabled: false,
+					Slug:                "test-apk-1",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						ProductFlavour: "sweet",
+						Module:         "module-1",
+						BuildType:      "release",
+						Universal:      "/bitrise/my-project/app-universal.apk",
+					},
+				},
+			},
+			expectedSplit:                         false,
+			expectedPublicInstallPageEnabled:      false,
+			expectedPublicInstallPageArtifactSlug: "",
+			expectedUniversalAvailable:            true,
+			expectedPublishEnabled:                true,
+		},
+		{
+			testName: "ok - standalone apk",
+			appVersion: models.AppVersion{
+				ProductFlavour:   "sweet",
+				ArtifactInfoData: json.RawMessage(`{"build_type":"release","module":"module-1"}`),
+			},
+			artifacts: []bitrise.ArtifactListElementResponseModel{
+				bitrise.ArtifactListElementResponseModel{
+					Title:               "app.apk",
+					IsPublicPageEnabled: true,
+					Slug:                "test-apk-1",
+					ArtifactMeta: &bitrise.ArtifactMeta{
+						Apk:            "/bitrise/my-project/app.apk",
+						ProductFlavour: "sweet",
+						Module:         "module-1",
+						BuildType:      "release",
+						Universal:      "",
+					},
+				},
+			},
+			expectedSplit:                         false,
+			expectedPublicInstallPageEnabled:      true,
+			expectedPublicInstallPageArtifactSlug: "test-apk-1",
+			expectedUniversalAvailable:            false,
+			expectedPublishEnabled:                true,
+		},
+	} {
+		t.Run(tc.testName, func(t *testing.T) {
+			selector := bitrise.NewArtifactSelector(tc.artifacts)
+			publishEnabled, publicInstallPageEnabled, publicInstallPageArtifactSlug, split, universalAvailable, err := selector.PublishAndShareInfo(&tc.appVersion)
+			if tc.expectedErr != "" {
+				require.EqualError(t, err, tc.expectedErr)
+			} else {
+				require.NoError(t, err)
+			}
+			require.Equal(t, tc.expectedPublishEnabled, publishEnabled)
+			require.Equal(t, tc.expectedPublicInstallPageEnabled, publicInstallPageEnabled)
+			require.Equal(t, tc.expectedPublicInstallPageArtifactSlug, publicInstallPageArtifactSlug)
+			require.Equal(t, tc.expectedSplit, split)
+			require.Equal(t, tc.expectedUniversalAvailable, universalAvailable)
 		})
 	}
 }

@@ -103,6 +103,47 @@ func (s *ArtifactSelector) Select(module string) ([]string, error) {
 	return artifactSlugs, nil
 }
 
+// PublishAndShareInfo ...
+func (s *ArtifactSelector) PublishAndShareInfo(appVersion *models.AppVersion) (bool, bool, string, bool, bool, error) {
+	publishEnabled := false
+	publicInstallPageEnabled := false
+	publicInstallPageArtifactSlug := ""
+	split := false
+	universalAvailable := false
+	artifactInfo, err := appVersion.ArtifactInfo()
+	if err != nil {
+		return false, false, "", false, false, errors.WithStack(err)
+	}
+	if artifactInfo.BuildType == "release" {
+		publishEnabled = true
+	}
+	for _, artifact := range s.artifacts {
+		if artifact.ArtifactMeta != nil {
+			if artifact.ArtifactMeta.ProductFlavour == appVersion.ProductFlavour &&
+				artifact.ArtifactMeta.BuildType == artifactInfo.BuildType &&
+				artifact.ArtifactMeta.Module == artifactInfo.Module {
+				if artifact.IsUniversalAPK() {
+					universalAvailable = true
+					if artifact.IsPublicPageEnabled {
+						publicInstallPageEnabled = true
+						publicInstallPageArtifactSlug = artifact.Slug
+					}
+				}
+				if artifact.IsStandaloneAPK() {
+					if artifact.IsPublicPageEnabled {
+						publicInstallPageEnabled = true
+						publicInstallPageArtifactSlug = artifact.Slug
+					}
+				}
+				if len(artifact.ArtifactMeta.Split) > 0 {
+					split = true
+				}
+			}
+		}
+	}
+	return publishEnabled, publicInstallPageEnabled, publicInstallPageArtifactSlug, split, universalAvailable, nil
+}
+
 func groupByBuildType(artifacts []ArtifactListElementResponseModel) map[string][]ArtifactListElementResponseModel {
 	buildTypeGroups := map[string][]ArtifactListElementResponseModel{}
 	for _, artifact := range artifacts {
