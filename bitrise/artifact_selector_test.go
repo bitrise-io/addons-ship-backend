@@ -225,6 +225,7 @@ func Test_ArtifactSelector_Select(t *testing.T) {
 		testName            string
 		artifacts           []bitrise.ArtifactListElementResponseModel
 		moduleName          string
+		flavour             string
 		expectedSlugs       []string
 		expectedSettingsErr string
 	}{
@@ -539,7 +540,8 @@ func Test_ArtifactSelector_Select(t *testing.T) {
 					},
 				},
 			},
-			expectedSlugs: []string{"test-apk-1", "test-apk-2", "test-apk-3", "test-apk-4", "test-apk-5", "test-apk-6", "test-apk-7", "test-apk-8"},
+			flavour:       "salty",
+			expectedSlugs: []string{"test-apk-5", "test-apk-6", "test-apk-7", "test-apk-8"},
 		},
 		{
 			testName: "ok - release build type - multiple flavour, multiple module - split apk",
@@ -722,7 +724,8 @@ func Test_ArtifactSelector_Select(t *testing.T) {
 				},
 			},
 			moduleName:    "module-1",
-			expectedSlugs: []string{"test-apk-1", "test-apk-2", "test-apk-3", "test-apk-4", "test-apk-5", "test-apk-6", "test-apk-7", "test-apk-8"},
+			flavour:       "sweet",
+			expectedSlugs: []string{"test-apk-1", "test-apk-2", "test-apk-3", "test-apk-4"},
 		},
 		{
 			testName: "error - release build type - multiple flavour, multiple module - split apk, without module settings",
@@ -909,7 +912,7 @@ func Test_ArtifactSelector_Select(t *testing.T) {
 	} {
 		t.Run(tc.testName, func(t *testing.T) {
 			selector := bitrise.NewArtifactSelector(tc.artifacts)
-			selectedSlugs, err := selector.Select(tc.moduleName)
+			selectedSlugs, err := selector.Select(tc.moduleName, tc.flavour)
 			if tc.expectedSettingsErr != "" {
 				require.EqualError(t, err, tc.expectedSettingsErr)
 			} else {
