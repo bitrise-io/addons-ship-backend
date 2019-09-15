@@ -34,8 +34,6 @@ func (s *ArtifactSelector) PrepareAndroidAppVersions(buildSlug, buildNumber, bui
 	for _, artifact := range artifacts {
 		if artifact.ArtifactMeta != nil {
 			flavourGroups[artifact.ArtifactMeta.ProductFlavour] = append(flavourGroups[artifact.ArtifactMeta.ProductFlavour], artifact)
-		} else {
-			return nil, nil, errors.New("No artifact meta data found for artifact")
 		}
 	}
 	groupKeys := []string{}

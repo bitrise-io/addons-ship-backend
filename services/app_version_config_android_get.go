@@ -168,6 +168,9 @@ func newArtifactResponse(env *env.AppEnv, apiToken, appSlug, buildSlug string, a
 	artifactURLs := []string{}
 	artifactSelector := bitrise.NewArtifactSelector(artifacts)
 	artifactSlugs, err := artifactSelector.Select(module)
+	if err != nil {
+		return []string{}, errors.WithStack(err)
+	}
 	for _, artifactSlug := range artifactSlugs {
 		artifactData, err := env.BitriseAPI.GetArtifact(apiToken, appSlug, buildSlug, artifactSlug)
 		if err != nil {
