@@ -78,7 +78,7 @@ func (s *ArtifactSelector) PrepareAndroidAppVersions(buildSlug, buildNumber, bui
 }
 
 // Select ...
-func (s *ArtifactSelector) Select(module string) ([]string, error) {
+func (s *ArtifactSelector) Select(module, flavour string) ([]string, error) {
 	artifactSlugs := []string{}
 	artifacts, settingErr := pickArtifactsByModule(s.artifacts, module)
 	if settingErr != nil {
@@ -87,18 +87,18 @@ func (s *ArtifactSelector) Select(module string) ([]string, error) {
 	buildTypeGroups := groupByBuildType(artifacts)
 	artifacts = buildTypeGroups["release"]
 	flavourGroups := groupByFlavour(artifacts)
-	for _, group := range flavourGroups {
-		for _, artifact := range group {
-			if artifact.IsStandaloneAPK() || artifact.IsUniversalAPK() || artifact.IsAAB() {
-				artifactSlugs = append(artifactSlugs, artifact.Slug)
-				continue
-			}
-			if len(artifact.ArtifactMeta.Split) > 0 && artifact.ArtifactMeta.Aab == "" {
-				artifactSlugs = append(artifactSlugs, artifact.Slug)
-				continue
-			}
+	selectedGroup := flavourGroups[flavour]
+	for _, artifact := range selectedGroup {
+		if artifact.IsStandaloneAPK() || artifact.IsUniversalAPK() || artifact.IsAAB() {
+			artifactSlugs = append(artifactSlugs, artifact.Slug)
+			continue
+		}
+		if len(artifact.ArtifactMeta.Split) > 0 && artifact.ArtifactMeta.Aab == "" {
+			artifactSlugs = append(artifactSlugs, artifact.Slug)
+			continue
 		}
 	}
+
 	return artifactSlugs, nil
 }
 
