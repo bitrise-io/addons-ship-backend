@@ -167,7 +167,15 @@ func BuildWebhookHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request
 
 			appVersions, settingsErr, err := artifactSelector.PrepareAndroidAppVersions(params.BuildSlug, fmt.Sprintf("%d", params.BuildNumber), buildDetails.CommitMessage, androidSettings.Module)
 			if settingsErr != nil {
-				// update error on app
+				app.AndroidErrors = []string{settingsErr.Error()}
+				verrs, err := env.AppService.Update(app, []string{"AndroidErrors"})
+				if len(verrs) > 0 {
+					return httpresponse.RespondWithUnprocessableEntity(w, verrs)
+				}
+				if err != nil {
+					return errors.Wrap(err, "SQL Error")
+				}
+
 				return httpresponse.RespondWithUnprocessableEntity(w, []error{settingsErr})
 			}
 			if err != nil {
@@ -207,6 +215,17 @@ func BuildWebhookHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request
 
 				if err := sendNotification(env, appVersion, app, appDetails); err != nil {
 					return errors.WithStack(err)
+				}
+
+				if len(app.AndroidErrors) > 0 {
+					app.AndroidErrors = []string{}
+					verrs, err = env.AppService.Update(app, []string{"AndroidErrors"})
+					if len(verrs) > 0 {
+						return httpresponse.RespondWithUnprocessableEntity(w, verrs)
+					}
+					if err != nil {
+						return errors.Wrap(err, "SQL Error")
+					}
 				}
 			}
 		}
