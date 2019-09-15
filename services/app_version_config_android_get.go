@@ -132,7 +132,7 @@ func AppVersionAndroidConfigGetHandler(env *env.AppEnv, w http.ResponseWriter, r
 		return errors.WithStack(err)
 	}
 
-	artifactList, err := newArtifactResponse(env, appVersion.App.BitriseAPIToken, appVersion.App.AppSlug, appVersion.BuildSlug, artifacts, androidSettings.Module)
+	artifactList, err := newArtifactResponse(env, appVersion.App.BitriseAPIToken, appVersion.App.AppSlug, appVersion.BuildSlug, artifacts, androidSettings.Module, appVersion.ProductFlavour)
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -164,10 +164,10 @@ func newScreenshotsResponse(screenshotData []models.Screenshot, env *env.AppEnv)
 	return scs, nil
 }
 
-func newArtifactResponse(env *env.AppEnv, apiToken, appSlug, buildSlug string, artifacts []bitrise.ArtifactListElementResponseModel, module string) ([]string, error) {
+func newArtifactResponse(env *env.AppEnv, apiToken, appSlug, buildSlug string, artifacts []bitrise.ArtifactListElementResponseModel, module, flavour string) ([]string, error) {
 	artifactURLs := []string{}
 	artifactSelector := bitrise.NewArtifactSelector(artifacts)
-	artifactSlugs, err := artifactSelector.Select(module)
+	artifactSlugs, err := artifactSelector.Select(module, flavour)
 	if err != nil {
 		return []string{}, errors.WithStack(err)
 	}
