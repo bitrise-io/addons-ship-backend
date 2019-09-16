@@ -38,6 +38,11 @@ type ArtifactMeta struct {
 	Module           string           `json:"module"`
 	ProductFlavour   string           `json:"product_flavour"`
 	BuildType        string           `json:"build_type"`
+	Include          bool             `json:"include"`
+	Universal        string           `json:"universal"`
+	Aab              string           `json:"aab"`
+	Apk              string           `json:"apk"`
+	Split            []string         `json:"split"`
 }
 
 // ArtifactData ...
@@ -112,15 +117,24 @@ func (a ArtifactListElementResponseModel) IsXCodeArchive() bool {
 
 // IsAAB ...
 func (a ArtifactListElementResponseModel) IsAAB() bool {
-	return filepath.Ext(a.Title) == ".aab"
+	if a.ArtifactMeta == nil {
+		return false
+	}
+	return filepath.Base(a.ArtifactMeta.Aab) == a.Title
 }
 
-// IsAPK ...
-func (a ArtifactListElementResponseModel) IsAPK() bool {
-	return filepath.Ext(a.Title) == ".apk"
+// IsStandaloneAPK ...
+func (a ArtifactListElementResponseModel) IsStandaloneAPK() bool {
+	if a.ArtifactMeta == nil {
+		return false
+	}
+	return filepath.Base(a.ArtifactMeta.Apk) == a.Title
 }
 
 // IsUniversalAPK ...
 func (a ArtifactListElementResponseModel) IsUniversalAPK() bool {
-	return strings.Contains(strings.ToLower(a.Title), "universal") && a.IsAPK()
+	if a.ArtifactMeta == nil {
+		return false
+	}
+	return filepath.Base(a.ArtifactMeta.Universal) == a.Title
 }

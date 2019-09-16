@@ -183,7 +183,14 @@ func Test_AppVersionAndroidConfigGetHandler(t *testing.T) {
 						require.Equal(t, "test-app-slug", appSlug)
 						require.Equal(t, "test-api-token", apiToken)
 						return []bitrise.ArtifactListElementResponseModel{
-							bitrise.ArtifactListElementResponseModel{Title: "app.aab", Slug: "test-artifact-slug"},
+							bitrise.ArtifactListElementResponseModel{
+								Title: "app.aab",
+								Slug:  "test-artifact-slug",
+								ArtifactMeta: &bitrise.ArtifactMeta{
+									Aab:       "/bitrise/my-project/app.aab",
+									BuildType: "release",
+								},
+							},
 						}, nil
 					},
 					getArtifactFn: func(apiToken, appSlug, buildSlug, artifactSlug string) (*bitrise.ArtifactShowResponseItemModel, error) {
@@ -313,13 +320,17 @@ func Test_AppVersionAndroidConfigGetHandler(t *testing.T) {
 							bitrise.ArtifactListElementResponseModel{
 								Title: "app-armeabi-my-awesome-app.apk", Slug: "test-artifact-slug-1",
 								ArtifactMeta: &bitrise.ArtifactMeta{
-									AppInfo: bitrise.AppInfo{AppName: "My Awesome app", VersionName: "1.0", PackageName: "my.package"},
+									AppInfo:   bitrise.AppInfo{AppName: "My Awesome app", VersionName: "1.0", PackageName: "my.package"},
+									BuildType: "release",
+									Split:     []string{"app-armeabi-my-awesome-app.apk", "app-x86-my-awesome-app.apk"},
 								},
 							},
 							bitrise.ArtifactListElementResponseModel{
 								Title: "app-x86-my-awesome-app.apk", Slug: "test-artifact-slug-2",
 								ArtifactMeta: &bitrise.ArtifactMeta{
-									AppInfo: bitrise.AppInfo{AppName: "My Awesome app", VersionName: "1.0", PackageName: "my.package"},
+									AppInfo:   bitrise.AppInfo{AppName: "My Awesome app", VersionName: "1.0", PackageName: "my.package"},
+									BuildType: "release",
+									Split:     []string{"app-armeabi-my-awesome-app.apk", "app-x86-my-awesome-app.apk"},
 								},
 							},
 						}, nil
@@ -1145,7 +1156,14 @@ func Test_AppVersionAndroidConfigGetHandler(t *testing.T) {
 					},
 					getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
 						return []bitrise.ArtifactListElementResponseModel{
-							bitrise.ArtifactListElementResponseModel{Title: "app.aab", Slug: "test-artifact-slug"},
+							bitrise.ArtifactListElementResponseModel{
+								Title: "app.aab",
+								Slug:  "test-artifact-slug",
+								ArtifactMeta: &bitrise.ArtifactMeta{
+									Aab:       "/bitrise/my-project/app.aab",
+									BuildType: "release",
+								},
+							},
 						}, nil
 					},
 					getArtifactFn: func(apiToken, appSlug, buildSlug, artifactSlug string) (*bitrise.ArtifactShowResponseItemModel, error) {
@@ -1217,13 +1235,17 @@ func Test_AppVersionAndroidConfigGetHandler(t *testing.T) {
 							bitrise.ArtifactListElementResponseModel{
 								Title: "app-armeabi-my-awesome-app.apk", Slug: "test-artifact-slug-1",
 								ArtifactMeta: &bitrise.ArtifactMeta{
-									AppInfo: bitrise.AppInfo{AppName: "My Awesome app", VersionName: "1.0", PackageName: "my.package"},
+									AppInfo:   bitrise.AppInfo{AppName: "My Awesome app", VersionName: "1.0", PackageName: "my.package"},
+									BuildType: "release",
+									Split:     []string{"app-armeabi-my-awesome-app.apk", "app-x86-my-awesome-app.apk"},
 								},
 							},
 							bitrise.ArtifactListElementResponseModel{
 								Title: "app-x86-my-awesome-app.apk", Slug: "test-artifact-slug-2",
 								ArtifactMeta: &bitrise.ArtifactMeta{
-									AppInfo: bitrise.AppInfo{AppName: "My Awesome app", VersionName: "1.0", PackageName: "my.package"},
+									AppInfo:   bitrise.AppInfo{AppName: "My Awesome app", VersionName: "1.0", PackageName: "my.package"},
+									BuildType: "release",
+									Split:     []string{"app-armeabi-my-awesome-app.apk", "app-x86-my-awesome-app.apk"},
 								},
 							},
 						}, nil
@@ -1294,7 +1316,14 @@ func Test_AppVersionAndroidConfigGetHandler(t *testing.T) {
 					},
 					getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
 						return []bitrise.ArtifactListElementResponseModel{
-							bitrise.ArtifactListElementResponseModel{Title: "app.aab", Slug: "test-artifact-slug"},
+							bitrise.ArtifactListElementResponseModel{
+								Title: "app.aab",
+								Slug:  "test-artifact-slug",
+								ArtifactMeta: &bitrise.ArtifactMeta{
+									Aab:       "/bitrise/my-project/app.aab",
+									BuildType: "release",
+								},
+							},
 						}, nil
 					},
 					getArtifactFn: func(apiToken, appSlug, buildSlug, artifactSlug string) (*bitrise.ArtifactShowResponseItemModel, error) {
@@ -1366,13 +1395,17 @@ func Test_AppVersionAndroidConfigGetHandler(t *testing.T) {
 							bitrise.ArtifactListElementResponseModel{
 								Title: "app-armeabi-my-awesome-app.apk", Slug: "test-artifact-slug-1",
 								ArtifactMeta: &bitrise.ArtifactMeta{
-									AppInfo: bitrise.AppInfo{AppName: "My Awesome app", VersionName: "1.0", PackageName: "my.package"},
+									AppInfo:   bitrise.AppInfo{AppName: "My Awesome app", VersionName: "1.0", PackageName: "my.package"},
+									BuildType: "release",
+									Split:     []string{"app-armeabi-my-awesome-app.apk", "app-x86-my-awesome-app.apk"},
 								},
 							},
 							bitrise.ArtifactListElementResponseModel{
 								Title: "app-x86-my-awesome-app.apk", Slug: "test-artifact-slug-2",
 								ArtifactMeta: &bitrise.ArtifactMeta{
-									AppInfo: bitrise.AppInfo{AppName: "My Awesome app", VersionName: "1.0", PackageName: "my.package"},
+									AppInfo:   bitrise.AppInfo{AppName: "My Awesome app", VersionName: "1.0", PackageName: "my.package"},
+									BuildType: "release",
+									Split:     []string{"app-armeabi-my-awesome-app.apk", "app-x86-my-awesome-app.apk"},
 								},
 							},
 						}, nil

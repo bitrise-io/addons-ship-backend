@@ -24,6 +24,8 @@ type AppVersionGetResponseData struct {
 	PublicInstallPageURL string              `json:"public_install_page_url"`
 	AppStoreInfo         models.AppStoreInfo `json:"app_store_info"`
 	PublishEnabled       bool                `json:"publish_enabled"`
+	Split                bool                `json:"split"`
+	UniversalAvailable   bool                `json:"universal_available"`
 	AppInfo              AppData             `json:"app_info"`
 	IPAExportMethod      string              `json:"ipa_export_method,omitempty"`
 	Version              string              `json:"version"`
@@ -87,11 +89,20 @@ func newArtifactVersionGetResponse(appVersion *models.AppVersion, env *env.AppEn
 	var publishEnabled, publicInstallPageEnabled bool
 	var ipaExportMethod string
 	var publicInstallPageArtifactSlug string
+	var publishAndShareInfo bitrise.PublishAndShareInfo
 	switch appVersion.Platform {
 	case "ios":
 		_, publishEnabled, publicInstallPageEnabled, ipaExportMethod, publicInstallPageArtifactSlug = selectIosArtifact(artifacts)
 	case "android":
-		_, publishEnabled, publicInstallPageEnabled, publicInstallPageArtifactSlug = selectAndroidArtifact(artifacts)
+		var err error
+		artifactSelector := bitrise.NewArtifactSelector(artifacts)
+		publishAndShareInfo, err = artifactSelector.PublishAndShareInfo(appVersion)
+		if err != nil {
+			return AppVersionGetResponseData{}, errors.WithStack(err)
+		}
+		publishEnabled = publishAndShareInfo.PublishEnabled
+		publicInstallPageEnabled = publishAndShareInfo.PublicInstallPageEnabled
+		publicInstallPageArtifactSlug = publishAndShareInfo.PublicInstallPageArtifactSlug
 	default:
 		return AppVersionGetResponseData{}, errors.Errorf("Invalid platform type of app version: %s", appVersion.Platform)
 	}
@@ -133,6 +144,8 @@ func newArtifactVersionGetResponse(appVersion *models.AppVersion, env *env.AppEn
 		PublicInstallPageURL: artifactPublicInstallPageURL,
 		AppStoreInfo:         appStoreInfo,
 		PublishEnabled:       publishEnabled,
+		Split:                publishAndShareInfo.Split,
+		UniversalAvailable:   publishAndShareInfo.UniversalAvailable,
 		AppInfo:              appData,
 		IPAExportMethod:      ipaExportMethod,
 		Version:              artifactInfo.Version,

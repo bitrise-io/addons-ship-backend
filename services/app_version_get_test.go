@@ -586,7 +586,8 @@ func Test_AppVersionGetHandler(t *testing.T) {
 						getArtifactsFn: func(string, string, string) ([]bitrise.ArtifactListElementResponseModel, error) {
 							return []bitrise.ArtifactListElementResponseModel{
 								bitrise.ArtifactListElementResponseModel{
-									Title: "my-awesome-app.aab",
+									Title: "app.apk",
+									Slug:  "test-apk-slug",
 									ArtifactMeta: &bitrise.ArtifactMeta{
 										AppInfo: bitrise.AppInfo{},
 									},
@@ -604,10 +605,9 @@ func Test_AppVersionGetHandler(t *testing.T) {
 				expectedStatusCode: http.StatusOK,
 				expectedResponse: services.AppVersionGetResponse{
 					Data: services.AppVersionGetResponseData{
-						AppVersion:     &models.AppVersion{Platform: "android"},
-						PublishEnabled: true,
-						PackageName:    "test.package",
-						VersionCode:    "abc123",
+						AppVersion:  &models.AppVersion{Platform: "android"},
+						PackageName: "test.package",
+						VersionCode: "abc123",
 					},
 				},
 			})
@@ -625,7 +625,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 							return &models.AppVersion{
 								App:              models.App{},
 								AppStoreInfoData: json.RawMessage(`{}`),
-								ArtifactInfoData: json.RawMessage(`{"module":"test-module","build_type":"test-build-type"}`),
+								ArtifactInfoData: json.RawMessage(`{"module":"test-module","build_type":"release"}`),
 								Platform:         "android",
 								ProductFlavour:   "test-product-flavour",
 							}, nil
@@ -635,9 +635,15 @@ func Test_AppVersionGetHandler(t *testing.T) {
 						getArtifactsFn: func(string, string, string) ([]bitrise.ArtifactListElementResponseModel, error) {
 							return []bitrise.ArtifactListElementResponseModel{
 								bitrise.ArtifactListElementResponseModel{
-									Title: "my-awesome-app-universal.apk",
+									Title:               "app-universal.apk",
+									Slug:                "test-artifact-slug",
+									IsPublicPageEnabled: true,
 									ArtifactMeta: &bitrise.ArtifactMeta{
-										AppInfo: bitrise.AppInfo{},
+										AppInfo:        bitrise.AppInfo{},
+										BuildType:      "release",
+										Module:         "test-module",
+										ProductFlavour: "test-product-flavour",
+										Universal:      "/bitrise/my-awesome-projcet/app-universal.apk",
 									},
 								},
 							}, nil
@@ -655,10 +661,11 @@ func Test_AppVersionGetHandler(t *testing.T) {
 					Data: services.AppVersionGetResponseData{
 						AppVersion:           &models.AppVersion{Platform: "android"},
 						PublicInstallPageURL: "http://don.t.go.there",
-						PublishEnabled:       false,
+						PublishEnabled:       true,
 						Module:               "test-module",
 						ProductFlavour:       "test-product-flavour",
-						BuildType:            "test-build-type",
+						BuildType:            "release",
+						UniversalAvailable:   true,
 					},
 				},
 			})
@@ -708,7 +715,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 					AppVersionService: &testAppVersionService{
 						findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
 							require.Equal(t, appVersion.ID.String(), "de438ddc-98e5-4226-a5f4-fd2d53474879")
-							return &models.AppVersion{App: models.App{}, Platform: "android"}, nil
+							return &models.AppVersion{App: models.App{}, Platform: "android", ArtifactInfoData: json.RawMessage(`{}`)}, nil
 						},
 					},
 					BitriseAPI: &testBitriseAPI{
@@ -740,7 +747,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 					AppVersionService: &testAppVersionService{
 						findFn: func(appVersion *models.AppVersion) (*models.AppVersion, error) {
 							require.Equal(t, appVersion.ID.String(), "de438ddc-98e5-4226-a5f4-fd2d53474879")
-							return &models.AppVersion{App: models.App{}, Platform: "android"}, nil
+							return &models.AppVersion{App: models.App{}, Platform: "android", ArtifactInfoData: json.RawMessage(`{}`)}, nil
 						},
 					},
 					BitriseAPI: &testBitriseAPI{

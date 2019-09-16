@@ -157,13 +157,14 @@ func BuildWebhookHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request
 			}
 		}
 
+		artifactSelector := bitrise.NewArtifactSelector(artifacts)
 		workflowInWhitelist = params.BuildTriggeredWorkflow != "" && strings.Contains(appSettings.AndroidWorkflow, params.BuildTriggeredWorkflow)
-		if (appSettings.AndroidWorkflow == "" || workflowInWhitelist) && hasAndroidArtifact(artifacts) {
+		if (appSettings.AndroidWorkflow == "" || workflowInWhitelist) && artifactSelector.HasAndroidArtifact() {
 			androidSettings, err := appSettings.AndroidSettings()
 			if err != nil {
 				return errors.WithStack(err)
 			}
-			artifactSelector := bitrise.NewArtifactSelector(artifacts)
+
 			appVersions, settingsErr, err := artifactSelector.PrepareAndroidAppVersions(params.BuildSlug, fmt.Sprintf("%d", params.BuildNumber), buildDetails.CommitMessage, androidSettings.Module)
 			if settingsErr != nil {
 				app.AndroidErrors = []string{settingsErr.Error()}
