@@ -9,6 +9,10 @@ import (
 	"github.com/pkg/errors"
 )
 
+const (
+	setCookieExpirationDuration = 1000 * 1000 * 1000 * 60 * 60 * 8
+)
+
 // LoginPostHandler ...
 func LoginPostHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request) error {
 	authorizedAppID, err := GetAuthorizedAppIDFromContext(r.Context())
@@ -23,6 +27,14 @@ func LoginPostHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request) e
 	if err != nil {
 		return errors.Wrap(err, "SQL Error")
 	}
+
+	expire := env.TimeService.Now().Add(setCookieExpirationDuration)
+	cookie := http.Cookie{
+		Name:    "api-token",
+		Value:   app.APIToken,
+		Expires: expire,
+	}
+	http.SetCookie(w, &cookie)
 
 	redirectURL := fmt.Sprintf("%s/apps/%s", env.AddonFrontendHostURL, app.AppSlug)
 	http.Redirect(w, r, redirectURL, http.StatusMovedPermanently)

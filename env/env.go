@@ -56,6 +56,7 @@ type AppEnv struct {
 	SsoTokenVerifier       security.SsoTokenVerifierInterface
 	BitriseAPIRootURL      *url.URL
 	AnalyticsClient        analytics.Interface
+	TimeService            dataservices.TimeInterface
 }
 
 // New ...
@@ -150,6 +151,8 @@ func New(db *gorm.DB) (*AppEnv, error) {
 		env.Logger.Warn("Failed to create analytics client", zap.Error(err))
 	}
 	env.AnalyticsClient = &analyticsClient
+
+	env.TimeService = &models.TimeService{}
 
 	return env, nil
 }

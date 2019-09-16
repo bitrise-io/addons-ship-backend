@@ -3,6 +3,7 @@ package services_test
 import (
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/bitrise-io/addons-ship-backend/env"
 	"github.com/bitrise-io/addons-ship-backend/models"
@@ -49,9 +50,15 @@ func Test_LoginPostHandler(t *testing.T) {
 						return app, nil
 					},
 				},
+				TimeService: &testTimeService{
+					nowFn: func() time.Time {
+						return time.Date(2019, 3, 5, 0, 0, 0, 0, time.UTC)
+					},
+				},
 			},
 			expectedStatusCode:       http.StatusMovedPermanently,
 			expectedResponseLocation: "http://ship.bitrise.io/apps/test-app-slug",
+			expectedSetCookie:        "api-token=test-app-api-token; Expires=Tue, 05 Mar 2019 08:00:00 GMT",
 		})
 	})
 

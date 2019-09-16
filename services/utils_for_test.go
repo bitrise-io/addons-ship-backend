@@ -23,6 +23,7 @@ type ControllerTestCase struct {
 	expectedStatusCode       int
 	expectedResponse         interface{}
 	expectedResponseLocation string
+	expectedSetCookie        string
 	expectedInternalErr      string
 
 	contextElements map[ctxpkg.RequestContextKey]interface{}
@@ -68,6 +69,11 @@ func performControllerTest(t *testing.T,
 		redirectLocationURL, err := rr.Result().Location()
 		require.NoError(t, err)
 		require.Equal(t, tc.expectedResponseLocation, redirectLocationURL.String())
+	}
+
+	if tc.expectedSetCookie != "" {
+		setCookie := rr.Header().Get("Set-Cookie")
+		require.Equal(t, tc.expectedSetCookie, setCookie)
 	}
 
 	if tc.expectedResponse != nil {
