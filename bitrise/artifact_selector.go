@@ -153,8 +153,8 @@ func (s *ArtifactSelector) PublishAndShareInfo(appVersion *models.AppVersion) (P
 		PublishEnabled:                publishEnabled,
 		PublicInstallPageEnabled:      publicInstallPageEnabled,
 		PublicInstallPageArtifactSlug: publicInstallPageArtifactSlug,
-		Split:              split,
-		UniversalAvailable: universalAvailable,
+		Split:                         split,
+		UniversalAvailable:            universalAvailable,
 	}, nil
 }
 
@@ -207,7 +207,7 @@ func pickArtifactsByModule(artifacts []ArtifactListElementResponseModel, module 
 			break
 		}
 	} else if len(moduleGroups) > 1 && module == "" {
-		return nil, errors.New("No module setting found")
+		return nil, errors.New("Multiple modules found, but none was selected in the settings")
 	} else if len(moduleGroups) > 1 {
 		pickedArtifacts = moduleGroups[module]
 	}
