@@ -9,6 +9,10 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
+const (
+	maxCharNumberForEmail = 254
+)
+
 // NotificationPreferences ...
 type NotificationPreferences struct {
 	NewVersion        bool `json:"new_version"`
@@ -52,6 +56,9 @@ func (a *AppContact) BeforeSave(scope *gorm.Scope) error {
 
 func (a *AppContact) validate(scope *gorm.Scope) error {
 	var err error
+	if len(a.Email) > maxCharNumberForEmail {
+		err = scope.DB().AddError(NewValidationError("email: Too long"))
+	}
 	ev := EmailVerifier{Email: a.Email}
 	if !ev.Verify() {
 		err = scope.DB().AddError(NewValidationError("email: Wrong format"))

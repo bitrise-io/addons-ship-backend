@@ -41,6 +41,17 @@ func Test_AppContactService_Create(t *testing.T) {
 		require.EqualError(t, verrs[0], "email: Wrong format")
 		require.Nil(t, createdAppContact)
 	})
+
+	t.Run("when email is too long", func(t *testing.T) {
+		appContactService := models.AppContactService{DB: dataservices.GetDB()}
+		testAppContact := &models.AppContact{Email: "123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-1234@bitrise.io"}
+
+		createdAppContact, verrs, err := appContactService.Create(testAppContact)
+		require.NoError(t, err)
+		require.Len(t, verrs, 1)
+		require.EqualError(t, verrs[0], "email: Too long")
+		require.Nil(t, createdAppContact)
+	})
 }
 
 func Test_AppContactService_Find(t *testing.T) {
