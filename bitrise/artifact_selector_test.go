@@ -215,7 +215,7 @@ func Test_ArtifactSelector_PrepareAndroidAppVersions(t *testing.T) {
 		artifactSelector := bitrise.NewArtifactSelector(testArtifacts)
 		appVersions, settingsErr, err := artifactSelector.PrepareAndroidAppVersions(testBuildSlug, testBuildNumber, testCommitMessage, "")
 		require.NoError(t, err)
-		require.EqualError(t, settingsErr, "No module setting found")
+		require.EqualError(t, settingsErr, "Multiple modules found, but none was selected in the settings")
 		require.Nil(t, appVersions)
 	})
 }
@@ -907,7 +907,7 @@ func Test_ArtifactSelector_Select(t *testing.T) {
 					},
 				},
 			},
-			expectedSettingsErr: "No module setting found",
+			expectedSettingsErr: "Multiple modules found, but none was selected in the settings",
 		},
 	} {
 		t.Run(tc.testName, func(t *testing.T) {
@@ -998,8 +998,8 @@ func Test_ArtifactSelector_PublishAndShareInfo(t *testing.T) {
 				},
 			},
 			expectedPublishAndShareInfo: bitrise.PublishAndShareInfo{
-				PublishEnabled: true,
-				Split:          true,
+				PublishEnabled:                true,
+				Split:                         true,
 				PublicInstallPageEnabled:      false,
 				PublicInstallPageArtifactSlug: "",
 				UniversalAvailable:            false,
@@ -1070,8 +1070,8 @@ func Test_ArtifactSelector_PublishAndShareInfo(t *testing.T) {
 				},
 			},
 			expectedPublishAndShareInfo: bitrise.PublishAndShareInfo{
-				PublishEnabled: true,
-				Split:          true,
+				PublishEnabled:                true,
+				Split:                         true,
 				PublicInstallPageEnabled:      true,
 				PublicInstallPageArtifactSlug: "test-apk-5",
 				UniversalAvailable:            true,
@@ -1097,8 +1097,8 @@ func Test_ArtifactSelector_PublishAndShareInfo(t *testing.T) {
 				},
 			},
 			expectedPublishAndShareInfo: bitrise.PublishAndShareInfo{
-				PublishEnabled: true,
-				Split:          false,
+				PublishEnabled:                true,
+				Split:                         false,
 				PublicInstallPageEnabled:      false,
 				PublicInstallPageArtifactSlug: "",
 				UniversalAvailable:            true,
@@ -1125,8 +1125,8 @@ func Test_ArtifactSelector_PublishAndShareInfo(t *testing.T) {
 				},
 			},
 			expectedPublishAndShareInfo: bitrise.PublishAndShareInfo{
-				PublishEnabled: true,
-				Split:          false,
+				PublishEnabled:                true,
+				Split:                         false,
 				PublicInstallPageEnabled:      true,
 				PublicInstallPageArtifactSlug: "test-apk-1",
 				UniversalAvailable:            false,
