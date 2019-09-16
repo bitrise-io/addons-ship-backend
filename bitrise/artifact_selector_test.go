@@ -925,29 +925,29 @@ func Test_ArtifactSelector_Select(t *testing.T) {
 
 func Test_ArtifactSelector_PublishAndShareInfo(t *testing.T) {
 	for _, tc := range []struct {
-		testName                              string
-		appVersion                            models.AppVersion
-		artifacts                             []bitrise.ArtifactListElementResponseModel
-		expectedPublishEnabled                bool
-		expectedPublicInstallPageEnabled      bool
-		expectedPublicInstallPageArtifactSlug string
-		expectedSplit                         bool
-		expectedUniversalAvailable            bool
-		expectedErr                           string
+		testName                    string
+		appVersion                  models.AppVersion
+		artifacts                   []bitrise.ArtifactListElementResponseModel
+		expectedPublishAndShareInfo bitrise.PublishAndShareInfo
+		expectedErr                 string
 	}{
 		{
 			testName: "ok - build type is release",
 			appVersion: models.AppVersion{
 				ArtifactInfoData: json.RawMessage(`{"build_type":"release"}`),
 			},
-			expectedPublishEnabled: true,
+			expectedPublishAndShareInfo: bitrise.PublishAndShareInfo{
+				PublishEnabled: true,
+			},
 		},
 		{
 			testName: "ok - build type is debug",
 			appVersion: models.AppVersion{
 				ArtifactInfoData: json.RawMessage(`{"build_type":"debug"}`),
 			},
-			expectedPublishEnabled: false,
+			expectedPublishAndShareInfo: bitrise.PublishAndShareInfo{
+				PublishEnabled: false,
+			},
 		},
 		{
 			testName: "ok - split without universal",
@@ -997,11 +997,13 @@ func Test_ArtifactSelector_PublishAndShareInfo(t *testing.T) {
 					},
 				},
 			},
-			expectedSplit:                         true,
-			expectedPublicInstallPageEnabled:      false,
-			expectedPublicInstallPageArtifactSlug: "",
-			expectedUniversalAvailable:            false,
-			expectedPublishEnabled:                true,
+			expectedPublishAndShareInfo: bitrise.PublishAndShareInfo{
+				PublishEnabled: true,
+				Split:          true,
+				PublicInstallPageEnabled:      false,
+				PublicInstallPageArtifactSlug: "",
+				UniversalAvailable:            false,
+			},
 		},
 		{
 			testName: "ok - split with universal",
@@ -1067,11 +1069,13 @@ func Test_ArtifactSelector_PublishAndShareInfo(t *testing.T) {
 					},
 				},
 			},
-			expectedSplit:                         true,
-			expectedPublicInstallPageEnabled:      true,
-			expectedPublicInstallPageArtifactSlug: "test-apk-5",
-			expectedUniversalAvailable:            true,
-			expectedPublishEnabled:                true,
+			expectedPublishAndShareInfo: bitrise.PublishAndShareInfo{
+				PublishEnabled: true,
+				Split:          true,
+				PublicInstallPageEnabled:      true,
+				PublicInstallPageArtifactSlug: "test-apk-5",
+				UniversalAvailable:            true,
+			},
 		},
 		{
 			testName: "ok - universal with public install page disabled",
@@ -1092,11 +1096,13 @@ func Test_ArtifactSelector_PublishAndShareInfo(t *testing.T) {
 					},
 				},
 			},
-			expectedSplit:                         false,
-			expectedPublicInstallPageEnabled:      false,
-			expectedPublicInstallPageArtifactSlug: "",
-			expectedUniversalAvailable:            true,
-			expectedPublishEnabled:                true,
+			expectedPublishAndShareInfo: bitrise.PublishAndShareInfo{
+				PublishEnabled: true,
+				Split:          false,
+				PublicInstallPageEnabled:      false,
+				PublicInstallPageArtifactSlug: "",
+				UniversalAvailable:            true,
+			},
 		},
 		{
 			testName: "ok - standalone apk",
@@ -1118,26 +1124,24 @@ func Test_ArtifactSelector_PublishAndShareInfo(t *testing.T) {
 					},
 				},
 			},
-			expectedSplit:                         false,
-			expectedPublicInstallPageEnabled:      true,
-			expectedPublicInstallPageArtifactSlug: "test-apk-1",
-			expectedUniversalAvailable:            false,
-			expectedPublishEnabled:                true,
+			expectedPublishAndShareInfo: bitrise.PublishAndShareInfo{
+				PublishEnabled: true,
+				Split:          false,
+				PublicInstallPageEnabled:      true,
+				PublicInstallPageArtifactSlug: "test-apk-1",
+				UniversalAvailable:            false,
+			},
 		},
 	} {
 		t.Run(tc.testName, func(t *testing.T) {
 			selector := bitrise.NewArtifactSelector(tc.artifacts)
-			publishEnabled, publicInstallPageEnabled, publicInstallPageArtifactSlug, split, universalAvailable, err := selector.PublishAndShareInfo(&tc.appVersion)
+			publishAndShareInfo, err := selector.PublishAndShareInfo(&tc.appVersion)
 			if tc.expectedErr != "" {
 				require.EqualError(t, err, tc.expectedErr)
 			} else {
 				require.NoError(t, err)
 			}
-			require.Equal(t, tc.expectedPublishEnabled, publishEnabled)
-			require.Equal(t, tc.expectedPublicInstallPageEnabled, publicInstallPageEnabled)
-			require.Equal(t, tc.expectedPublicInstallPageArtifactSlug, publicInstallPageArtifactSlug)
-			require.Equal(t, tc.expectedSplit, split)
-			require.Equal(t, tc.expectedUniversalAvailable, universalAvailable)
+			require.Equal(t, tc.expectedPublishAndShareInfo, publishAndShareInfo)
 		})
 	}
 }

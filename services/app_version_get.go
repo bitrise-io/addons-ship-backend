@@ -86,19 +86,23 @@ func AppVersionGetHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Reques
 }
 
 func newArtifactVersionGetResponse(appVersion *models.AppVersion, env *env.AppEnv, artifacts []bitrise.ArtifactListElementResponseModel) (AppVersionGetResponseData, error) {
-	var publishEnabled, publicInstallPageEnabled, androidSplit, androidUniversalAvailable bool
+	var publishEnabled, publicInstallPageEnabled bool
 	var ipaExportMethod string
 	var publicInstallPageArtifactSlug string
+	var publishAndShareInfo bitrise.PublishAndShareInfo
 	switch appVersion.Platform {
 	case "ios":
 		_, publishEnabled, publicInstallPageEnabled, ipaExportMethod, publicInstallPageArtifactSlug = selectIosArtifact(artifacts)
 	case "android":
 		var err error
 		artifactSelector := bitrise.NewArtifactSelector(artifacts)
-		publishEnabled, publicInstallPageEnabled, publicInstallPageArtifactSlug, androidSplit, androidUniversalAvailable, err = artifactSelector.PublishAndShareInfo(appVersion)
+		publishAndShareInfo, err = artifactSelector.PublishAndShareInfo(appVersion)
 		if err != nil {
 			return AppVersionGetResponseData{}, errors.WithStack(err)
 		}
+		publishEnabled = publishAndShareInfo.PublishEnabled
+		publicInstallPageEnabled = publishAndShareInfo.PublicInstallPageEnabled
+		publicInstallPageArtifactSlug = publishAndShareInfo.PublicInstallPageArtifactSlug
 	default:
 		return AppVersionGetResponseData{}, errors.Errorf("Invalid platform type of app version: %s", appVersion.Platform)
 	}
@@ -140,8 +144,8 @@ func newArtifactVersionGetResponse(appVersion *models.AppVersion, env *env.AppEn
 		PublicInstallPageURL: artifactPublicInstallPageURL,
 		AppStoreInfo:         appStoreInfo,
 		PublishEnabled:       publishEnabled,
-		Split:                androidSplit,
-		UniversalAvailable:   androidUniversalAvailable,
+		Split:                publishAndShareInfo.Split,
+		UniversalAvailable:   publishAndShareInfo.UniversalAvailable,
 		AppInfo:              appData,
 		IPAExportMethod:      ipaExportMethod,
 		Version:              artifactInfo.Version,

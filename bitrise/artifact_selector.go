@@ -16,6 +16,15 @@ type ArtifactSelector struct {
 	artifacts []ArtifactListElementResponseModel
 }
 
+// PublishAndShareInfo ...
+type PublishAndShareInfo struct {
+	PublishEnabled                bool
+	PublicInstallPageEnabled      bool
+	PublicInstallPageArtifactSlug string
+	Split                         bool
+	UniversalAvailable            bool
+}
+
 // NewArtifactSelector ...
 func NewArtifactSelector(artifacts []ArtifactListElementResponseModel) ArtifactSelector {
 	return ArtifactSelector{
@@ -103,7 +112,7 @@ func (s *ArtifactSelector) Select(module, flavour string) ([]string, error) {
 }
 
 // PublishAndShareInfo ...
-func (s *ArtifactSelector) PublishAndShareInfo(appVersion *models.AppVersion) (bool, bool, string, bool, bool, error) {
+func (s *ArtifactSelector) PublishAndShareInfo(appVersion *models.AppVersion) (PublishAndShareInfo, error) {
 	publishEnabled := false
 	publicInstallPageEnabled := false
 	publicInstallPageArtifactSlug := ""
@@ -111,7 +120,7 @@ func (s *ArtifactSelector) PublishAndShareInfo(appVersion *models.AppVersion) (b
 	universalAvailable := false
 	artifactInfo, err := appVersion.ArtifactInfo()
 	if err != nil {
-		return false, false, "", false, false, errors.WithStack(err)
+		return PublishAndShareInfo{}, errors.WithStack(err)
 	}
 	if artifactInfo.BuildType == "release" {
 		publishEnabled = true
@@ -140,7 +149,13 @@ func (s *ArtifactSelector) PublishAndShareInfo(appVersion *models.AppVersion) (b
 			}
 		}
 	}
-	return publishEnabled, publicInstallPageEnabled, publicInstallPageArtifactSlug, split, universalAvailable, nil
+	return PublishAndShareInfo{
+		PublishEnabled:                publishEnabled,
+		PublicInstallPageEnabled:      publicInstallPageEnabled,
+		PublicInstallPageArtifactSlug: publicInstallPageArtifactSlug,
+		Split:              split,
+		UniversalAvailable: universalAvailable,
+	}, nil
 }
 
 // HasAndroidArtifact ...
