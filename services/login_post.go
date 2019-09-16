@@ -24,7 +24,7 @@ func LoginPostHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request) e
 		return errors.Wrap(err, "SQL Error")
 	}
 
-	redirectURL := fmt.Sprintf("%s/apps/%s?token=%s", env.AddonFrontendHostURL, app.AppSlug, app.APIToken)
+	redirectURL := fmt.Sprintf("%s/apps/%s", env.AddonFrontendHostURL, app.AppSlug)
 	http.Redirect(w, r, redirectURL, http.StatusMovedPermanently)
 	return nil
 }

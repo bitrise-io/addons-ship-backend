@@ -10,7 +10,7 @@ import (
 	ctxpkg "github.com/bitrise-io/api-utils/context"
 	"github.com/c2fo/testify/require"
 	"github.com/jinzhu/gorm"
-	"github.com/satori/go.uuid"
+	uuid "github.com/satori/go.uuid"
 )
 
 func Test_LoginPostHandler(t *testing.T) {
@@ -51,7 +51,7 @@ func Test_LoginPostHandler(t *testing.T) {
 				},
 			},
 			expectedStatusCode:       http.StatusMovedPermanently,
-			expectedResponseLocation: "http://ship.bitrise.io/apps/test-app-slug?token=test-app-api-token",
+			expectedResponseLocation: "http://ship.bitrise.io/apps/test-app-slug",
 		})
 	})
 
