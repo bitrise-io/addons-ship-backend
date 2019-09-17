@@ -30,33 +30,34 @@ const (
 
 // AppEnv ...
 type AppEnv struct {
-	Port                   string
-	Environment            string
-	AddonAccessToken       string
-	AddonHostURL           string
-	AddonFrontendHostURL   string
-	Logger                 *zap.Logger
-	AppService             dataservices.AppService
-	AppContactService      dataservices.AppContactService
-	AppVersionService      dataservices.AppVersionService
-	ScreenshotService      dataservices.ScreenshotService
-	FeatureGraphicService  dataservices.FeatureGraphicService
-	AppSettingsService     dataservices.AppSettingsService
-	AppVersionEventService dataservices.AppVersionEventService
-	PublishTaskService     dataservices.PublishTaskService
-	BitriseAPI             bitrise.APIInterface
-	RequestParams          providers.RequestParamsInterface
-	AWS                    providers.AWSInterface
-	Redis                  redis.Interface
-	RedisExpirationTime    int
-	LogStoreService        dataservices.LogStore
-	WorkerService          dataservices.WorkerService
-	Mailer                 mailer.Interface
-	EmailConfirmLandingURL string
-	SsoTokenVerifier       security.SsoTokenVerifierInterface
-	BitriseAPIRootURL      *url.URL
-	AnalyticsClient        analytics.Interface
-	TimeService            dataservices.TimeInterface
+	Port                     string
+	Environment              string
+	AddonAccessToken         string
+	AddonHostURL             string
+	AddonFrontendHostURL     string
+	AddonAuthSetCookieDomain string
+	Logger                   *zap.Logger
+	AppService               dataservices.AppService
+	AppContactService        dataservices.AppContactService
+	AppVersionService        dataservices.AppVersionService
+	ScreenshotService        dataservices.ScreenshotService
+	FeatureGraphicService    dataservices.FeatureGraphicService
+	AppSettingsService       dataservices.AppSettingsService
+	AppVersionEventService   dataservices.AppVersionEventService
+	PublishTaskService       dataservices.PublishTaskService
+	BitriseAPI               bitrise.APIInterface
+	RequestParams            providers.RequestParamsInterface
+	AWS                      providers.AWSInterface
+	Redis                    redis.Interface
+	RedisExpirationTime      int
+	LogStoreService          dataservices.LogStore
+	WorkerService            dataservices.WorkerService
+	Mailer                   mailer.Interface
+	EmailConfirmLandingURL   string
+	SsoTokenVerifier         security.SsoTokenVerifierInterface
+	BitriseAPIRootURL        *url.URL
+	AnalyticsClient          analytics.Interface
+	TimeService              dataservices.TimeInterface
 }
 
 // New ...
@@ -82,6 +83,10 @@ func New(db *gorm.DB) (*AppEnv, error) {
 	env.AddonFrontendHostURL, ok = os.LookupEnv("ADDON_FRONTEND_HOST_URL")
 	if !ok {
 		return nil, errors.New("No value set for env ADDON_FRONTEND_HOST_URL")
+	}
+	env.AddonAuthSetCookieDomain, ok = os.LookupEnv("ADDON_AUTH_SET_COOKIE_DOMAIN")
+	if !ok {
+		return nil, errors.New("No value set for env ADDON_AUTH_SET_COOKIE_DOMAIN")
 	}
 	env.Logger = logging.WithContext(nil)
 	env.AppService = &models.AppService{DB: db}

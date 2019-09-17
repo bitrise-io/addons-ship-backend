@@ -34,6 +34,7 @@ func LoginPostHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request) e
 		Name:    "api-token",
 		Value:   app.APIToken,
 		Expires: expire,
+		Domain:  env.AddonAuthSetCookieDomain,
 	}
 	http.SetCookie(w, &cookie)
 
