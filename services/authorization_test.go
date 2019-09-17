@@ -452,12 +452,22 @@ func Test_AuthorizeForAddonAPIAccessHandlerFunc(t *testing.T) {
 		handler := services.AuthorizeForAddonAPIAccessHandlerFunc(&env.AppEnv{
 			AppService: &testAppService{
 				findFn: func(app *models.App) (*models.App, error) {
-					require.Equal(t, app.APIToken, "test-auth-token")
+					require.Equal(t, app.APIToken, "auth-token-from-jwt")
 					return &models.App{
 						Record:   models.Record{ID: uuid.FromStringOrNil("211afc15-127a-40f9-8cbe-1dadc1f86cdf")},
 						AppSlug:  "test_app_slug",
-						APIToken: "test-auth-token",
+						APIToken: "auth-token-from-jwt",
 					}, nil
+				},
+			},
+			JWTService: &security.JWTMock{
+				VerifyFn: func(token string) (bool, error) {
+					require.Equal(t, "test-auth-token", token)
+					return true, nil
+				},
+				GetTokenFn: func(token string) (interface{}, error) {
+					require.Equal(t, "test-auth-token", token)
+					return "auth-token-from-jwt", nil
 				},
 			},
 		}, authHandler)
@@ -519,8 +529,16 @@ func Test_AuthorizeForAddonAPIAccessHandlerFunc(t *testing.T) {
 		handler := services.AuthorizeForAddonAPIAccessHandlerFunc(&env.AppEnv{
 			AppService: &testAppService{
 				findFn: func(app *models.App) (*models.App, error) {
-					require.Equal(t, app.APIToken, "test-auth-token")
+					require.Equal(t, "auth-token-from-jwt", app.APIToken)
 					return &models.App{}, gorm.ErrRecordNotFound
+				},
+			},
+			JWTService: &security.JWTMock{
+				VerifyFn: func(token string) (bool, error) {
+					return true, nil
+				},
+				GetTokenFn: func(token string) (interface{}, error) {
+					return "auth-token-from-jwt", nil
 				},
 			},
 		}, authHandler)
@@ -542,8 +560,16 @@ func Test_AuthorizeForAddonAPIAccessHandlerFunc(t *testing.T) {
 		handler := services.AuthorizeForAddonAPIAccessHandlerFunc(&env.AppEnv{
 			AppService: &testAppService{
 				findFn: func(app *models.App) (*models.App, error) {
-					require.Equal(t, app.APIToken, "test-auth-token")
+					require.Equal(t, "auth-token-from-jwt", app.APIToken)
 					return &models.App{}, errors.New("SOME-SQL-ERROR")
+				},
+			},
+			JWTService: &security.JWTMock{
+				VerifyFn: func(token string) (bool, error) {
+					return true, nil
+				},
+				GetTokenFn: func(token string) (interface{}, error) {
+					return "auth-token-from-jwt", nil
 				},
 			},
 		}, authHandler)

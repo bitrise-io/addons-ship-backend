@@ -121,7 +121,22 @@ func AuthorizeForAddonAPIAccessHandlerFunc(env *env.AppEnv, h http.Handler) http
 			return
 		}
 
-		app, err := env.AppService.Find(&models.App{APIToken: authToken})
+		valid, err := env.JWTService.Verify(authToken)
+		if err != nil {
+			httpresponse.RespondWithInternalServerError(w, errors.Wrap(err, "Failed to validate token"))
+			return
+		}
+		if !valid {
+			httpresponse.RespondWithUnauthorizedNoErr(w)
+			return
+		}
+		token, err := env.JWTService.GetToken(authToken)
+		if err != nil {
+			httpresponse.RespondWithInternalServerError(w, errors.Wrap(err, "Failed to get token"))
+			return
+		}
+
+		app, err := env.AppService.Find(&models.App{APIToken: fmt.Sprintf("%s", token)})
 		switch {
 		case errors.Cause(err) == gorm.ErrRecordNotFound:
 			httpresponse.RespondWithNotFoundErrorNoErr(w)

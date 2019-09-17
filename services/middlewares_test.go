@@ -101,7 +101,18 @@ func Test_AuthorizedAppResourceMiddleware(t *testing.T) {
 		Middleware: services.AuthorizedAppResourceMiddleware(&env.AppEnv{
 			AppService: &testAppService{
 				findFn: func(app *models.App) (*models.App, error) {
+					require.Equal(t, "auth-token-from-jwt", app.APIToken)
 					return app, nil
+				},
+			},
+			JWTService: &security.JWTMock{
+				VerifyFn: func(token string) (bool, error) {
+					require.Equal(t, "ADDON_AUTH_TOKEN", token)
+					return true, nil
+				},
+				GetTokenFn: func(token string) (interface{}, error) {
+					require.Equal(t, "ADDON_AUTH_TOKEN", token)
+					return "auth-token-from-jwt", nil
 				},
 			},
 		}),
