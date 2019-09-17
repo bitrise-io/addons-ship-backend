@@ -11,6 +11,7 @@ import (
 	"github.com/bitrise-io/api-utils/handlers"
 	"github.com/bitrise-io/api-utils/httpresponse"
 	"github.com/bitrise-io/api-utils/providers"
+	"github.com/bitrise-io/api-utils/security"
 	"github.com/bitrise-io/go-crypto/crypto"
 	"github.com/bitrise-io/go-utils/envutil"
 	"github.com/c2fo/testify/require"
@@ -211,12 +212,22 @@ func Test_AuthorizeForAppAccessHandlerFunc(t *testing.T) {
 			AppService: &testAppService{
 				findFn: func(app *models.App) (*models.App, error) {
 					require.Equal(t, app.AppSlug, "test_app_slug")
-					require.Equal(t, app.APIToken, "test-auth-token")
+					require.Equal(t, app.APIToken, "auth-token-from-jwt")
 					return &models.App{
 						Record:   models.Record{ID: uuid.FromStringOrNil("211afc15-127a-40f9-8cbe-1dadc1f86cdf")},
 						AppSlug:  "test_app_slug",
 						APIToken: "test-auth-token",
 					}, nil
+				},
+			},
+			JWTService: &security.JWTMock{
+				VerifyFn: func(token string) (bool, error) {
+					require.Equal(t, "test-auth-token", token)
+					return true, nil
+				},
+				GetTokenFn: func(token string) (interface{}, error) {
+					require.Equal(t, "test-auth-token", token)
+					return "auth-token-from-jwt", nil
 				},
 			},
 		}, authHandler)
@@ -330,6 +341,14 @@ func Test_AuthorizeForAppAccessHandlerFunc(t *testing.T) {
 					"app-slug": "test_app_slug",
 				},
 			},
+			JWTService: &security.JWTMock{
+				VerifyFn: func(token string) (bool, error) {
+					return true, nil
+				},
+				GetTokenFn: func(token string) (interface{}, error) {
+					return "auth-token-from-jwt", nil
+				},
+			},
 		}, authHandler)
 		performAuthorizationTest(t, httpMethod, url, handler, AuthorizationTestCase{
 			contextElements: map[ctxpkg.RequestContextKey]interface{}{
@@ -355,8 +374,16 @@ func Test_AuthorizeForAppAccessHandlerFunc(t *testing.T) {
 			AppService: &testAppService{
 				findFn: func(app *models.App) (*models.App, error) {
 					require.Equal(t, app.AppSlug, "test_app_slug")
-					require.Equal(t, app.APIToken, "test-auth-token")
+					require.Equal(t, app.APIToken, "auth-token-from-jwt")
 					return &models.App{}, gorm.ErrRecordNotFound
+				},
+			},
+			JWTService: &security.JWTMock{
+				VerifyFn: func(token string) (bool, error) {
+					return true, nil
+				},
+				GetTokenFn: func(token string) (interface{}, error) {
+					return "auth-token-from-jwt", nil
 				},
 			},
 		}, authHandler)
@@ -384,8 +411,16 @@ func Test_AuthorizeForAppAccessHandlerFunc(t *testing.T) {
 			AppService: &testAppService{
 				findFn: func(app *models.App) (*models.App, error) {
 					require.Equal(t, app.AppSlug, "test_app_slug")
-					require.Equal(t, app.APIToken, "test-auth-token")
+					require.Equal(t, app.APIToken, "auth-token-from-jwt")
 					return &models.App{}, errors.New("SOME-SQL-ERROR")
+				},
+			},
+			JWTService: &security.JWTMock{
+				VerifyFn: func(token string) (bool, error) {
+					return true, nil
+				},
+				GetTokenFn: func(token string) (interface{}, error) {
+					return "auth-token-from-jwt", nil
 				},
 			},
 		}, authHandler)

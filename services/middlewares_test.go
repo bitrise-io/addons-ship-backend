@@ -77,6 +77,14 @@ func Test_AuthorizedAppMiddleware(t *testing.T) {
 					return app, nil
 				},
 			},
+			JWTService: &security.JWTMock{
+				VerifyFn: func(token string) (bool, error) {
+					return true, nil
+				},
+				GetTokenFn: func(token string) (interface{}, error) {
+					return "auth-token-from-jwt", nil
+				},
+			},
 		}),
 	})
 }
@@ -126,6 +134,14 @@ func Test_AuthorizedAppVersionMiddleware(t *testing.T) {
 					return appVersion, nil
 				},
 			},
+			JWTService: &security.JWTMock{
+				VerifyFn: func(token string) (bool, error) {
+					return true, nil
+				},
+				GetTokenFn: func(token string) (interface{}, error) {
+					return "auth-token-from-jwt", nil
+				},
+			},
 		}),
 	})
 }
@@ -160,6 +176,14 @@ func Test_AuthorizedAppVersionScreenshotMiddleware(t *testing.T) {
 			ScreenshotService: &testScreenshotService{
 				findFn: func(screenshot *models.Screenshot) (*models.Screenshot, error) {
 					return screenshot, nil
+				},
+			},
+			JWTService: &security.JWTMock{
+				VerifyFn: func(token string) (bool, error) {
+					return true, nil
+				},
+				GetTokenFn: func(token string) (interface{}, error) {
+					return "auth-token-from-jwt", nil
 				},
 			},
 		}),
@@ -237,6 +261,14 @@ func Test_AuthorizedAppContactMiddleware(t *testing.T) {
 			AppContactService: &testAppContactService{
 				findFn: func(appContact *models.AppContact) (*models.AppContact, error) {
 					return appContact, nil
+				},
+			},
+			JWTService: &security.JWTMock{
+				VerifyFn: func(token string) (bool, error) {
+					return true, nil
+				},
+				GetTokenFn: func(token string) (interface{}, error) {
+					return "auth-token-from-jwt", nil
 				},
 			},
 		}),
