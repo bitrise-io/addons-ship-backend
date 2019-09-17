@@ -6,7 +6,7 @@ require (
 	github.com/GeertJohan/go.rice v1.0.0
 	github.com/aws/aws-sdk-go v1.19.34
 	github.com/bitrise-io/addons-firebase-testlab v0.0.0-20190904083442-e0102763f65e
-	github.com/bitrise-io/api-utils v0.0.0-20190808122146-bb54c0d943b1
+	github.com/bitrise-io/api-utils v0.0.0-20190916132118-1bb756b9b3f0
 	github.com/bitrise-io/go-crypto v0.0.0-20190716130036-2cb4b060f33a
 	github.com/bitrise-io/go-utils v0.0.0-20190507082533-8898129615c9
 	github.com/c2fo/testify v0.0.0-20150827203832-fba96363964a
