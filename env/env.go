@@ -58,6 +58,7 @@ type AppEnv struct {
 	BitriseAPIRootURL        *url.URL
 	AnalyticsClient          analytics.Interface
 	TimeService              dataservices.TimeInterface
+	JWTService               security.JWTInterface
 }
 
 // New ...
@@ -158,6 +159,19 @@ func New(db *gorm.DB) (*AppEnv, error) {
 	env.AnalyticsClient = &analyticsClient
 
 	env.TimeService = &models.TimeService{}
+	jwtPublilcKey, ok := os.LookupEnv("JWT_PUBLIC_KEY")
+	if !ok {
+		return nil, errors.New("No JWT_PUBLIC_KEY env var defined")
+	}
+	jwtPrivateKey, ok := os.LookupEnv("JWT_PRIVATE_KEY")
+	if !ok {
+		return nil, errors.New("No JWT_PRIVATE_KEY env var defined")
+	}
+	jwtService, err := security.NewJWTService(jwtPublilcKey, jwtPrivateKey, 8*time.Hour)
+	if err != nil {
+		env.Logger.Warn("Failed to create JWTService", zap.Error(err))
+	}
+	env.JWTService = &jwtService
 
 	return env, nil
 }

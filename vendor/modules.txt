@@ -38,7 +38,7 @@ github.com/aws/aws-sdk-go/aws/ec2metadata
 github.com/aws/aws-sdk-go/private/protocol/query/queryutil
 github.com/aws/aws-sdk-go/internal/sdkuri
 github.com/aws/aws-sdk-go/private/protocol/json/jsonutil
-# github.com/bitrise-io/api-utils v0.0.0-20190808122146-bb54c0d943b1
+# github.com/bitrise-io/api-utils v0.0.0-20190917113134-a2aa6a6a4549
 github.com/bitrise-io/api-utils/logging
 github.com/bitrise-io/api-utils/httpresponse
 github.com/bitrise-io/api-utils/providers
@@ -64,6 +64,8 @@ github.com/c2fo/testify/assert
 github.com/daaku/go.zipexe
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
+# github.com/dgrijalva/jwt-go v3.2.0+incompatible
+github.com/dgrijalva/jwt-go
 # github.com/go-yaml/yaml v2.1.0+incompatible
 github.com/go-yaml/yaml
 # github.com/gocraft/work v0.5.1

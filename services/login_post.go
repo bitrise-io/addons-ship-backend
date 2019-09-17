@@ -29,10 +29,14 @@ func LoginPostHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request) e
 		return errors.Wrap(err, "SQL Error")
 	}
 
+	authToken, err := env.JWTService.Sign(app.APIToken)
+	if err != nil {
+		return errors.Wrap(err, "Failed to sign API token")
+	}
 	expire := env.TimeService.Now().Add(setCookieExpirationDuration)
 	cookie := http.Cookie{
 		Name:    fmt.Sprintf("token-%s", app.AppSlug),
-		Value:   app.APIToken,
+		Value:   authToken,
 		Expires: expire,
 		Domain:  env.AddonAuthSetCookieDomain,
 	}

@@ -3,6 +3,7 @@ package services
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 
@@ -70,12 +71,27 @@ func AuthorizeForAppAccessHandlerFunc(env *env.AppEnv, h http.Handler) http.Hand
 			return
 		}
 
+		valid, err := env.JWTService.Verify(authToken)
+		if err != nil {
+			httpresponse.RespondWithInternalServerError(w, errors.Wrap(err, "Failed to validate token"))
+			return
+		}
+		if !valid {
+			httpresponse.RespondWithUnauthorizedNoErr(w)
+			return
+		}
+		token, err := env.JWTService.GetToken(authToken)
+		if err != nil {
+			httpresponse.RespondWithInternalServerError(w, errors.Wrap(err, "Failed to get token"))
+			return
+		}
+
 		if env.AppService == nil {
 			httpresponse.RespondWithInternalServerError(w, errors.New("No App Service provided"))
 			return
 		}
 
-		app, err := env.AppService.Find(&models.App{AppSlug: appSlug, APIToken: authToken})
+		app, err := env.AppService.Find(&models.App{AppSlug: appSlug, APIToken: fmt.Sprintf("%s", token)})
 		switch {
 		case errors.Cause(err) == gorm.ErrRecordNotFound:
 			httpresponse.RespondWithNotFoundErrorNoErr(w)
