@@ -42,22 +42,34 @@
                         </tr>
                         <tr>
                           <td style="padding: 0; line-height: 16px; font-size: 15px; font-weight: 700; color: #683d87">
-                            Hey {{ Name }}!
+                            Hey {{ Name }},
                           </td>
                         </tr>
                         <tr>
                           <td
                             style="padding: 0; padding-top: 8px; line-height: 24px; font-size: 19px; font-weight: 500; color: #492f5c;"
                           >
+                            {{ if PublishSucceeded }}
                             Your app has been
                             <a
                               href="{{ PublishURL }}"
                               style="
                                 text-decoration: none;
-                                color: {{ if PublishSucceeded }}#35c894{{ else }}#ff2158{{ end }};"
-                              >{{ if PublishSucceeded }}successfully published{{ else }}failed to publish{{ end }}</a
+                                color: #35c894;"
+                              >successfully published</a
                             >
                             to {{ PublishTarget }}.
+                            {{ else }}
+                            Your app has
+                            <a
+                              href="{{ AppURL }}"
+                              style="
+                                text-decoration: none;
+                                color: #ff2158;"
+                              >failed to publish</a
+                            >
+                            to {{ PublishTarget }}.
+                            {{ end }}
                           </td>
                         </tr>
                         <tr>
@@ -111,7 +123,7 @@
                                         <td
                                           style="border-radius: 4px; padding: 14px 16px; line-height: 20px; text-align: center; font-size: 16px; font-weight: 700; color: #f8f8f8; background: #760fc3; background-image: linear-gradient(#6c0eb2, #450674 97%);"
                                         >
-                                          View at Ship
+                                          View on Ship
                                         </td>
                                       </tr>
                                     </table></a

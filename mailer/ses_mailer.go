@@ -109,7 +109,9 @@ func (m *SES) SendEmailNewVersion(appVersion *models.AppVersion, contacts []mode
 				"NewVersion":  func() string { return artifactInfo.Version },
 				"BuildNumber": func() string { return appVersion.BuildNumber },
 				"AppPlatform": func() string { return appVersion.Platform },
-				"AppURL":      func() string { return fmt.Sprintf("%s/apps/%s", frontendBaseURL, appVersion.App.AppSlug) },
+				"AppURL": func() string {
+					return fmt.Sprintf("%s/apps/%s/versions/%s", frontendBaseURL, appVersion.App.AppSlug, appVersion.ID)
+				},
 			})
 		if err != nil {
 			return errors.WithStack(err)
@@ -129,19 +131,22 @@ func (m *SES) SendEmailPublish(appVersion *models.AppVersion, contacts []models.
 		appIconURL = *appDetails.AvatarURL
 	}
 
-	var subject string
-	if publishSucceeded {
-		subject = "🚀🍏 Your app has been successfully published to App Store Connect. 🍏"
-	} else {
-		subject = "🚀🍅 Your app has been failed to publish to App Store Connect. 🍅"
-	}
-
-	var publishTarget string
+	var publishTarget, publishURL string
 	if appVersion.Platform == "ios" {
 		publishTarget = "App Store Connect"
+		publishURL = "https://appstoreconnect.apple.com"
 	} else if appVersion.Platform == "android" {
-		publishTarget = "Play Store"
+		publishTarget = "the Play Store"
+		publishURL = "https://play.google.com/apps/publish/"
 	}
+
+	var subject string
+	if publishSucceeded {
+		subject = fmt.Sprintf("🚀🍏 Your app has been successfully published to %s. 🍏", publishTarget)
+	} else {
+		subject = fmt.Sprintf("🚀🍅 Failed to publish your app to %s. 🍅", publishTarget)
+	}
+
 	for _, contact := range contacts {
 		notificationPreferences, err := contact.NotificationPreferences()
 		if err != nil {
@@ -158,16 +163,18 @@ func (m *SES) SendEmailPublish(appVersion *models.AppVersion, contacts []models.
 		},
 			"email/publish.html",
 			map[string]interface{}{
-				"CurrentTime":      func() time.Time { return time.Now() },
-				"Name":             func() string { return nameForHey },
-				"AppTitle":         func() string { return appDetails.Title },
-				"AppIconURL":       func() string { return appIconURL },
-				"Version":          func() string { return artifactInfo.Version },
-				"BuildNumber":      func() string { return appVersion.BuildNumber },
-				"AppPlatform":      func() string { return appVersion.Platform },
-				"AppURL":           func() string { return fmt.Sprintf("%s/apps/%s", frontendBaseURL, appVersion.App.AppSlug) },
+				"CurrentTime": func() time.Time { return time.Now() },
+				"Name":        func() string { return nameForHey },
+				"AppTitle":    func() string { return appDetails.Title },
+				"AppIconURL":  func() string { return appIconURL },
+				"Version":     func() string { return artifactInfo.Version },
+				"BuildNumber": func() string { return appVersion.BuildNumber },
+				"AppPlatform": func() string { return appVersion.Platform },
+				"AppURL": func() string {
+					return fmt.Sprintf("%s/apps/%s/versions/%s", frontendBaseURL, appVersion.App.AppSlug, appVersion.ID)
+				},
 				"PublishSucceeded": func() bool { return publishSucceeded },
-				"PublishURL":       func() string { return "https://bitrise.io" },
+				"PublishURL":       func() string { return publishURL },
 				"PublishTarget":    func() string { return publishTarget },
 			})
 		if err != nil {
