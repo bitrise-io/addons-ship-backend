@@ -3,6 +3,7 @@ package services
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/bitrise-io/addons-ship-backend/env"
 	"github.com/bitrise-io/addons-ship-backend/models"
@@ -10,7 +11,7 @@ import (
 )
 
 const (
-	setCookieExpirationDuration = 1000 * 1000 * 1000 * 60 * 60 * 8
+	setCookieExpirationDuration = time.Hour * 8
 )
 
 // LoginPostHandler ...
