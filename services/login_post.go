@@ -3,10 +3,15 @@ package services
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/bitrise-io/addons-ship-backend/env"
 	"github.com/bitrise-io/addons-ship-backend/models"
 	"github.com/pkg/errors"
+)
+
+const (
+	setCookieExpirationDuration = time.Hour * 8
 )
 
 // LoginPostHandler ...
@@ -24,7 +29,15 @@ func LoginPostHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request) e
 		return errors.Wrap(err, "SQL Error")
 	}
 
-	redirectURL := fmt.Sprintf("%s/apps/%s?token=%s", env.AddonFrontendHostURL, app.AppSlug, app.APIToken)
+	expire := env.TimeService.Now().Add(setCookieExpirationDuration)
+	cookie := http.Cookie{
+		Name:    "api-token",
+		Value:   app.APIToken,
+		Expires: expire,
+	}
+	http.SetCookie(w, &cookie)
+
+	redirectURL := fmt.Sprintf("%s/apps/%s", env.AddonFrontendHostURL, app.AppSlug)
 	http.Redirect(w, r, redirectURL, http.StatusMovedPermanently)
 	return nil
 }
