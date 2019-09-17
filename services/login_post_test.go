@@ -41,7 +41,8 @@ func Test_LoginPostHandler(t *testing.T) {
 				services.ContextKeyAuthorizedAppID: testAppID,
 			},
 			env: &env.AppEnv{
-				AddonFrontendHostURL: "http://ship.bitrise.io",
+				AddonFrontendHostURL:     "http://ship.bitrise.io",
+				AddonAuthSetCookieDomain: "ship.bitrise.io",
 				AppService: &testAppService{
 					findFn: func(app *models.App) (*models.App, error) {
 						require.Equal(t, testAppID, app.ID)
@@ -58,7 +59,7 @@ func Test_LoginPostHandler(t *testing.T) {
 			},
 			expectedStatusCode:       http.StatusMovedPermanently,
 			expectedResponseLocation: "http://ship.bitrise.io/apps/test-app-slug",
-			expectedSetCookie:        "api-token=test-app-api-token; Expires=Tue, 05 Mar 2019 08:00:00 GMT",
+			expectedSetCookie:        "api-token=test-app-api-token; Domain=ship.bitrise.io; Expires=Tue, 05 Mar 2019 08:00:00 GMT",
 		})
 	})
 
