@@ -31,7 +31,7 @@ func LoginPostHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request) e
 
 	expire := env.TimeService.Now().Add(setCookieExpirationDuration)
 	cookie := http.Cookie{
-		Name:    "api-token",
+		Name:    fmt.Sprintf("token-%s", app.AppSlug),
 		Value:   app.APIToken,
 		Expires: expire,
 		Domain:  env.AddonAuthSetCookieDomain,
