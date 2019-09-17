@@ -59,7 +59,7 @@ func Test_LoginPostHandler(t *testing.T) {
 			},
 			expectedStatusCode:       http.StatusMovedPermanently,
 			expectedResponseLocation: "http://ship.bitrise.io/apps/test-app-slug",
-			expectedSetCookie:        "api-token=test-app-api-token; Domain=ship.bitrise.io; Expires=Tue, 05 Mar 2019 08:00:00 GMT",
+			expectedSetCookie:        "token-test-app-slug=test-app-api-token; Domain=ship.bitrise.io; Expires=Tue, 05 Mar 2019 08:00:00 GMT",
 		})
 	})
 
