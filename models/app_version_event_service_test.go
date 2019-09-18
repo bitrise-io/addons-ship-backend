@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/bitrise-io/addons-ship-backend/dataservices"
 	"github.com/bitrise-io/addons-ship-backend/models"
@@ -13,6 +14,16 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
 )
+
+func compareAppVersionEvent(t *testing.T, expected, actual models.AppVersionEvent) {
+	expected.CreatedAt = time.Time{}
+	expected.UpdatedAt = time.Time{}
+	expected.AppVersion = nil
+	actual.CreatedAt = time.Time{}
+	actual.UpdatedAt = time.Time{}
+	actual.AppVersion = nil
+	require.Equal(t, expected, actual)
+}
 
 func Test_AppVersionEventService_Create(t *testing.T) {
 	dbCloseCallbackMethod := prepareDB(t)
@@ -95,7 +106,7 @@ func Test_AppVersionEventService_Update(t *testing.T) {
 		t.Log("check if no other app version events were updated")
 		foundAppVersionEvent, err = appVersionEventService.Find(&models.AppVersionEvent{Record: models.Record{ID: testAppVersionEvents[1].ID}})
 		require.NoError(t, err)
-		compareApp(t, *testAppVersionEvents[1], *foundAppVersionEvent)
+		compareAppVersionEvent(t, *testAppVersionEvents[1], *foundAppVersionEvent)
 	})
 
 	t.Run("when trying to update non-existing field", func(t *testing.T) {
