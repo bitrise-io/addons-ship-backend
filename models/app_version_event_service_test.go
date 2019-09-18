@@ -68,3 +68,40 @@ func Test_AppVersionEventService_FindAll(t *testing.T) {
 		reflect.DeepEqual([]models.AppVersionEvent{*testAppVersionEvent2, *testAppVersionEvent1}, foundAppVersionEvents)
 	})
 }
+
+func Test_AppVersionEventService_Update(t *testing.T) {
+	dbCloseCallbackMethod := prepareDB(t)
+	defer dbCloseCallbackMethod()
+
+	appVersionEventService := models.AppVersionEventService{DB: dataservices.GetDB()}
+	testAppVersion := createTestAppVersion(t, &models.AppVersion{Platform: "ios", ArtifactInfoData: json.RawMessage(`{"version":"1.0"}`)})
+
+	t.Run("ok", func(t *testing.T) {
+		testAppVersionEvents := []*models.AppVersionEvent{
+			createTestAppVersionEvent(t, &models.AppVersionEvent{Text: "Some interesting event", AppVersion: *testAppVersion}),
+			createTestAppVersionEvent(t, &models.AppVersionEvent{Text: "Another interesting event", AppVersion: *testAppVersion})
+		}
+
+		testAppVersionEvents[0].IsLogAvailable = true
+		verrs, err := appVersionEventService.Update(testAppVersionEvents[0], []string{"IsLogAvailable"})
+		require.Empty(t, verrs)
+		require.NoError(t, err)
+
+		t.Log("check if app version event got updated")
+		foundAppVersionEvent, err := appVersionEventService.Find(&models.AppVersionEvent{Record: models.Record{ID: testAppVersionEvents[0].ID}})
+		require.NoError(t, err)
+		require.Equal(t, true, foundAppVersionEvent.IsLogAvailable)
+
+		t.Log("check if no other app version events were updated")
+		foundAppVersionEvent, err = appVersionEventService.Find(&models.AppVersionEvent{Record: models.Record{ID: testAppVersionEvents[1].ID}})
+		require.NoError(t, err)
+		compareApp(t, *testAppVersionEvents[1], *foundAppVersionEvent)
+	})
+
+	t.Run("when trying to update non-existing field", func(t *testing.T) {
+		testAppVersionEvent := createTestAppVersionEvent(t, &models.AppVersionEvent{})
+		verrs, err := appVersionEventService.Update(testAppVersionEvent, []string{"NonExistingField"})
+		require.EqualError(t, err, "Attribute name doesn't exist in the model")
+		require.Equal(t, 0, len(verrs))
+	})
+}

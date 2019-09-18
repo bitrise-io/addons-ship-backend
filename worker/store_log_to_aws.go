@@ -6,6 +6,7 @@ import (
 
 	"github.com/bitrise-io/addons-ship-backend/models"
 	"github.com/gocraft/work"
+	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
 	"github.com/satori/go.uuid"
 	"go.uber.org/zap"
@@ -16,6 +17,11 @@ var storeLogToAWS = "store_log_to_aws"
 // StoreLogToAWS ...
 func (c *Context) StoreLogToAWS(job *work.Job) error {
 	c.env.Logger.Info("[i] Job StoreLogToAWS started")
+	appVersionEventID := job.ArgString("app_version_event_id")
+	if appVersionEventID == (uuid.UUID{}).String() {
+		c.env.Logger.Error("Failed to get App Version Event ID", zap.String("app_version_event_id", appVersionEventID))
+		return errors.New("Failed to get App Version Event ID")
+	}
 	denTaskID := job.ArgString("den_task_id")
 	if denTaskID == (uuid.UUID{}).String() {
 		c.env.Logger.Error("Failed to get App Event ID", zap.String("den_task_id", denTaskID))
@@ -53,6 +59,24 @@ func (c *Context) StoreLogToAWS(job *work.Job) error {
 		c.env.Logger.Error("Failed to save object to AWS", zap.String("aws_path", awsPath), zap.String("content", string(content)))
 		return errors.WithStack(err)
 	}
+
+	appVersionEvent, err := c.env.AppVersionEventService.Find(&models.AppVersionEvent{Record: models.Record{ID: uuid.FromStringOrNil(appVersionEventID)}})
+	switch {
+	case errors.Cause(err) == gorm.ErrRecordNotFound:
+		c.env.Logger.Info("[i] App Version Event not found")
+	case err != nil:
+		c.env.Logger.Info("[i] SQL Error")
+	default:
+		appVersionEvent.IsLogAvailable = true
+
+		verr, err := c.env.AppVersionEventService.Update(appVersionEvent, []string{"IsLogAvailable"})
+		if len(verr) > 0 {
+			c.env.Logger.Info("[i] Failed to update App Version Event")
+		} else if err != nil {
+			c.env.Logger.Info("[i] SQL Error")
+		}
+	}
+
 	c.env.Logger.Info("[i] Job StoreLogToAWS finished")
 
 	return nil
