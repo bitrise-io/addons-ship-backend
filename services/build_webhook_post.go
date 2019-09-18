@@ -238,6 +238,7 @@ func BuildWebhookHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request
 
 func sendNotification(env *env.AppEnv, appVersion *models.AppVersion, app *models.App, appDetails *bitrise.AppDetails) error {
 	appContacts, err := env.AppContactService.FindAll(app)
+	appVersion.App = *app
 	if err != nil {
 		return errors.WithStack(err)
 	}
