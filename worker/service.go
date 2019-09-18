@@ -11,7 +11,7 @@ import (
 type Service struct{}
 
 // EnqueueStoreLogToAWS ...
-func (*Service) EnqueueStoreLogToAWS(appVersionEventID uuid.UUID, publishTaskExternalID uuid.UUID, numberOfLogChunks int64, awsPath string, secondsFromNow int64) error {
+func (*Service) EnqueueStoreLogToAWS(appVersionEventID, publishTaskExternalID uuid.UUID, numberOfLogChunks int64, awsPath string, secondsFromNow int64) error {
 	enqueuer := work.NewEnqueuer(namespace, redisPool)
 	var err error
 	jobParams := work.Q{

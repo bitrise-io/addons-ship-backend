@@ -11,7 +11,7 @@ type testWorkerService struct {
 	enqueueCopyUploadablesToNewAppVersionFn func(appVersionFromCopyID, appVersionToCopyID string) error
 }
 
-func (s *testWorkerService) EnqueueStoreLogToAWS(appVersionEventID uuid.UUID, publishTaskExternalID uuid.UUID, numberOfLogChunks int64, awsPath string, secondsFromNow int64) error {
+func (s *testWorkerService) EnqueueStoreLogToAWS(appVersionEventID, publishTaskExternalID uuid.UUID, numberOfLogChunks int64, awsPath string, secondsFromNow int64) error {
 	if s.enqueueStoreLogToAWSFn == nil {
 		panic("You have to override EnqueueStoreLogToAWS function in tests")
 	}

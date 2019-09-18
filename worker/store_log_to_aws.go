@@ -63,18 +63,22 @@ func (c *Context) StoreLogToAWS(job *work.Job) error {
 	appVersionEvent, err := c.env.AppVersionEventService.Find(&models.AppVersionEvent{Record: models.Record{ID: uuid.FromStringOrNil(appVersionEventID)}})
 	switch {
 	case errors.Cause(err) == gorm.ErrRecordNotFound:
-		c.env.Logger.Info("[i] App Version Event not found")
+		c.env.Logger.Error("App Version Event not found", zap.String("app_version_event_id", appVersionEventID))
+		return errors.New("App Version Event not found")
 	case err != nil:
-		c.env.Logger.Info("[i] SQL Error")
-	default:
-		appVersionEvent.IsLogAvailable = true
+		c.env.Logger.Error("SQL Error", zap.String("app_version_event_id", appVersionEventID))
+		return errors.New("SQL Error")
+	}
 
-		verr, err := c.env.AppVersionEventService.Update(appVersionEvent, []string{"IsLogAvailable"})
-		if len(verr) > 0 {
-			c.env.Logger.Info("[i] Failed to update App Version Event")
-		} else if err != nil {
-			c.env.Logger.Info("[i] SQL Error")
-		}
+	appVersionEvent.IsLogAvailable = true
+	verr, err := c.env.AppVersionEventService.Update(appVersionEvent, []string{"IsLogAvailable"})
+	if len(verr) > 0 {
+		c.env.Logger.Error("Failed to update App Version Event", zap.String("app_version_event_id", appVersionEventID))
+		return errors.New("Failed to update App Version Event")
+	}
+	if err != nil {
+		c.env.Logger.Error("SQL Error", zap.String("app_version_event_id", appVersionEventID))
+		return errors.New("SQL Error")
 	}
 
 	c.env.Logger.Info("[i] Job StoreLogToAWS finished")

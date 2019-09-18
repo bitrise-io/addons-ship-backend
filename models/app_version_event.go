@@ -12,7 +12,7 @@ type AppVersionEvent struct {
 	Record
 	Status         string `json:"status"`
 	Text           string `json:"event_text" gorm:"column:event_text"`
-	IsLogAvailable bool   `db:"is_log_available" json:"is_log_available"`
+	IsLogAvailable bool   `json:"is_log_available"`
 
 	AppVersionID uuid.UUID  `db:"app_version_id" json:"-"`
 	AppVersion   AppVersion `gorm:"foreignkey:AppVersionID" json:"-"`
