@@ -79,7 +79,7 @@ func Test_AppVersionEventService_Update(t *testing.T) {
 	t.Run("ok", func(t *testing.T) {
 		testAppVersionEvents := []*models.AppVersionEvent{
 			createTestAppVersionEvent(t, &models.AppVersionEvent{Text: "Some interesting event", AppVersion: *testAppVersion}),
-			createTestAppVersionEvent(t, &models.AppVersionEvent{Text: "Another interesting event", AppVersion: *testAppVersion})
+			createTestAppVersionEvent(t, &models.AppVersionEvent{Text: "Another interesting event", AppVersion: *testAppVersion}),
 		}
 
 		testAppVersionEvents[0].IsLogAvailable = true
