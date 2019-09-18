@@ -136,7 +136,7 @@ func (m *SES) SendEmailPublish(appVersion *models.AppVersion, contacts []models.
 		publishTarget = "App Store Connect"
 		publishURL = "https://appstoreconnect.apple.com"
 	} else if appVersion.Platform == "android" {
-		publishTarget = "the Play Store"
+		publishTarget = "Google Play Console"
 		publishURL = "https://play.google.com/apps/publish/"
 	}
 
