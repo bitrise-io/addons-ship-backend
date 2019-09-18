@@ -18,10 +18,10 @@ import (
 func compareAppVersionEvent(t *testing.T, expected, actual models.AppVersionEvent) {
 	expected.CreatedAt = time.Time{}
 	expected.UpdatedAt = time.Time{}
-	expected.AppVersion = nil
+	expected.AppVersion = (*models.AppVersion)(nil)
 	actual.CreatedAt = time.Time{}
 	actual.UpdatedAt = time.Time{}
-	actual.AppVersion = nil
+	actual.AppVersion = (*models.AppVersion)(nil)
 	require.Equal(t, expected, actual)
 }
 
