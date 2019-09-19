@@ -603,6 +603,7 @@ func Test_AppVersionAndroidConfigGetHandler(t *testing.T) {
 						return []models.Screenshot{}, nil
 					},
 				},
+				Logger: zap.NewNop(),
 			},
 			expectedStatusCode: http.StatusOK,
 			expectedResponse: services.AppVersionAndroidConfigGetResponse{
