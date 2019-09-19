@@ -52,7 +52,7 @@ func webhookPostStatusHelper(env *env.AppEnv, w http.ResponseWriter, r *http.Req
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		err = env.WorkerService.EnqueueStoreLogToAWS(params.TaskID, data.LogChunkCount, logAWSPath, 30)
+		err = env.WorkerService.EnqueueStoreLogToAWS(event.ID, params.TaskID, data.LogChunkCount, logAWSPath, 30)
 		if err != nil {
 			return errors.Wrap(err, "Worker error")
 		}
