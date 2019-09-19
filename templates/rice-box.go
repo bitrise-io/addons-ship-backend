@@ -35,7 +35,7 @@ func init() {
 	}
 	file8 := &embedded.EmbeddedFile{
 		Filename:    "rice-box.go",
-		FileModTime: time.Unix(1568897107, 0),
+		FileModTime: time.Unix(1568905420, 0),
 
 		Content: string(""),
 	}

@@ -48,7 +48,33 @@ func (m *SES) sendMail(r *Request, template string, data map[string]interface{})
 
 // SendEmailConfirmation ...
 func (m *SES) SendEmailConfirmation(confirmURL string, contact *models.AppContact, appDetails *bitrise.AppDetails) error {
-	appIconURL := "https://bitrise-public-content-production.s3.amazonaws.com/emails/invitation-app-32x32.png"
+	var appIconURL string
+	switch appDetails.ProjectType {
+	case "ios":
+		appIconURL = "https://bitrise-public-content-production.s3.amazonaws.com/addons/default-app-icon-ios.png"
+	case "android":
+		appIconURL = "https://bitrise-public-content-production.s3.amazonaws.com/addons/default-app-icon-android.png"
+	case "cordova":
+		appIconURL = "https://bitrise-public-content-production.s3.amazonaws.com/addons/default-app-icon-cordova.png"
+	case "fastlane":
+		appIconURL = "https://bitrise-public-content-production.s3.amazonaws.com/addons/default-app-icon-fastlane.png"
+	case "flutter":
+		appIconURL = "https://bitrise-public-content-production.s3.amazonaws.com/addons/default-app-icon-flutter.png"
+	case "go":
+		appIconURL = "https://bitrise-public-content-production.s3.amazonaws.com/addons/default-app-icon-go.png"
+	case "ionic":
+		appIconURL = "https://bitrise-public-content-production.s3.amazonaws.com/addons/default-app-icon-ionic.png"
+	case "macos":
+		appIconURL = "https://bitrise-public-content-production.s3.amazonaws.com/addons/default-app-icon-macos.png"
+	case "nodejs":
+		appIconURL = "https://bitrise-public-content-production.s3.amazonaws.com/addons/default-app-icon-nodejs.png"
+	case "react":
+		appIconURL = "https://bitrise-public-content-production.s3.amazonaws.com/addons/default-app-icon-react.png"
+	case "xamarin":
+		appIconURL = "https://bitrise-public-content-production.s3.amazonaws.com/addons/default-app-icon-xamarin.png"
+	default:
+		appIconURL = "https://bitrise-public-content-production.s3.amazonaws.com/addons-ship/default-app-icon-other.png"
+	}
 	if appDetails.AvatarURL != nil {
 		appIconURL = *appDetails.AvatarURL
 	}
@@ -82,7 +108,13 @@ func (m *SES) SendEmailNewVersion(appVersion *models.AppVersion, contacts []mode
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	appIconURL := "https://bitrise-public-content-production.s3.amazonaws.com/emails/invitation-app-32x32.png"
+	var appIconURL string
+	switch appVersion.Platform {
+	case "ios":
+		appIconURL = "https://bitrise-public-content-production.s3.amazonaws.com/addons/default-app-icon-ios.png"
+	case "android":
+		appIconURL = "https://bitrise-public-content-production.s3.amazonaws.com/addons/default-app-icon-android.png"
+	}
 	if appDetails.AvatarURL != nil {
 		appIconURL = *appDetails.AvatarURL
 	}
@@ -126,7 +158,13 @@ func (m *SES) SendEmailPublish(appVersion *models.AppVersion, contacts []models.
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	appIconURL := "https://bitrise-public-content-production.s3.amazonaws.com/emails/invitation-app-32x32.png"
+	var appIconURL string
+	switch appVersion.Platform {
+	case "ios":
+		appIconURL = "https://bitrise-public-content-production.s3.amazonaws.com/addons/default-app-icon-ios.png"
+	case "android":
+		appIconURL = "https://bitrise-public-content-production.s3.amazonaws.com/addons/default-app-icon-android.png"
+	}
 	if appDetails.AvatarURL != nil {
 		appIconURL = *appDetails.AvatarURL
 	}
