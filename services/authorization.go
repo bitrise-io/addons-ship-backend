@@ -72,11 +72,7 @@ func AuthorizeForAppAccessHandlerFunc(env *env.AppEnv, h http.Handler) http.Hand
 		}
 
 		valid, err := env.JWTService.Verify(authToken)
-		if err != nil {
-			httpresponse.RespondWithInternalServerError(w, errors.Wrap(err, "Failed to validate token"))
-			return
-		}
-		if !valid {
+		if err != nil || !valid {
 			httpresponse.RespondWithUnauthorizedNoErr(w)
 			return
 		}
@@ -122,11 +118,7 @@ func AuthorizeForAddonAPIAccessHandlerFunc(env *env.AppEnv, h http.Handler) http
 		}
 
 		valid, err := env.JWTService.Verify(authToken)
-		if err != nil {
-			httpresponse.RespondWithInternalServerError(w, errors.Wrap(err, "Failed to validate token"))
-			return
-		}
-		if !valid {
+		if err != nil || !valid {
 			httpresponse.RespondWithUnauthorizedNoErr(w)
 			return
 		}
