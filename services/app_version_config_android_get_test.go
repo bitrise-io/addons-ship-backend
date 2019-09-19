@@ -13,13 +13,13 @@ import (
 	"github.com/bitrise-io/addons-ship-backend/models"
 	"github.com/bitrise-io/addons-ship-backend/services"
 	ctxpkg "github.com/bitrise-io/api-utils/context"
-	"github.com/bitrise-io/api-utils/httpresponse"
 	"github.com/bitrise-io/api-utils/providers"
 	"github.com/bitrise-io/go-utils/pointers"
 	"github.com/c2fo/testify/require"
 	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
 	"github.com/satori/go.uuid"
+	"go.uber.org/zap"
 )
 
 func Test_AppVersionAndroidConfigGetHandler(t *testing.T) {
@@ -534,6 +534,9 @@ func Test_AppVersionAndroidConfigGetHandler(t *testing.T) {
 					getAndroidKeystoreFileFn: func(apiToken, appSlug, keystoreSlug string) (*bitrise.AndroidKeystoreFile, error) {
 						return &bitrise.AndroidKeystoreFile{}, nil
 					},
+					getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
+						return []bitrise.ArtifactListElementResponseModel{}, nil
+					},
 				},
 				AppSettingsService: &testAppSettingsService{
 					findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
@@ -546,9 +549,9 @@ func Test_AppVersionAndroidConfigGetHandler(t *testing.T) {
 						return []models.Screenshot{}, nil
 					},
 				},
+				Logger: zap.NewNop(),
 			},
-			expectedStatusCode: http.StatusNotFound,
-			expectedResponse:   httpresponse.StandardErrorRespModel{Message: "Not Found"},
+			expectedStatusCode: http.StatusOK,
 		})
 	})
 
@@ -585,6 +588,9 @@ func Test_AppVersionAndroidConfigGetHandler(t *testing.T) {
 					getAndroidKeystoreFileFn: func(apiToken, appSlug, keystoreSlug string) (*bitrise.AndroidKeystoreFile, error) {
 						return &bitrise.AndroidKeystoreFile{}, nil
 					},
+					getArtifactsFn: func(apiToken, appSlug, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
+						return []bitrise.ArtifactListElementResponseModel{}, nil
+					},
 				},
 				AppSettingsService: &testAppSettingsService{
 					findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
@@ -598,7 +604,15 @@ func Test_AppVersionAndroidConfigGetHandler(t *testing.T) {
 					},
 				},
 			},
-			expectedInternalErr: "SQL Error: SOME-SQL-ERROR",
+			expectedStatusCode: http.StatusOK,
+			expectedResponse: services.AppVersionAndroidConfigGetResponse{
+				MetaData: services.MetaData{
+					ListingInfo: map[string]services.ListingInfo{
+						"en-GB": services.ListingInfo{},
+					},
+				},
+				Artifacts: []string{},
+			},
 		})
 	})
 

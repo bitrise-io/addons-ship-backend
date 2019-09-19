@@ -7,8 +7,8 @@ import (
 	"github.com/bitrise-io/addons-ship-backend/env"
 	"github.com/bitrise-io/addons-ship-backend/models"
 	"github.com/bitrise-io/api-utils/httpresponse"
-	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
+	"go.uber.org/zap"
 )
 
 // AppVersionAndroidConfigGetResponse ...
@@ -56,17 +56,15 @@ func AppVersionAndroidConfigGetHandler(env *env.AppEnv, w http.ResponseWriter, r
 	}
 	config.MetaData.PackageName = artifactInfo.PackageName
 
+	var featureGraphicPresignedURL string
 	featureGraphic, err := env.FeatureGraphicService.Find(&models.FeatureGraphic{AppVersionID: authorizedAppVersionID})
-	switch {
-	case errors.Cause(err) == gorm.ErrRecordNotFound:
-		return httpresponse.RespondWithNotFoundError(w)
-	case err != nil:
-		return errors.Wrap(err, "SQL Error")
-	}
-
-	featureGraphicPresignedURL, err := env.AWS.GeneratePresignedGETURL(featureGraphic.AWSPath(), presignedURLExpirationInterval)
-	if err != nil {
-		return errors.WithStack(err)
+	if err == nil {
+		featureGraphicPresignedURL, err = env.AWS.GeneratePresignedGETURL(featureGraphic.AWSPath(), presignedURLExpirationInterval)
+		if err != nil {
+			return errors.WithStack(err)
+		}
+	} else {
+		env.Logger.Error("Failed to get feature graphic", zap.Error(err))
 	}
 
 	storeInfo, err := appVersion.AppStoreInfo()
