@@ -6,6 +6,7 @@ type testAppVersionEventService struct {
 	createFn  func(*models.AppVersionEvent) (*models.AppVersionEvent, error)
 	findFn    func(*models.AppVersionEvent) (*models.AppVersionEvent, error)
 	findAllFn func(*models.AppVersion) ([]models.AppVersionEvent, error)
+	updateFn  func(*models.AppVersionEvent) ([]error, error)
 }
 
 func (a *testAppVersionEventService) Create(appVersionEvent *models.AppVersionEvent) (*models.AppVersionEvent, error) {
@@ -27,4 +28,11 @@ func (a *testAppVersionEventService) FindAll(appVersion *models.AppVersion) ([]m
 		return a.findAllFn(appVersion)
 	}
 	panic("You have to override FindAll function in tests")
+}
+
+func (a *testAppVersionEventService) Update(appVersionEvent *models.AppVersionEvent, whitelist []string) (validationErrors []error, dbErr error) {
+	if a.updateFn != nil {
+		return a.updateFn(appVersionEvent)
+	}
+	panic("You have to override Update function in tests")
 }

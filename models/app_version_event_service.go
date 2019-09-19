@@ -5,6 +5,7 @@ import "github.com/jinzhu/gorm"
 // AppVersionEventService ...
 type AppVersionEventService struct {
 	DB *gorm.DB
+	UpdatableModelService
 }
 
 // Create ...
@@ -34,4 +35,21 @@ func (a *AppVersionEventService) FindAll(appVersion *AppVersion) ([]AppVersionEv
 		return nil, err
 	}
 	return appVersionEvents, nil
+}
+
+// Update ...
+func (a *AppVersionEventService) Update(appVersionEvent *AppVersionEvent, whitelist []string) (validationErrors []error, dbErr error) {
+	updateData, err := a.UpdateData(*appVersionEvent, whitelist)
+	if err != nil {
+		return nil, err
+	}
+	result := a.DB.Model(appVersionEvent).Updates(updateData)
+	verrs := ValidationErrors(result.GetErrors())
+	if len(verrs) > 0 {
+		return verrs, nil
+	}
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return nil, nil
 }
