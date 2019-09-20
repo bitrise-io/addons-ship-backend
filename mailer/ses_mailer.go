@@ -48,7 +48,7 @@ func (m *SES) sendMail(r *Request, template string, data map[string]interface{})
 
 // SendEmailConfirmation ...
 func (m *SES) SendEmailConfirmation(confirmURL string, contact *models.AppContact, appDetails *bitrise.AppDetails) error {
-	appIconURL := "https://bitrise-public-content-production.s3.amazonaws.com/emails/invitation-app-32x32.png"
+	appIconURL := defaultIconURL(appDetails.ProjectType)
 	if appDetails.AvatarURL != nil {
 		appIconURL = *appDetails.AvatarURL
 	}
@@ -82,7 +82,7 @@ func (m *SES) SendEmailNewVersion(appVersion *models.AppVersion, contacts []mode
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	appIconURL := "https://bitrise-public-content-production.s3.amazonaws.com/emails/invitation-app-32x32.png"
+	appIconURL := defaultIconURL(appDetails.ProjectType)
 	if appDetails.AvatarURL != nil {
 		appIconURL = *appDetails.AvatarURL
 	}
@@ -126,7 +126,7 @@ func (m *SES) SendEmailPublish(appVersion *models.AppVersion, contacts []models.
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	appIconURL := "https://bitrise-public-content-production.s3.amazonaws.com/emails/invitation-app-32x32.png"
+	appIconURL := defaultIconURL(appDetails.ProjectType)
 	if appDetails.AvatarURL != nil {
 		appIconURL = *appDetails.AvatarURL
 	}
@@ -186,4 +186,33 @@ func (m *SES) SendEmailPublish(appVersion *models.AppVersion, contacts []models.
 
 func getUsernameFromEmail(email string) string {
 	return strings.Split(email, "@")[0]
+}
+
+func defaultIconURL(projectType string) string {
+	switch projectType {
+	case "ios":
+		return "https://bitrise-public-content-production.s3.amazonaws.com/addons/default-app-icon-ios.png"
+	case "android":
+		return "https://bitrise-public-content-production.s3.amazonaws.com/addons/default-app-icon-android.png"
+	case "cordova":
+		return "https://bitrise-public-content-production.s3.amazonaws.com/addons/default-app-icon-cordova.png"
+	case "fastlane":
+		return "https://bitrise-public-content-production.s3.amazonaws.com/addons/default-app-icon-fastlane.png"
+	case "flutter":
+		return "https://bitrise-public-content-production.s3.amazonaws.com/addons/default-app-icon-flutter.png"
+	case "go":
+		return "https://bitrise-public-content-production.s3.amazonaws.com/addons/default-app-icon-go.png"
+	case "ionic":
+		return "https://bitrise-public-content-production.s3.amazonaws.com/addons/default-app-icon-ionic.png"
+	case "macos":
+		return "https://bitrise-public-content-production.s3.amazonaws.com/addons/default-app-icon-macos.png"
+	case "nodejs":
+		return "https://bitrise-public-content-production.s3.amazonaws.com/addons/default-app-icon-nodejs.png"
+	case "react":
+		return "https://bitrise-public-content-production.s3.amazonaws.com/addons/default-app-icon-react.png"
+	case "xamarin":
+		return "https://bitrise-public-content-production.s3.amazonaws.com/addons/default-app-icon-xamarin.png"
+	default:
+		return "https://bitrise-public-content-production.s3.amazonaws.com/addons-ship/default-app-icon-other.png"
+	}
 }
