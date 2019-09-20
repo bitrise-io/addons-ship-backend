@@ -41,16 +41,16 @@ func main() {
 		App:              models.App{AppSlug: "test-app-slug-1"},
 	}
 	testAppContacts := []models.AppContact{models.AppContact{
-		Email: targetEmail,
+		Email:                       targetEmail,
 		NotificationPreferencesData: json.RawMessage(`{"new_version":true,"successful_publish":true,"failed_publish":true}`),
 		ConfirmationToken:           pointers.NewStringPtr("your-confirmation-token"),
 	}}
-	testAppDetails := &bitrise.AppDetails{Title: "Standup Timer"}
+	testAppDetails := &bitrise.AppDetails{Title: "Standup Timer", ProjectType: "flutter"}
 	emailName := os.Getenv("MAIL_TO_SEND")
 	switch emailName {
 	case "confirmation":
 		err := ses.SendEmailConfirmation("http://here.you.can.confirm", &models.AppContact{
-			Email: targetEmail,
+			Email:                       targetEmail,
 			NotificationPreferencesData: json.RawMessage(`{}`),
 			ConfirmationToken:           pointers.NewStringPtr("your-confirmation-token"),
 		}, testAppDetails)
