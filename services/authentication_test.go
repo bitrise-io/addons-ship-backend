@@ -132,8 +132,6 @@ func Test_AuthenticateWithDENSecretHandlerFunc(t *testing.T) {
 
 func Test_AuthenticateWithSSOTokenHandlerFunc(t *testing.T) {
 	reqTimestamp := fmt.Sprintf("%d", time.Now().Unix())
-	testLogger, err := zap.NewDevelopment()
-	require.NoError(t, err)
 
 	t.Run("ok", func(t *testing.T) {
 		performAuthenticationTest(t, "POST", "...", AuthenticationTestCase{
@@ -143,7 +141,7 @@ func Test_AuthenticateWithSSOTokenHandlerFunc(t *testing.T) {
 				"app_slug":  "test-app-slug",
 			},
 			env: &env.AppEnv{
-				Logger: testLogger,
+				Logger: zap.NewNop(),
 				SsoTokenVerifier: &security.SsoTokenVerifierMock{
 					VerifyFn: func(timestamp, ssoToken, appSlug string) (bool, error) {
 						require.Equal(t, reqTimestamp, timestamp)
@@ -173,7 +171,7 @@ func Test_AuthenticateWithSSOTokenHandlerFunc(t *testing.T) {
 				"app_slug":  "test-app-slug",
 			},
 			env: &env.AppEnv{
-				Logger: testLogger,
+				Logger: zap.NewNop(),
 				SsoTokenVerifier: &security.SsoTokenVerifierMock{
 					VerifyFn: func(timestamp, ssoToken, appSlug string) (bool, error) {
 						return true, nil
@@ -195,7 +193,7 @@ func Test_AuthenticateWithSSOTokenHandlerFunc(t *testing.T) {
 				"app_slug":  "test-app-slug",
 			},
 			env: &env.AppEnv{
-				Logger:           testLogger,
+				Logger:           zap.NewNop(),
 				SsoTokenVerifier: nil,
 				AppService: &testAppService{
 					findFn: func(app *models.App) (*models.App, error) {
@@ -217,7 +215,7 @@ func Test_AuthenticateWithSSOTokenHandlerFunc(t *testing.T) {
 				"app_slug":  "test-app-slug",
 			},
 			env: &env.AppEnv{
-				Logger: testLogger,
+				Logger: zap.NewNop(),
 				SsoTokenVerifier: &security.SsoTokenVerifierMock{
 					VerifyFn: func(timestamp, ssoToken, appSlug string) (bool, error) {
 						return false, errors.New("SOME-VERIFICATION-ERROR")
@@ -243,7 +241,7 @@ func Test_AuthenticateWithSSOTokenHandlerFunc(t *testing.T) {
 				"app_slug":  "test-app-slug",
 			},
 			env: &env.AppEnv{
-				Logger: testLogger,
+				Logger: zap.NewNop(),
 				SsoTokenVerifier: &security.SsoTokenVerifierMock{
 					VerifyFn: func(timestamp, ssoToken, appSlug string) (bool, error) {
 						return false, nil
@@ -270,7 +268,7 @@ func Test_AuthenticateWithSSOTokenHandlerFunc(t *testing.T) {
 				"app_slug":  "test-app-slug",
 			},
 			env: &env.AppEnv{
-				Logger: testLogger,
+				Logger: zap.NewNop(),
 				SsoTokenVerifier: &security.SsoTokenVerifierMock{
 					VerifyFn: func(timestamp, ssoToken, appSlug string) (bool, error) {
 						require.Equal(t, reqTimestamp, timestamp)
@@ -300,7 +298,7 @@ func Test_AuthenticateWithSSOTokenHandlerFunc(t *testing.T) {
 				"app_slug":  "test-app-slug",
 			},
 			env: &env.AppEnv{
-				Logger: testLogger,
+				Logger: zap.NewNop(),
 				SsoTokenVerifier: &security.SsoTokenVerifierMock{
 					VerifyFn: func(timestamp, ssoToken, appSlug string) (bool, error) {
 						require.Equal(t, reqTimestamp, timestamp)
