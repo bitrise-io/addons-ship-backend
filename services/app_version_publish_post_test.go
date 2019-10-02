@@ -11,6 +11,7 @@ import (
 	"github.com/bitrise-io/addons-ship-backend/services"
 	ctxpkg "github.com/bitrise-io/api-utils/context"
 	"github.com/bitrise-io/api-utils/httpresponse"
+	"github.com/bitrise-io/api-utils/security"
 	"github.com/bitrise-io/go-utils/envutil"
 	"github.com/c2fo/testify/require"
 	"github.com/jinzhu/gorm"
@@ -42,6 +43,11 @@ func Test_AppVersionPublishPostHandler(t *testing.T) {
 					return []bitrise.ArtifactListElementResponseModel{}, nil
 				},
 			},
+			JWTService: &security.JWTMock{
+				SignFn: func(token string) (string, error) {
+					return "", nil
+				},
+			},
 		},
 	})
 
@@ -55,6 +61,11 @@ func Test_AppVersionPublishPostHandler(t *testing.T) {
 			BitriseAPI: &testBitriseAPI{
 				getArtifactsFn: func(apiToken string, appSlug string, buildSlug string) ([]bitrise.ArtifactListElementResponseModel, error) {
 					return []bitrise.ArtifactListElementResponseModel{}, nil
+				},
+			},
+			JWTService: &security.JWTMock{
+				SignFn: func(token string) (string, error) {
+					return "", nil
 				},
 			},
 		},
@@ -83,6 +94,11 @@ func Test_AppVersionPublishPostHandler(t *testing.T) {
 				PublishTaskService: &testPublishTaskService{
 					createFn: func(*models.PublishTask) (*models.PublishTask, error) {
 						return nil, nil
+					},
+				},
+				JWTService: &security.JWTMock{
+					SignFn: func(token string) (string, error) {
+						return "", nil
 					},
 				},
 			},
@@ -136,7 +152,7 @@ func Test_AppVersionPublishPostHandler(t *testing.T) {
 						}, params.InlineEnvs)
 						require.Equal(t, map[string]interface{}{"envs": []bitrise.TaskSecret{
 							bitrise.TaskSecret{"BITRISE_ACCESS_TOKEN": "bitrise-api-addon-token"},
-							bitrise.TaskSecret{"ADDON_SHIP_APP_ACCESS_TOKEN": "addon-access-token"},
+							bitrise.TaskSecret{"ADDON_SHIP_APP_ACCESS_TOKEN": "jwt-token"},
 							bitrise.TaskSecret{"SSH_RSA_PRIVATE_KEY": ""},
 						}}, params.Secrets)
 						require.Equal(t, "http://ship.addon.url/task-webhook", params.WebhookURL)
@@ -148,6 +164,12 @@ func Test_AppVersionPublishPostHandler(t *testing.T) {
 					createFn: func(publishTask *models.PublishTask) (*models.PublishTask, error) {
 						require.Equal(t, testTaskIdentifier, publishTask.TaskID)
 						return publishTask, nil
+					},
+				},
+				JWTService: &security.JWTMock{
+					SignFn: func(token string) (string, error) {
+						require.Equal(t, "addon-access-token", token)
+						return "jwt-token", nil
 					},
 				},
 			},
@@ -203,7 +225,7 @@ func Test_AppVersionPublishPostHandler(t *testing.T) {
 						require.Equal(t, map[string]interface{}{"envs": []bitrise.TaskSecret{
 							bitrise.TaskSecret{"BITRISE_ACCESS_TOKEN": "bitrise-api-addon-token"},
 							bitrise.TaskSecret{"ADDON_SHIP_ACCESS_TOKEN": "super-secret-token"},
-							bitrise.TaskSecret{"ADDON_SHIP_APP_ACCESS_TOKEN": "addon-access-token"},
+							bitrise.TaskSecret{"ADDON_SHIP_APP_ACCESS_TOKEN": "jwt-token"},
 							bitrise.TaskSecret{"SSH_RSA_PRIVATE_KEY": ""},
 						}}, params.Secrets)
 						return &bitrise.TriggerResponse{TaskIdentifier: testTaskIdentifier}, nil
@@ -213,6 +235,12 @@ func Test_AppVersionPublishPostHandler(t *testing.T) {
 					createFn: func(publishTask *models.PublishTask) (*models.PublishTask, error) {
 						require.Equal(t, testTaskIdentifier, publishTask.TaskID)
 						return publishTask, nil
+					},
+				},
+				JWTService: &security.JWTMock{
+					SignFn: func(token string) (string, error) {
+						require.Equal(t, "addon-access-token", token)
+						return "jwt-token", nil
 					},
 				},
 			},
@@ -246,6 +274,7 @@ func Test_AppVersionPublishPostHandler(t *testing.T) {
 					},
 				},
 				PublishTaskService: &testPublishTaskService{},
+				JWTService:         &security.JWTMock{},
 			},
 			expectedStatusCode: http.StatusNotFound,
 			expectedResponse:   httpresponse.StandardErrorRespModel{Message: "Not Found"},
@@ -273,6 +302,7 @@ func Test_AppVersionPublishPostHandler(t *testing.T) {
 					},
 				},
 				PublishTaskService: &testPublishTaskService{},
+				JWTService:         &security.JWTMock{},
 			},
 			expectedInternalErr: "SQL Error: SOME-SQL-ERROR",
 		})
@@ -299,6 +329,7 @@ func Test_AppVersionPublishPostHandler(t *testing.T) {
 					},
 				},
 				PublishTaskService: &testPublishTaskService{},
+				JWTService:         &security.JWTMock{},
 			},
 			expectedInternalErr: "SOME-BITRISE-API-ERROR",
 		})
@@ -325,6 +356,11 @@ func Test_AppVersionPublishPostHandler(t *testing.T) {
 					},
 				},
 				PublishTaskService: &testPublishTaskService{},
+				JWTService: &security.JWTMock{
+					SignFn: func(token string) (string, error) {
+						return "", nil
+					},
+				},
 			},
 			expectedInternalErr: "SOME-BITRISE-API-ERROR",
 		})
@@ -353,6 +389,11 @@ func Test_AppVersionPublishPostHandler(t *testing.T) {
 				PublishTaskService: &testPublishTaskService{
 					createFn: func(*models.PublishTask) (*models.PublishTask, error) {
 						return nil, errors.New("SOME-SQL-ERROR")
+					},
+				},
+				JWTService: &security.JWTMock{
+					SignFn: func(token string) (string, error) {
+						return "", nil
 					},
 				},
 			},
