@@ -128,7 +128,7 @@ func (s *ArtifactSelector) PublishAndShareInfo(appVersion *models.AppVersion) (P
 	for _, artifact := range s.artifacts {
 		if artifact.ArtifactMeta != nil {
 			if artifact.ArtifactMeta.ProductFlavour == appVersion.ProductFlavour &&
-				artifact.ArtifactMeta.BuildType == artifactInfo.BuildType &&
+				strings.Contains(artifactInfo.BuildType, artifact.ArtifactMeta.BuildType) &&
 				artifact.ArtifactMeta.Module == artifactInfo.Module {
 				if artifact.IsUniversalAPK() {
 					universalAvailable = true
@@ -153,8 +153,8 @@ func (s *ArtifactSelector) PublishAndShareInfo(appVersion *models.AppVersion) (P
 		PublishEnabled:                publishEnabled,
 		PublicInstallPageEnabled:      publicInstallPageEnabled,
 		PublicInstallPageArtifactSlug: publicInstallPageArtifactSlug,
-		Split:                         split,
-		UniversalAvailable:            universalAvailable,
+		Split:              split,
+		UniversalAvailable: universalAvailable,
 	}, nil
 }
 
