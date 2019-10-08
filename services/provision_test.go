@@ -55,7 +55,6 @@ func Test_ProvisionHandler(t *testing.T) {
 				AppService: &testAppService{
 					findFn: func(app *models.App) (*models.App, error) {
 						require.Equal(t, "test-app-slug", app.AppSlug)
-						require.Equal(t, "test-bitrise-api-token", app.BitriseAPIToken)
 						return app, nil
 					},
 				},
