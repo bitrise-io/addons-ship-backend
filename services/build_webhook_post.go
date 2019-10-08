@@ -183,9 +183,9 @@ func BuildWebhookHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request
 			}
 			for _, version := range appVersions {
 				latestAppVersion, err := env.AppVersionService.Latest(&models.AppVersion{
-					AppID:          app.ID,
-					Platform:       "android",
-					ProductFlavour: version.ProductFlavour,
+					AppID:         app.ID,
+					Platform:      "android",
+					ProductFlavor: version.ProductFlavor,
 				})
 				if err != nil && errors.Cause(err) != gorm.ErrRecordNotFound {
 					return errors.Wrap(err, "SQL Error")

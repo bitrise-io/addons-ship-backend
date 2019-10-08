@@ -37,7 +37,7 @@ type AppVersionGetResponseData struct {
 	Size                 int64               `json:"size"`
 	SupportedDeviceTypes []string            `json:"supported_device_types"`
 	Module               string              `json:"module"`
-	ProductFlavour       string              `json:"product_flavour"`
+	ProductFlavor        string              `json:"product_flavour"`
 	BuildType            string              `json:"build_type"`
 }
 
@@ -157,7 +157,7 @@ func newArtifactVersionGetResponse(appVersion *models.AppVersion, env *env.AppEn
 		PackageName:          artifactInfo.PackageName,
 		VersionCode:          artifactInfo.VersionCode,
 		Module:               artifactInfo.Module,
-		ProductFlavour:       appVersion.ProductFlavour,
+		ProductFlavor:        appVersion.ProductFlavor,
 		BuildType:            artifactInfo.BuildType,
 	}, nil
 }

@@ -39,20 +39,20 @@ func (s *ArtifactSelector) PrepareAndroidAppVersions(buildSlug, buildNumber, bui
 	if settingErr != nil {
 		return nil, settingErr, nil
 	}
-	flavourGroups := map[string][]ArtifactListElementResponseModel{}
+	flavorGroups := map[string][]ArtifactListElementResponseModel{}
 	for _, artifact := range artifacts {
 		if artifact.ArtifactMeta != nil {
-			flavourGroups[artifact.ArtifactMeta.ProductFlavour] = append(flavourGroups[artifact.ArtifactMeta.ProductFlavour], artifact)
+			flavorGroups[artifact.ArtifactMeta.ProductFlavor] = append(flavorGroups[artifact.ArtifactMeta.ProductFlavor], artifact)
 		}
 	}
 	groupKeys := []string{}
-	for key := range flavourGroups {
+	for key := range flavorGroups {
 		groupKeys = append(groupKeys, key)
 	}
 	sort.Strings(groupKeys)
 
 	for _, key := range groupKeys {
-		group := flavourGroups[key]
+		group := flavorGroups[key]
 		buildTypeGroups := groupByBuildType(group)
 		keys := []string{}
 		for key := range buildTypeGroups {
@@ -79,7 +79,7 @@ func (s *ArtifactSelector) PrepareAndroidAppVersions(buildSlug, buildNumber, bui
 			ArtifactInfoData: artifactInfoData,
 			LastUpdate:       time.Now(),
 			CommitMessage:    buildCommitMessage,
-			ProductFlavour:   group[0].ArtifactMeta.ProductFlavour,
+			ProductFlavor:    group[0].ArtifactMeta.ProductFlavor,
 		}
 		appVersions = append(appVersions, appVersion)
 	}
@@ -87,7 +87,7 @@ func (s *ArtifactSelector) PrepareAndroidAppVersions(buildSlug, buildNumber, bui
 }
 
 // Select ...
-func (s *ArtifactSelector) Select(module, flavour string) ([]string, error) {
+func (s *ArtifactSelector) Select(module, flavor string) ([]string, error) {
 	artifactSlugs := []string{}
 	artifacts, settingErr := pickArtifactsByModule(s.artifacts, module)
 	if settingErr != nil {
@@ -95,8 +95,8 @@ func (s *ArtifactSelector) Select(module, flavour string) ([]string, error) {
 	}
 	buildTypeGroups := groupByBuildType(artifacts)
 	artifacts = buildTypeGroups["release"]
-	flavourGroups := groupByFlavour(artifacts)
-	selectedGroup := flavourGroups[flavour]
+	flavorGroups := groupByFlavor(artifacts)
+	selectedGroup := flavorGroups[flavor]
 	for _, artifact := range selectedGroup {
 		if artifact.IsStandaloneAPK() || artifact.IsUniversalAPK() || artifact.IsAAB() {
 			artifactSlugs = append(artifactSlugs, artifact.Slug)
@@ -127,7 +127,7 @@ func (s *ArtifactSelector) PublishAndShareInfo(appVersion *models.AppVersion) (P
 	}
 	for _, artifact := range s.artifacts {
 		if artifact.ArtifactMeta != nil {
-			if artifact.ArtifactMeta.ProductFlavour == appVersion.ProductFlavour &&
+			if artifact.ArtifactMeta.ProductFlavor == appVersion.ProductFlavor &&
 				strings.Contains(artifactInfo.BuildType, artifact.ArtifactMeta.BuildType) &&
 				artifact.ArtifactMeta.Module == artifactInfo.Module {
 				if artifact.IsUniversalAPK() {
@@ -178,14 +178,14 @@ func groupByBuildType(artifacts []ArtifactListElementResponseModel) map[string][
 	}
 	return buildTypeGroups
 }
-func groupByFlavour(artifacts []ArtifactListElementResponseModel) map[string][]ArtifactListElementResponseModel {
-	flavourGroups := map[string][]ArtifactListElementResponseModel{}
+func groupByFlavor(artifacts []ArtifactListElementResponseModel) map[string][]ArtifactListElementResponseModel {
+	flavorGroups := map[string][]ArtifactListElementResponseModel{}
 	for _, artifact := range artifacts {
 		if artifact.ArtifactMeta != nil {
-			flavourGroups[artifact.ArtifactMeta.ProductFlavour] = append(flavourGroups[artifact.ArtifactMeta.ProductFlavour], artifact)
+			flavorGroups[artifact.ArtifactMeta.ProductFlavor] = append(flavorGroups[artifact.ArtifactMeta.ProductFlavor], artifact)
 		}
 	}
-	return flavourGroups
+	return flavorGroups
 }
 
 func groupByModule(artifacts []ArtifactListElementResponseModel) map[string][]ArtifactListElementResponseModel {

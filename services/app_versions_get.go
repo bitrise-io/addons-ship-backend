@@ -23,7 +23,7 @@ type AppVersionsGetResponseElement struct {
 	BundleID             string   `json:"bundle_id,omitempty"`
 	PackageName          string   `json:"package_name,omitempty"`
 	Module               string   `json:"module"`
-	ProductFlavour       string   `json:"product_flavour"`
+	ProductFlavor        string   `json:"product_flavour"`
 	BuildType            string   `json:"build_type"`
 }
 
@@ -98,7 +98,7 @@ func newAppVersionsGetResponse(app *models.App, env *env.AppEnv) ([]AppVersionsG
 			VersionCode:          artifactInfo.VersionCode,
 			Module:               artifactInfo.Module,
 			BuildType:            artifactInfo.BuildType,
-			ProductFlavour:       appVersion.ProductFlavour,
+			ProductFlavor:        appVersion.ProductFlavor,
 		})
 	}
 	return elements, nil
