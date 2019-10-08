@@ -22,7 +22,6 @@ type ArtifactInfo struct {
 	VersionCode          string    `json:"version_code"`
 	MinimumOS            string    `json:"minimum_os"`
 	MinimumSDK           string    `json:"minimum_sdk"`
-	Size                 int64     `json:"size"`
 	BundleID             string    `json:"bundle_id"`
 	SupportedDeviceTypes []string  `json:"supported_device_types"`
 	PackageName          string    `json:"package_name"`

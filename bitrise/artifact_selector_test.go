@@ -55,7 +55,7 @@ func Test_ArtifactSelector_PrepareAndroidAppVersions(t *testing.T) {
 		}
 		artifactSelector := bitrise.NewArtifactSelector(testArtifacts)
 
-		expectedArtifactInfo := `{"version":"","version_code":"","minimum_os":"","minimum_sdk":"","size":0,"bundle_id":"","supported_device_types":null,"package_name":"","expire_date":"0001-01-01T00:00:00Z","ipa_export_method":"","module":"","build_type":""}`
+		expectedArtifactInfo := `{"version":"","version_code":"","minimum_os":"","minimum_sdk":"","bundle_id":"","supported_device_types":null,"package_name":"","expire_date":"0001-01-01T00:00:00Z","ipa_export_method":"","module":"","build_type":""}`
 		appVersions, settingsErr, err := artifactSelector.PrepareAndroidAppVersions(testBuildSlug, testBuildNumber, testCommitMessage, "")
 		require.NoError(t, err)
 		require.NoError(t, settingsErr)
@@ -108,7 +108,7 @@ func Test_ArtifactSelector_PrepareAndroidAppVersions(t *testing.T) {
 		}
 		artifactSelector := bitrise.NewArtifactSelector(testArtifacts)
 
-		expectedArtifactInfo := `{"version":"","version_code":"","minimum_os":"","minimum_sdk":"","size":0,"bundle_id":"","supported_device_types":null,"package_name":"","expire_date":"0001-01-01T00:00:00Z","ipa_export_method":"","module":"","build_type":"%s"}`
+		expectedArtifactInfo := `{"version":"","version_code":"","minimum_os":"","minimum_sdk":"","bundle_id":"","supported_device_types":null,"package_name":"","expire_date":"0001-01-01T00:00:00Z","ipa_export_method":"","module":"","build_type":"%s"}`
 		appVersions, settingsErr, err := artifactSelector.PrepareAndroidAppVersions(testBuildSlug, testBuildNumber, testCommitMessage, "")
 		require.NoError(t, err)
 		require.NoError(t, settingsErr)
@@ -161,7 +161,7 @@ func Test_ArtifactSelector_PrepareAndroidAppVersions(t *testing.T) {
 		}
 		artifactSelector := bitrise.NewArtifactSelector(testArtifacts)
 
-		expectedArtifactInfo := `{"version":"","version_code":"","minimum_os":"","minimum_sdk":"","size":0,"bundle_id":"","supported_device_types":null,"package_name":"","expire_date":"0001-01-01T00:00:00Z","ipa_export_method":"","module":"test-module-1","build_type":""}`
+		expectedArtifactInfo := `{"version":"","version_code":"","minimum_os":"","minimum_sdk":"","bundle_id":"","supported_device_types":null,"package_name":"","expire_date":"0001-01-01T00:00:00Z","ipa_export_method":"","module":"test-module-1","build_type":""}`
 		appVersions, settingsErr, err := artifactSelector.PrepareAndroidAppVersions(testBuildSlug, testBuildNumber, testCommitMessage, "test-module-1")
 		require.NoError(t, err)
 		require.NoError(t, settingsErr)
@@ -998,8 +998,8 @@ func Test_ArtifactSelector_PublishAndShareInfo(t *testing.T) {
 				},
 			},
 			expectedPublishAndShareInfo: bitrise.PublishAndShareInfo{
-				PublishEnabled:                true,
-				Split:                         true,
+				PublishEnabled: true,
+				Split:          true,
 				PublicInstallPageEnabled:      false,
 				PublicInstallPageArtifactSlug: "",
 				UniversalAvailable:            false,
@@ -1070,8 +1070,8 @@ func Test_ArtifactSelector_PublishAndShareInfo(t *testing.T) {
 				},
 			},
 			expectedPublishAndShareInfo: bitrise.PublishAndShareInfo{
-				PublishEnabled:                true,
-				Split:                         true,
+				PublishEnabled: true,
+				Split:          true,
 				PublicInstallPageEnabled:      true,
 				PublicInstallPageArtifactSlug: "test-apk-5",
 				UniversalAvailable:            true,
@@ -1097,8 +1097,8 @@ func Test_ArtifactSelector_PublishAndShareInfo(t *testing.T) {
 				},
 			},
 			expectedPublishAndShareInfo: bitrise.PublishAndShareInfo{
-				PublishEnabled:                true,
-				Split:                         false,
+				PublishEnabled: true,
+				Split:          false,
 				PublicInstallPageEnabled:      false,
 				PublicInstallPageArtifactSlug: "",
 				UniversalAvailable:            true,
@@ -1125,8 +1125,8 @@ func Test_ArtifactSelector_PublishAndShareInfo(t *testing.T) {
 				},
 			},
 			expectedPublishAndShareInfo: bitrise.PublishAndShareInfo{
-				PublishEnabled:                true,
-				Split:                         false,
+				PublishEnabled: true,
+				Split:          false,
 				PublicInstallPageEnabled:      true,
 				PublicInstallPageArtifactSlug: "test-apk-1",
 				UniversalAvailable:            false,
