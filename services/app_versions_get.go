@@ -23,7 +23,7 @@ type AppVersionsGetResponseElement struct {
 	BundleID             string   `json:"bundle_id,omitempty"`
 	PackageName          string   `json:"package_name,omitempty"`
 	Module               string   `json:"module"`
-	ProductFlavor        string   `json:"product_flavour"`
+	ProductFlavor        string   `json:"product_flavor"`
 	BuildType            string   `json:"build_type"`
 }
 

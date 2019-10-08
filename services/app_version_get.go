@@ -37,7 +37,7 @@ type AppVersionGetResponseData struct {
 	Size                 int64               `json:"size"`
 	SupportedDeviceTypes []string            `json:"supported_device_types"`
 	Module               string              `json:"module"`
-	ProductFlavor        string              `json:"product_flavour"`
+	ProductFlavor        string              `json:"product_flavor"`
 	BuildType            string              `json:"build_type"`
 }
 
