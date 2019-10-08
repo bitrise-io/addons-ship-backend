@@ -162,7 +162,6 @@ func Test_AppVersionGetHandler(t *testing.T) {
 							BuildSlug: "test-build-slug",
 						},
 						MinimumOS:       "11.1",
-						Size:            1024,
 						IPAExportMethod: "app-store",
 						Version:         "v1.0",
 						AppInfo: services.AppData{
