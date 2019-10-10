@@ -36,7 +36,7 @@ type ArtifactMeta struct {
 	Size             string           `json:"file_size_bytes"`
 	Scheme           string           `json:"scheme"`
 	Module           string           `json:"module"`
-	ProductFlavour   string           `json:"product_flavour"`
+	ProductFlavor    string           `json:"product_flavour"`
 	BuildType        string           `json:"build_type"`
 	Include          bool             `json:"include"`
 	Universal        string           `json:"universal"`

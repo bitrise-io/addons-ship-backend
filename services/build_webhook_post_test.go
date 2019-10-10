@@ -1278,7 +1278,7 @@ func Test_BuildWebhookHandler(t *testing.T) {
 								require.Equal(t, "android", appVersion.Platform)
 								require.Equal(t, "test-build-slug", appVersion.BuildSlug)
 								require.Equal(t, "Some commit message", appVersion.CommitMessage)
-								require.Equal(t, "test-product-flavour", appVersion.ProductFlavour)
+								require.Equal(t, "test-product-flavor", appVersion.ProductFlavor)
 								appInfo, err := appVersion.ArtifactInfo()
 								require.NoError(t, err)
 								require.Equal(t, models.ArtifactInfo{
@@ -1318,9 +1318,9 @@ func Test_BuildWebhookHandler(t *testing.T) {
 												PackageName:       "myPackage",
 												VersionCode:       "abc123",
 											},
-											Module:         "test-module",
-											ProductFlavour: "test-product-flavour",
-											BuildType:      "test-build-type",
+											Module:        "test-module",
+											ProductFlavor: "test-product-flavor",
+											BuildType:     "test-build-type",
 										},
 									},
 								}, nil
