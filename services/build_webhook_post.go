@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"runtime/debug"
 	"strings"
 	"time"
 
@@ -29,6 +30,11 @@ type BuildWebhookPayload struct {
 
 // BuildWebhookHandler ...
 func BuildWebhookHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request) error {
+	defer func() {
+		if r := recover(); r != nil {
+			env.Logger.Error("Panic recover", zap.String("trace", string(debug.Stack())))
+		}
+	}()
 	authorizedAppID, err := GetAuthorizedAppIDFromContext(r.Context())
 	if err != nil {
 		return errors.WithStack(err)
