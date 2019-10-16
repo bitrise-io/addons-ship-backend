@@ -5,10 +5,10 @@ go 1.12
 require (
 	github.com/GeertJohan/go.rice v1.0.0
 	github.com/aws/aws-sdk-go v1.19.34
-	github.com/bitrise-io/addons-firebase-testlab v0.0.0-20190904083442-e0102763f65e // indirect
 	github.com/bitrise-io/api-utils v0.0.0-20190917113134-a2aa6a6a4549
 	github.com/bitrise-io/go-crypto v0.0.0-20190716130036-2cb4b060f33a
 	github.com/bitrise-io/go-utils v0.0.0-20190507082533-8898129615c9
+	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869 // indirect
 	github.com/c2fo/testify v0.0.0-20150827203832-fba96363964a
 	github.com/daaku/go.zipexe v1.0.1 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
@@ -29,7 +29,7 @@ require (
 	github.com/rs/cors v1.6.0 // indirect
 	github.com/satori/go.uuid v1.2.0
 	github.com/segmentio/backo-go v0.0.0-20160424052352-204274ad699c // indirect
-	github.com/simonmarton/common-colors v0.0.0-20190907120037-58fe7a5367fe
+	github.com/simonmarton/common-colors v0.0.0-20191015143516-73bafb07f2ad
 	github.com/stretchr/testify v1.3.0
 	github.com/tinylib/msgp v1.1.0 // indirect
 	github.com/xtgo/uuid v0.0.0-20140804021211-a0b114877d4c // indirect
