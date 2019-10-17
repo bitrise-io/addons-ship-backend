@@ -48,6 +48,11 @@ func FromURL(url string) ([]string, error) {
 	colors := colorsFromImage(img)
 
 	commonColors, _ := calculator.GetCommonColors(colors)
+
+	if len(commonColors) == 0 {
+		return nil, fmt.Errorf("All colors were filtered")
+	}
+
 	return calculator.GenrateGradientColors(commonColors), nil
 }
 
