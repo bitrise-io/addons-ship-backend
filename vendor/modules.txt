@@ -1,0 +1,144 @@
+# github.com/GeertJohan/go.rice v1.0.0
+github.com/GeertJohan/go.rice
+github.com/GeertJohan/go.rice/embedded
+# github.com/aws/aws-sdk-go v1.19.34
+github.com/aws/aws-sdk-go/aws
+github.com/aws/aws-sdk-go/aws/credentials
+github.com/aws/aws-sdk-go/aws/session
+github.com/aws/aws-sdk-go/service/ses
+github.com/aws/aws-sdk-go/service/s3
+github.com/aws/aws-sdk-go/aws/awserr
+github.com/aws/aws-sdk-go/aws/endpoints
+github.com/aws/aws-sdk-go/internal/sdkio
+github.com/aws/aws-sdk-go/internal/ini
+github.com/aws/aws-sdk-go/internal/shareddefaults
+github.com/aws/aws-sdk-go/aws/client
+github.com/aws/aws-sdk-go/aws/corehandlers
+github.com/aws/aws-sdk-go/aws/credentials/processcreds
+github.com/aws/aws-sdk-go/aws/credentials/stscreds
+github.com/aws/aws-sdk-go/aws/csm
+github.com/aws/aws-sdk-go/aws/defaults
+github.com/aws/aws-sdk-go/aws/request
+github.com/aws/aws-sdk-go/aws/awsutil
+github.com/aws/aws-sdk-go/aws/client/metadata
+github.com/aws/aws-sdk-go/aws/signer/v4
+github.com/aws/aws-sdk-go/private/protocol
+github.com/aws/aws-sdk-go/private/protocol/query
+github.com/aws/aws-sdk-go/internal/s3err
+github.com/aws/aws-sdk-go/private/protocol/eventstream
+github.com/aws/aws-sdk-go/private/protocol/eventstream/eventstreamapi
+github.com/aws/aws-sdk-go/private/protocol/rest
+github.com/aws/aws-sdk-go/private/protocol/restxml
+github.com/aws/aws-sdk-go/private/protocol/xml/xmlutil
+github.com/aws/aws-sdk-go/internal/sdkrand
+github.com/aws/aws-sdk-go/service/sts
+github.com/aws/aws-sdk-go/aws/credentials/ec2rolecreds
+github.com/aws/aws-sdk-go/aws/credentials/endpointcreds
+github.com/aws/aws-sdk-go/aws/ec2metadata
+github.com/aws/aws-sdk-go/private/protocol/query/queryutil
+github.com/aws/aws-sdk-go/internal/sdkuri
+github.com/aws/aws-sdk-go/private/protocol/json/jsonutil
+# github.com/bitrise-io/api-utils v0.0.0-20190917113134-a2aa6a6a4549
+github.com/bitrise-io/api-utils/logging
+github.com/bitrise-io/api-utils/httpresponse
+github.com/bitrise-io/api-utils/providers
+github.com/bitrise-io/api-utils/security
+github.com/bitrise-io/api-utils/constants
+github.com/bitrise-io/api-utils/structs
+github.com/bitrise-io/api-utils/utils
+github.com/bitrise-io/api-utils/handlers
+github.com/bitrise-io/api-utils/context
+github.com/bitrise-io/api-utils/httprequest
+github.com/bitrise-io/api-utils/middleware
+github.com/bitrise-io/api-utils/proxy
+# github.com/bitrise-io/go-crypto v0.0.0-20190716130036-2cb4b060f33a
+github.com/bitrise-io/go-crypto/crypto
+# github.com/bitrise-io/go-utils v0.0.0-20190507082533-8898129615c9
+github.com/bitrise-io/go-utils/pointers
+github.com/bitrise-io/go-utils/templateutil
+github.com/bitrise-io/go-utils/envutil
+# github.com/c2fo/testify v0.0.0-20150827203832-fba96363964a
+github.com/c2fo/testify/require
+github.com/c2fo/testify/assert
+# github.com/daaku/go.zipexe v1.0.1
+github.com/daaku/go.zipexe
+# github.com/davecgh/go-spew v1.1.1
+github.com/davecgh/go-spew/spew
+# github.com/dgrijalva/jwt-go v3.2.0+incompatible
+github.com/dgrijalva/jwt-go
+# github.com/go-yaml/yaml v2.1.0+incompatible
+github.com/go-yaml/yaml
+# github.com/gocraft/work v0.5.1
+github.com/gocraft/work
+# github.com/gomodule/redigo v2.0.0+incompatible
+github.com/gomodule/redigo/redis
+github.com/gomodule/redigo/internal
+# github.com/gorilla/mux v1.7.1
+github.com/gorilla/mux
+# github.com/jinzhu/gorm v1.9.8
+github.com/jinzhu/gorm
+# github.com/jinzhu/inflection v0.0.0-20180308033659-04140366298a
+github.com/jinzhu/inflection
+# github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af
+github.com/jmespath/go-jmespath
+# github.com/justinas/alice v0.0.0-20171023064455-03f45bd4b7da
+github.com/justinas/alice
+# github.com/lib/pq v1.1.0
+github.com/lib/pq
+github.com/lib/pq/oid
+github.com/lib/pq/scram
+# github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
+github.com/nfnt/resize
+# github.com/philhofer/fwd v1.0.0
+github.com/philhofer/fwd
+# github.com/pkg/errors v0.8.1
+github.com/pkg/errors
+# github.com/pmezard/go-difflib v1.0.0
+github.com/pmezard/go-difflib/difflib
+# github.com/pressly/goose v2.6.0+incompatible
+github.com/pressly/goose
+# github.com/robfig/cron v1.2.0
+github.com/robfig/cron
+# github.com/rs/cors v1.6.0
+github.com/rs/cors
+# github.com/satori/go.uuid v1.2.0
+github.com/satori/go.uuid
+# github.com/segmentio/backo-go v0.0.0-20160424052352-204274ad699c
+github.com/segmentio/backo-go
+# github.com/simonmarton/common-colors v0.0.0-20191015143516-73bafb07f2ad
+github.com/simonmarton/common-colors/processimage
+github.com/simonmarton/common-colors/calculator
+github.com/simonmarton/common-colors/color
+github.com/simonmarton/common-colors/models
+# github.com/stretchr/testify v1.3.0
+github.com/stretchr/testify/require
+github.com/stretchr/testify/assert
+# github.com/tinylib/msgp v1.1.0
+github.com/tinylib/msgp/msgp
+# github.com/xtgo/uuid v0.0.0-20140804021211-a0b114877d4c
+github.com/xtgo/uuid
+# go.uber.org/atomic v1.4.0
+go.uber.org/atomic
+# go.uber.org/multierr v1.1.0
+go.uber.org/multierr
+# go.uber.org/zap v1.10.0
+go.uber.org/zap
+go.uber.org/zap/internal/bufferpool
+go.uber.org/zap/zapcore
+go.uber.org/zap/buffer
+go.uber.org/zap/internal/color
+go.uber.org/zap/internal/exit
+# golang.org/x/sys v0.0.0-20190509141414-a5b02f93d862
+golang.org/x/sys/windows
+# gopkg.in/DataDog/dd-trace-go.v1 v1.13.0
+gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer
+gopkg.in/DataDog/dd-trace-go.v1/contrib/gorilla/mux
+gopkg.in/DataDog/dd-trace-go.v1/ddtrace
+gopkg.in/DataDog/dd-trace-go.v1/ddtrace/ext
+gopkg.in/DataDog/dd-trace-go.v1/ddtrace/internal
+gopkg.in/DataDog/dd-trace-go.v1/internal/globalconfig
+gopkg.in/DataDog/dd-trace-go.v1/contrib/internal/httputil
+# gopkg.in/segmentio/analytics-go.v3 v3.0.1
+gopkg.in/segmentio/analytics-go.v3
+# gopkg.in/yaml.v2 v2.2.2
+gopkg.in/yaml.v2
