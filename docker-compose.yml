@@ -9,8 +9,6 @@ services:
   app:
     build:
       context: .
-      args:
-        - 'GOFLAGS=$GOFLAGS'
     volumes:
       - .:/bitrise/src
     command: gin --immediate --appPort=3003
@@ -49,8 +47,6 @@ services:
   worker:
     build:
       context: .
-      args:
-        - 'GOFLAGS=$GOFLAGS'
     volumes:
       - .:/bitrise/src
     command: go run main.go
