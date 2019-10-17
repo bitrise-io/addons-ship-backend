@@ -105,7 +105,7 @@ github.com/rs/cors
 github.com/satori/go.uuid
 # github.com/segmentio/backo-go v0.0.0-20160424052352-204274ad699c
 github.com/segmentio/backo-go
-# github.com/simonmarton/common-colors v0.0.0-20190907120037-58fe7a5367fe
+# github.com/simonmarton/common-colors v0.0.0-20191015143516-73bafb07f2ad
 github.com/simonmarton/common-colors/processimage
 github.com/simonmarton/common-colors/calculator
 github.com/simonmarton/common-colors/color
