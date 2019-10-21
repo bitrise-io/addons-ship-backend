@@ -10,7 +10,6 @@ app:
     - CODE_COV_DIR: ./_coverage
     - CODE_COV_TXT_REPORT_FILE: ${CODE_COV_DIR}/coverage.txt
     - PORT: 3003
-    - GOFLAGS: -mod=vendor
 workflows:
   _collect_package_list_without_vendor:
     steps:
