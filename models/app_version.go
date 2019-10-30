@@ -2,18 +2,11 @@ package models
 
 import (
 	"encoding/json"
-	"fmt"
 	"time"
 
 	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
-)
-
-const (
-	maxCharNumberForAndroidShortDescription = 80
-	maxCharNumberForAndroidFullDescription  = 80
-	maxCharNumberForIOSFullDescription      = 255
 )
 
 // ArtifactInfo ...
@@ -89,23 +82,6 @@ func (a *AppVersion) BeforeUpdate(scope *gorm.Scope) error {
 }
 
 func (a *AppVersion) validate(scope *gorm.Scope) error {
-	appStoreInfo, err := a.AppStoreInfo()
-	if err != nil {
-		return err
-	}
-	if a.Platform == "android" {
-		if len(appStoreInfo.ShortDescription) > maxCharNumberForAndroidShortDescription {
-			err = scope.DB().AddError(NewValidationError(fmt.Sprintf("short_description: Mustn't be longer than %d characters", maxCharNumberForAndroidShortDescription)))
-		}
-		if len(appStoreInfo.FullDescription) > maxCharNumberForAndroidFullDescription {
-			err = scope.DB().AddError(NewValidationError(fmt.Sprintf("full_description: Mustn't be longer than %d characters", maxCharNumberForAndroidFullDescription)))
-		}
-	}
-	if a.Platform == "ios" {
-		if len(appStoreInfo.FullDescription) > maxCharNumberForIOSFullDescription {
-			err = scope.DB().AddError(NewValidationError(fmt.Sprintf("full_description: Mustn't be longer than %d characters", maxCharNumberForIOSFullDescription)))
-		}
-	}
 	artifactInfo, err := a.ArtifactInfo()
 	if err != nil {
 		return errors.WithStack(err)
