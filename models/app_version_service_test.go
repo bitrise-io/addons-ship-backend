@@ -60,7 +60,7 @@ func Test_AppVersionService_Create(t *testing.T) {
 		}
 		createdAppVersion, verrs, err := appVersionService.Create(testAppVersion)
 		require.Empty(t, verrs)
-		require.EqualError(t, err, "invalid character 'i' looking for beginning of value")
+		require.EqualError(t, err, "pq: invalid input syntax for type json")
 		require.Nil(t, createdAppVersion)
 	})
 
@@ -95,10 +95,9 @@ func Test_AppVersionService_Create(t *testing.T) {
 				AppStoreInfoData: json.RawMessage(`{"short_description":"Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula e"}`),
 				ArtifactInfoData: json.RawMessage(`{"version":"1.0"}`),
 			}
-			createdAppVersion, verrs, err := appVersionService.Create(testAppVersion)
-			require.Equal(t, []error{errors.New("short_description: Mustn't be longer than 80 characters")}, verrs)
+			_, verrs, err := appVersionService.Create(testAppVersion)
+			require.Empty(t, verrs)
 			require.NoError(t, err)
-			require.Nil(t, createdAppVersion)
 		})
 
 		t.Run("when full description is longer, than 80 characters", func(t *testing.T) {
@@ -107,10 +106,9 @@ func Test_AppVersionService_Create(t *testing.T) {
 				AppStoreInfoData: json.RawMessage(`{"full_description":"Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula e"}`),
 				ArtifactInfoData: json.RawMessage(`{"version":"1.0"}`),
 			}
-			createdAppVersion, verrs, err := appVersionService.Create(testAppVersion)
-			require.Equal(t, []error{errors.New("full_description: Mustn't be longer than 80 characters")}, verrs)
+			_, verrs, err := appVersionService.Create(testAppVersion)
+			require.Empty(t, verrs)
 			require.NoError(t, err)
-			require.Nil(t, createdAppVersion)
 		})
 	})
 
@@ -121,10 +119,9 @@ func Test_AppVersionService_Create(t *testing.T) {
 				AppStoreInfoData: json.RawMessage(`{"full_description":"Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis,."}`),
 				ArtifactInfoData: json.RawMessage(`{"version":"1.0"}`),
 			}
-			createdAppVersion, verrs, err := appVersionService.Create(testAppVersion)
-			require.Equal(t, []error{errors.New("full_description: Mustn't be longer than 255 characters")}, verrs)
+			_, verrs, err := appVersionService.Create(testAppVersion)
+			require.Empty(t, verrs)
 			require.NoError(t, err)
-			require.Nil(t, createdAppVersion)
 		})
 	})
 }
@@ -216,8 +213,7 @@ func Test_AppVersionService_Update(t *testing.T) {
 		testAppVersion := createTestAppVersion(t, &models.AppVersion{Platform: "android", ArtifactInfoData: json.RawMessage(`{"version":"v1.0"}`)})
 		testAppVersion.AppStoreInfoData = json.RawMessage(`{"short_description":"Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula e"}`)
 		verrs, err := appVersionService.Update(testAppVersion, []string{"AppStoreInfoData"})
-		require.Equal(t, 1, len(verrs))
-		require.Equal(t, "short_description: Mustn't be longer than 80 characters", verrs[0].Error())
+		require.Empty(t, verrs)
 		require.NoError(t, err)
 	})
 
