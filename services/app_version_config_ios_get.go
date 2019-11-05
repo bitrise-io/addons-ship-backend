@@ -80,7 +80,7 @@ func AppVersionIosConfigGetHandler(env *env.AppEnv, w http.ResponseWriter, r *ht
 		return errors.WithStack(err)
 	}
 
-	for _, provProfileSlug := range iosSettings.SelectedAppStoreProvisioningProfile {
+	for _, provProfileSlug := range iosSettings.SelectedAppStoreProvisioningProfiles {
 		selectedProvisioningProfile, err := env.BitriseAPI.GetProvisioningProfile(appVersion.App.BitriseAPIToken, appVersion.App.AppSlug, provProfileSlug)
 		if err != nil {
 			return errors.WithStack(err)

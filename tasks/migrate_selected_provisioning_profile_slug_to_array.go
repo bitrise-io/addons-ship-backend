@@ -50,7 +50,7 @@ func MigrateSelectedProvisioningProfileSlugToArray() error {
 		newIosSettings.AppSKU = iosSettings.AppSKU
 		newIosSettings.AppleDeveloperAccountEmail = iosSettings.AppleDeveloperAccountEmail
 		newIosSettings.ApplSpecificPassword = iosSettings.ApplSpecificPassword
-		newIosSettings.SelectedAppStoreProvisioningProfile = []string{iosSettings.SelectedAppStoreProvisioningProfile}
+		newIosSettings.SelectedAppStoreProvisioningProfiles = []string{iosSettings.SelectedAppStoreProvisioningProfile}
 		newIosSettings.SelectedCodeSigningIdentity = iosSettings.SelectedCodeSigningIdentity
 		newIosSettings.IncludeBitCode = iosSettings.IncludeBitCode
 
