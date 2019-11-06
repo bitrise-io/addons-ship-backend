@@ -59,7 +59,14 @@ func MigrateSelectedProvisioningProfileSlugToArray() error {
 			return errors.WithStack(err)
 		}
 		appSettings.IosSettingsData = iosSettingsUpdateData
-		appSettingsService.Update(&appSettings, []string{"IosSettingsData"})
+		verrs, err := appSettingsService.Update(&appSettings, []string{"IosSettingsData"})
+		if len(verrs) > 0 {
+			fmt.Println("Validation error: %#v", verrs)
+		}
+		if err != nil {
+			logger.Error("Failed to update appSettings", zap.Error(errors.WithStack(err)))
+			return errors.WithStack(err)
+		}
 	}
 
 	return nil

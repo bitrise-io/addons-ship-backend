@@ -1,9 +1,11 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/bitrise-io/addons-ship-backend/tasks/lib"
 )
 
 func main() {
-	lib.MigrateSelectedProvisioningProfileSlugToArray()
+	fmt.Println(lib.MigrateSelectedProvisioningProfileSlugToArray())
 }
