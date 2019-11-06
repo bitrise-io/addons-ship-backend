@@ -1,6 +1,4 @@
-// +build mage
-
-package main
+package lib
 
 import (
 	"encoding/json"
@@ -13,7 +11,7 @@ import (
 	"go.uber.org/zap"
 )
 
-type PreviousIosSettings struct {
+type previousIosSettings struct {
 	AppSKU                              string `json:"app_sku"`
 	AppleDeveloperAccountEmail          string `json:"apple_developer_account_email"`
 	ApplSpecificPassword                string `json:"app_specific_password"`
@@ -22,6 +20,7 @@ type PreviousIosSettings struct {
 	IncludeBitCode                      bool   `json:"include_bit_code"`
 }
 
+// MigrateSelectedProvisioningProfileSlugToArray ...
 func MigrateSelectedProvisioningProfileSlugToArray() error {
 	logger := logging.WithContext(nil)
 	defer func() {
@@ -37,10 +36,10 @@ func MigrateSelectedProvisioningProfileSlugToArray() error {
 	}
 
 	appSettingsToMigrate := []models.AppSettings{}
-	dataservices.GetDB().Where("ios_settings->>'selected_app_store_provisioning_profile' IS NOT NULL").Find(&appSettingssToMigrate)
+	dataservices.GetDB().Where("ios_settings->>'selected_app_store_provisioning_profile' IS NOT NULL").Find(&appSettingsToMigrate)
 	appSettingsService := models.AppSettingsService{DB: dataservices.GetDB()}
 	for _, appSettings := range appSettingsToMigrate {
-		iosSettings := PreviousIosSettings{}
+		iosSettings := previousIosSettings{}
 		err := json.Unmarshal(appSettings.IosSettingsData, &iosSettings)
 		if err != nil {
 			logger.Error("Failed to unmarshal IosSettings struct", zap.Error(errors.WithStack(err)))
@@ -60,7 +59,14 @@ func MigrateSelectedProvisioningProfileSlugToArray() error {
 			return errors.WithStack(err)
 		}
 		appSettings.IosSettingsData = iosSettingsUpdateData
-		appSettingsService.Update(&appSettings, []string{"IosSettingsData"})
+		verrs, err := appSettingsService.Update(&appSettings, []string{"IosSettingsData"})
+		if len(verrs) > 0 {
+			fmt.Printf("Validation error: %#v\n", verrs)
+		}
+		if err != nil {
+			logger.Error("Failed to update appSettings", zap.Error(errors.WithStack(err)))
+			return errors.WithStack(err)
+		}
 	}
 
 	return nil
