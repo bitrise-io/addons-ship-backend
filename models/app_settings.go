@@ -2,6 +2,7 @@ package models
 
 import (
 	"encoding/json"
+	"reflect"
 
 	"github.com/jinzhu/gorm"
 	uuid "github.com/satori/go.uuid"
@@ -9,17 +10,17 @@ import (
 
 // IosSettings ...
 type IosSettings struct {
-	AppSKU                              string `json:"app_sku"`
-	AppleDeveloperAccountEmail          string `json:"apple_developer_account_email"`
-	ApplSpecificPassword                string `json:"app_specific_password"`
-	SelectedAppStoreProvisioningProfile string `json:"selected_app_store_provisioning_profile"`
-	SelectedCodeSigningIdentity         string `json:"selected_code_signing_identity"`
-	IncludeBitCode                      bool   `json:"include_bit_code"`
+	AppSKU                               string   `json:"app_sku"`
+	AppleDeveloperAccountEmail           string   `json:"apple_developer_account_email"`
+	ApplSpecificPassword                 string   `json:"app_specific_password"`
+	SelectedAppStoreProvisioningProfiles []string `json:"selected_app_store_provisioning_profiles"`
+	SelectedCodeSigningIdentity          string   `json:"selected_code_signing_identity"`
+	IncludeBitCode                       bool     `json:"include_bit_code"`
 }
 
 // Valid ...
 func (s IosSettings) Valid() bool {
-	return s != (IosSettings{})
+	return !reflect.DeepEqual(s, IosSettings{})
 }
 
 // AndroidSettings ...

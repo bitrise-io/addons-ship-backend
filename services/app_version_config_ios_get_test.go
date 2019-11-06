@@ -90,7 +90,7 @@ func Test_AppVersionIosConfigGetHandler(t *testing.T) {
 				},
 				AppSettingsService: &testAppSettingsService{
 					findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
-						appSettings.IosSettingsData = json.RawMessage(`{"selected_app_store_provisioning_profile":"prov-profile-slug","selected_code_signing_identity":"code-signing-slug"}`)
+						appSettings.IosSettingsData = json.RawMessage(`{"selected_app_store_provisioning_profiles":["prov-profile-slug"],"selected_code_signing_identity":"code-signing-slug"}`)
 						return appSettings, nil
 					},
 				},
@@ -107,7 +107,7 @@ func Test_AppVersionIosConfigGetHandler(t *testing.T) {
 						"en-US": services.IosListingInfo{Screenshots: map[string][]string{}},
 					},
 					Signing: services.Signing{
-						AppStoreProfileURL:                "http://here.you.can.find.the.prov.profile",
+						AppStoreProfileURL:                []string{"http://here.you.can.find.the.prov.profile"},
 						DistributionCertificateURL:        "http://here.you.can.find.the.code.signing.id",
 						DistributionCertificatePasshprase: "super-secret",
 					},
@@ -178,7 +178,7 @@ func Test_AppVersionIosConfigGetHandler(t *testing.T) {
 					findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
 						require.Equal(t, testAppID, appSettings.AppID)
 						appSettings.IosSettingsData = json.RawMessage(`{` +
-							`"selected_app_store_provisioning_profile":"prov-profile-slug","selected_code_signing_identity":"code-signing-slug"` +
+							`"selected_app_store_provisioning_profiles":["prov-profile-slug"],"selected_code_signing_identity":"code-signing-slug"` +
 							`,"include_bit_code":true,"app_sku":"some-string","apple_developer_account_email":"my.apple@email.com"` +
 							`,"app_specific_password":"my-super-secret-pass"` +
 							`}`)
@@ -227,7 +227,7 @@ func Test_AppVersionIosConfigGetHandler(t *testing.T) {
 					Signing: services.Signing{
 						DistributionCertificateURL:        "http:/code-signing.url",
 						DistributionCertificatePasshprase: "my-super-password",
-						AppStoreProfileURL:                "http://provisioning-profile.url",
+						AppStoreProfileURL:                []string{"http://provisioning-profile.url"},
 					},
 					ExportOptions:            services.ExportOptions{IncludeBitcode: true},
 					SKU:                      "some-string",
@@ -268,7 +268,7 @@ func Test_AppVersionIosConfigGetHandler(t *testing.T) {
 				},
 				AppSettingsService: &testAppSettingsService{
 					findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
-						appSettings.IosSettingsData = json.RawMessage(`{"selected_app_store_provisioning_profile":"prov-profile-slug","selected_code_signing_identity":"code-signing-slug"}`)
+						appSettings.IosSettingsData = json.RawMessage(`{"selected_app_store_provisioning_profiles":["prov-profile-slug"],"selected_code_signing_identity":"code-signing-slug"}`)
 						return appSettings, nil
 					},
 				},
@@ -313,7 +313,7 @@ func Test_AppVersionIosConfigGetHandler(t *testing.T) {
 				},
 				AppSettingsService: &testAppSettingsService{
 					findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
-						appSettings.IosSettingsData = json.RawMessage(`{"selected_app_store_provisioning_profile":"prov-profile-slug","selected_code_signing_identity":"code-signing-slug"}`)
+						appSettings.IosSettingsData = json.RawMessage(`{"selected_app_store_provisioning_profiles":["prov-profile-slug"],"selected_code_signing_identity":"code-signing-slug"}`)
 						return appSettings, nil
 					},
 				},
@@ -358,7 +358,7 @@ func Test_AppVersionIosConfigGetHandler(t *testing.T) {
 				},
 				AppSettingsService: &testAppSettingsService{
 					findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
-						appSettings.IosSettingsData = json.RawMessage(`{"selected_app_store_provisioning_profile":"prov-profile-slug","selected_code_signing_identity":"code-signing-slug"}`)
+						appSettings.IosSettingsData = json.RawMessage(`{"selected_app_store_provisioning_profiles":["prov-profile-slug"],"selected_code_signing_identity":"code-signing-slug"}`)
 						return appSettings, nil
 					},
 				},
@@ -403,7 +403,7 @@ func Test_AppVersionIosConfigGetHandler(t *testing.T) {
 				},
 				AppSettingsService: &testAppSettingsService{
 					findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
-						appSettings.IosSettingsData = json.RawMessage(`{"selected_app_store_provisioning_profile":"prov-profile-slug","selected_code_signing_identity":"code-signing-slug"}`)
+						appSettings.IosSettingsData = json.RawMessage(`{"selected_app_store_provisioning_profiles":["prov-profile-slug"],"selected_code_signing_identity":"code-signing-slug"}`)
 						return appSettings, nil
 					},
 				},
@@ -537,7 +537,7 @@ func Test_AppVersionIosConfigGetHandler(t *testing.T) {
 				},
 				AppSettingsService: &testAppSettingsService{
 					findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
-						appSettings.IosSettingsData = json.RawMessage(`{"selected_app_store_provisioning_profile":"prov-profile-slug","selected_code_signing_identity":"code-signing-slug"}`)
+						appSettings.IosSettingsData = json.RawMessage(`{"selected_app_store_provisioning_profiles":["prov-profile-slug"],"selected_code_signing_identity":"code-signing-slug"}`)
 						return appSettings, nil
 					},
 				},
@@ -582,7 +582,7 @@ func Test_AppVersionIosConfigGetHandler(t *testing.T) {
 				},
 				AppSettingsService: &testAppSettingsService{
 					findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
-						appSettings.IosSettingsData = json.RawMessage(`{"selected_app_store_provisioning_profile":"prov-profile-slug","selected_code_signing_identity":"code-signing-slug"}`)
+						appSettings.IosSettingsData = json.RawMessage(`{"selected_app_store_provisioning_profiles":["prov-profile-slug"],"selected_code_signing_identity":"code-signing-slug"}`)
 						return appSettings, nil
 					},
 				},
@@ -633,7 +633,7 @@ func Test_AppVersionIosConfigGetHandler(t *testing.T) {
 				},
 				AppSettingsService: &testAppSettingsService{
 					findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
-						appSettings.IosSettingsData = json.RawMessage(`{"selected_app_store_provisioning_profile":"prov-profile-slug","selected_code_signing_identity":"code-signing-slug"}`)
+						appSettings.IosSettingsData = json.RawMessage(`{"selected_app_store_provisioning_profiles":["prov-profile-slug"],"selected_code_signing_identity":"code-signing-slug"}`)
 						return appSettings, nil
 					},
 				},
@@ -684,7 +684,7 @@ func Test_AppVersionIosConfigGetHandler(t *testing.T) {
 				},
 				AppSettingsService: &testAppSettingsService{
 					findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
-						appSettings.IosSettingsData = json.RawMessage(`{"selected_app_store_provisioning_profile":"prov-profile-slug","selected_code_signing_identity":"code-signing-slug"}`)
+						appSettings.IosSettingsData = json.RawMessage(`{"selected_app_store_provisioning_profiles":["prov-profile-slug"],"selected_code_signing_identity":"code-signing-slug"}`)
 						return appSettings, nil
 					},
 				},
@@ -735,7 +735,7 @@ func Test_AppVersionIosConfigGetHandler(t *testing.T) {
 				},
 				AppSettingsService: &testAppSettingsService{
 					findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
-						appSettings.IosSettingsData = json.RawMessage(`{"selected_app_store_provisioning_profile":"prov-profile-slug","selected_code_signing_identity":"code-signing-slug"}`)
+						appSettings.IosSettingsData = json.RawMessage(`{"selected_app_store_provisioning_profiles":["prov-profile-slug"],"selected_code_signing_identity":"code-signing-slug"}`)
 						return appSettings, nil
 					},
 				},

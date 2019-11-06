@@ -80,11 +80,13 @@ func AppVersionIosConfigGetHandler(env *env.AppEnv, w http.ResponseWriter, r *ht
 		return errors.WithStack(err)
 	}
 
-	selectedProvisioningProfile, err := env.BitriseAPI.GetProvisioningProfile(appVersion.App.BitriseAPIToken, appVersion.App.AppSlug, iosSettings.SelectedAppStoreProvisioningProfile)
-	if err != nil {
-		return errors.WithStack(err)
+	for _, provProfileSlug := range iosSettings.SelectedAppStoreProvisioningProfiles {
+		selectedProvisioningProfile, err := env.BitriseAPI.GetProvisioningProfile(appVersion.App.BitriseAPIToken, appVersion.App.AppSlug, provProfileSlug)
+		if err != nil {
+			return errors.WithStack(err)
+		}
+		config.MetaData.Signing.AppStoreProfileURL = append(config.MetaData.Signing.AppStoreProfileURL, selectedProvisioningProfile.DownloadURL)
 	}
-	config.MetaData.Signing.AppStoreProfileURL = selectedProvisioningProfile.DownloadURL
 
 	codeSigningID, err := env.BitriseAPI.GetCodeSigningIdentity(appVersion.App.BitriseAPIToken, appVersion.App.AppSlug, iosSettings.SelectedCodeSigningIdentity)
 	if err != nil {
@@ -143,9 +145,9 @@ type IosListingInfo struct {
 
 // Signing ...
 type Signing struct {
-	DistributionCertificatePasshprase string `json:"distribution_certificate_passhprase"`
-	DistributionCertificateURL        string `json:"distribution_certificate_url"`
-	AppStoreProfileURL                string `json:"app_store_profile_url"`
+	DistributionCertificatePasshprase string   `json:"distribution_certificate_passhprase"`
+	DistributionCertificateURL        string   `json:"distribution_certificate_url"`
+	AppStoreProfileURL                []string `json:"app_store_profile_url"`
 }
 
 // ExportOptions ...
