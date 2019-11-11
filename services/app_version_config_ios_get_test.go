@@ -149,8 +149,7 @@ func Test_AppVersionIosConfigGetHandler(t *testing.T) {
 					getProvisioningProfileFn: func(apiToken, appSlug, provProfileSlug string) (*bitrise.ProvisioningProfile, error) {
 						require.Equal(t, "test-app-slug", appSlug)
 						require.Equal(t, "test-api-token", apiToken)
-						require.Equal(t, "prov-profile-slug", provProfileSlug)
-						return &bitrise.ProvisioningProfile{Slug: "prov-profile-slug", DownloadURL: "http://provisioning-profile.url"}, nil
+						return &bitrise.ProvisioningProfile{Slug: "prov-profile-slug", DownloadURL: "http://provisioning-profile.url/" + provProfileSlug}, nil
 					},
 					getCodeSigningIdentityFn: func(apiToken, appSlug, codeSignIDSlug string) (*bitrise.CodeSigningIdentity, error) {
 						require.Equal(t, "test-app-slug", appSlug)
@@ -178,7 +177,7 @@ func Test_AppVersionIosConfigGetHandler(t *testing.T) {
 					findFn: func(appSettings *models.AppSettings) (*models.AppSettings, error) {
 						require.Equal(t, testAppID, appSettings.AppID)
 						appSettings.IosSettingsData = json.RawMessage(`{` +
-							`"selected_app_store_provisioning_profiles":["prov-profile-slug"],"selected_code_signing_identity":"code-signing-slug"` +
+							`"selected_app_store_provisioning_profiles":["prov-profile-slug","prov-profile-slug-2"],"selected_code_signing_identity":"code-signing-slug"` +
 							`,"include_bit_code":true,"app_sku":"some-string","apple_developer_account_email":"my.apple@email.com"` +
 							`,"app_specific_password":"my-super-secret-pass"` +
 							`}`)
@@ -227,7 +226,7 @@ func Test_AppVersionIosConfigGetHandler(t *testing.T) {
 					Signing: services.Signing{
 						DistributionCertificateURL:        "http:/code-signing.url",
 						DistributionCertificatePasshprase: "my-super-password",
-						AppStoreProfileURL:                "http://provisioning-profile.url",
+						AppStoreProfileURL:                "http://provisioning-profile.url/prov-profile-slug|http://provisioning-profile.url/prov-profile-slug-2",
 					},
 					ExportOptions:            services.ExportOptions{IncludeBitcode: true},
 					SKU:                      "some-string",
