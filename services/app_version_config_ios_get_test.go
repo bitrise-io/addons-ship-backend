@@ -107,7 +107,7 @@ func Test_AppVersionIosConfigGetHandler(t *testing.T) {
 						"en-US": services.IosListingInfo{Screenshots: map[string][]string{}},
 					},
 					Signing: services.Signing{
-						AppStoreProfileURL:                []string{"http://here.you.can.find.the.prov.profile"},
+						AppStoreProfileURL:                "http://here.you.can.find.the.prov.profile",
 						DistributionCertificateURL:        "http://here.you.can.find.the.code.signing.id",
 						DistributionCertificatePasshprase: "super-secret",
 					},
@@ -227,7 +227,7 @@ func Test_AppVersionIosConfigGetHandler(t *testing.T) {
 					Signing: services.Signing{
 						DistributionCertificateURL:        "http:/code-signing.url",
 						DistributionCertificatePasshprase: "my-super-password",
-						AppStoreProfileURL:                []string{"http://provisioning-profile.url"},
+						AppStoreProfileURL:                "http://provisioning-profile.url",
 					},
 					ExportOptions:            services.ExportOptions{IncludeBitcode: true},
 					SKU:                      "some-string",

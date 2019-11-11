@@ -1,6 +1,7 @@
 package services
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -85,7 +86,11 @@ func AppVersionIosConfigGetHandler(env *env.AppEnv, w http.ResponseWriter, r *ht
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		config.MetaData.Signing.AppStoreProfileURL = append(config.MetaData.Signing.AppStoreProfileURL, selectedProvisioningProfile.DownloadURL)
+		if len(config.MetaData.Signing.AppStoreProfileURL) > 0 {
+			config.MetaData.Signing.AppStoreProfileURL = fmt.Sprintf("%s|%s", config.MetaData.Signing.AppStoreProfileURL, selectedProvisioningProfile.DownloadURL)
+		} else {
+			config.MetaData.Signing.AppStoreProfileURL = selectedProvisioningProfile.DownloadURL
+		}
 	}
 
 	codeSigningID, err := env.BitriseAPI.GetCodeSigningIdentity(appVersion.App.BitriseAPIToken, appVersion.App.AppSlug, iosSettings.SelectedCodeSigningIdentity)
@@ -145,9 +150,9 @@ type IosListingInfo struct {
 
 // Signing ...
 type Signing struct {
-	DistributionCertificatePasshprase string   `json:"distribution_certificate_passhprase"`
-	DistributionCertificateURL        string   `json:"distribution_certificate_url"`
-	AppStoreProfileURL                []string `json:"app_store_profile_url"`
+	DistributionCertificatePasshprase string `json:"distribution_certificate_passhprase"`
+	DistributionCertificateURL        string `json:"distribution_certificate_url"`
+	AppStoreProfileURL                string `json:"app_store_profile_url"`
 }
 
 // ExportOptions ...
