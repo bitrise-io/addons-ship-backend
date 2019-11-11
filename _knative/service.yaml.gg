@@ -129,7 +129,7 @@ spec:
           image: us.gcr.io/{{getenvRequired "GCP_PROJECT_ID"}}/addons-ship-backend:{{getenvRequired "TAG"}}
           env:
             - name: WORKER
-              value: true
+              value: "true"
             - name: DB_HOST
               value: 127.0.0.1
             - name: DB_NAME
