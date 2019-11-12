@@ -21,7 +21,7 @@ workflows:
                 mkdir zip_tmp
                 unzip -o "$BITRISE_SHIP_ARTIFACT" -d ./zip_tmp
                 mv zip_tmp/*.xcarchive ./ship.xcarchive
-      - export-xcarchive@1.0.1:
+      - export-xcarchive@1.0.3:
           inputs:
             - export_method: app-store
             - archive_path: './ship.xcarchive'
