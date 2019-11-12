@@ -13,7 +13,9 @@ require (
 	github.com/daaku/go.zipexe v1.0.1 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/go-yaml/yaml v2.1.0+incompatible
+	github.com/gobuffalo/uuid v2.0.5+incompatible
 	github.com/gocraft/work v0.5.1
+	github.com/gofrs/uuid v3.2.0+incompatible // indirect
 	github.com/gomodule/redigo v2.0.0+incompatible
 	github.com/gorilla/mux v1.7.1 // indirect
 	github.com/jinzhu/gorm v1.9.8

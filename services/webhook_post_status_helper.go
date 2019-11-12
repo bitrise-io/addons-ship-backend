@@ -60,6 +60,7 @@ func webhookPostStatusHelper(env *env.AppEnv, w http.ResponseWriter, r *http.Req
 		if err != nil {
 			return errors.WithStack(err)
 		}
+		env.AnalyticsClient.PublishFinished(appVersion.App.AppSlug, appVersion.ID, eventStatus)
 		return httpresponse.RespondWithSuccess(w, httpresponse.StandardErrorRespModel{Message: "ok"})
 	default:
 		return errors.Errorf("Invalid status of incoming webhook: %s", data.NewStatus)

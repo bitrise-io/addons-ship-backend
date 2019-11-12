@@ -5,6 +5,7 @@ import (
 	"os"
 	"time"
 
+	uuid "github.com/satori/go.uuid"
 	"go.uber.org/zap"
 	segment "gopkg.in/segmentio/analytics-go.v3"
 )
@@ -12,6 +13,7 @@ import (
 // Interface ...
 type Interface interface {
 	FirstVersionCreated(appSlug, buildSlug, platform string)
+	PublishFinished(appSlug string, appVersionID uuid.UUID, result string)
 }
 
 // Client ...
@@ -46,5 +48,21 @@ func (c *Client) FirstVersionCreated(appSlug, buildSlug, platform string) {
 	})
 	if err != nil {
 		c.logger.Warn("Failed to track analytics (FirstVersionCreated)", zap.Error(err))
+	}
+}
+
+// PublishFinished ...
+func (c *Client) PublishFinished(appSlug string, appVersionID uuid.UUID, result string) {
+	err := c.client.Enqueue(segment.Track{
+		UserId: appSlug,
+		Event:  "Publish task finished",
+		Properties: segment.NewProperties().
+			Set("app_slug", appSlug).
+			Set("app_version_id", appVersionID).
+			Set("result", result).
+			Set("datetime", time.Now()),
+	})
+	if err != nil {
+		c.logger.Warn("Failed to track analytics (PublishFinished)", zap.Error(err))
 	}
 }
