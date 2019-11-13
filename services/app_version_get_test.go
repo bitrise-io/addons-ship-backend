@@ -307,7 +307,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 						Version:              "v1.0",
 						MinimumOS:            "10.1",
 						IPAExportMethod:      "development",
-						PublicInstallPageURL: "http://don.t.go.there",
+						PublicInstallPageURL: "http://don.t.go.there?source=ship",
 						AppInfo: services.AppData{
 							Title:       "The Adventures of Stealy",
 							AppIconURL:  pointers.NewStringPtr("https://bit.ly/1LixVJu"),
@@ -376,7 +376,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 						MinimumOS:            "10.1",
 						SupportedDeviceTypes: []string{"iPhone", "iPod Touch", "iPad"},
 						IPAExportMethod:      "development",
-						PublicInstallPageURL: "http://don.t.go.there",
+						PublicInstallPageURL: "http://don.t.go.there?source=ship",
 						AppInfo: services.AppData{
 							Title:       "The Adventures of Stealy",
 							AppIconURL:  pointers.NewStringPtr("https://bit.ly/1LixVJu"),
@@ -442,7 +442,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 						MinimumOS:            "10.1",
 						SupportedDeviceTypes: []string{"Unknown"},
 						IPAExportMethod:      "development",
-						PublicInstallPageURL: "http://don.t.go.there",
+						PublicInstallPageURL: "http://don.t.go.there?source=ship",
 						AppInfo: services.AppData{
 							Title:       "The Adventures of Stealy",
 							AppIconURL:  pointers.NewStringPtr("https://bit.ly/1LixVJu"),
@@ -659,7 +659,7 @@ func Test_AppVersionGetHandler(t *testing.T) {
 				expectedResponse: services.AppVersionGetResponse{
 					Data: services.AppVersionGetResponseData{
 						AppVersion:           &models.AppVersion{Platform: "android"},
-						PublicInstallPageURL: "http://don.t.go.there",
+						PublicInstallPageURL: "http://don.t.go.there?source=ship",
 						PublishEnabled:       true,
 						Module:               "test-module",
 						ProductFlavor:        "test-product-flavor",

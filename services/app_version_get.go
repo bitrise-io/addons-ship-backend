@@ -1,6 +1,7 @@
 package services
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/bitrise-io/addons-ship-backend/bitrise"
@@ -117,6 +118,10 @@ func newArtifactVersionGetResponse(appVersion *models.AppVersion, env *env.AppEn
 		)
 		if err != nil {
 			return AppVersionGetResponseData{}, errors.WithStack(err)
+		}
+
+		if artifactPublicInstallPageURL != "" {
+			artifactPublicInstallPageURL = fmt.Sprintf("%s?source=ship", artifactPublicInstallPageURL)
 		}
 	}
 
