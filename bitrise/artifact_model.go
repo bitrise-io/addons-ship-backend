@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-var debugIPAExportMethods = [...]string{"development", "ad-hoc"}
+var debugIPAExportMethods = [...]string{"development", "ad-hoc", "enterprise"}
 
 // AppInfo ...
 type AppInfo struct {
