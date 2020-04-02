@@ -1,6 +1,7 @@
 package dataservices
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"os"
@@ -11,6 +12,8 @@ import (
 
 	// Postgres driver
 	_ "github.com/lib/pq"
+
+	migrate "github.com/rubenv/sql-migrate"
 )
 
 const (
@@ -121,4 +124,31 @@ func connectionString(defaultParams ConnectionParams, withDB bool) (string, erro
 		connString += " sslmode=" + connParams.SSLMode
 	}
 	return connString, nil
+}
+
+// RunMigrations ...
+func RunMigrations() error {
+	migrations := &migrate.FileMigrationSource{
+		Dir: "db/migrations",
+	}
+	dbURL := os.Getenv("DATABASE_URL")
+	if dbURL == "" {
+		return errors.New("No database URL provided")
+	}
+	db, err := sql.Open("postgres", dbURL)
+	if err != nil {
+		return errors.WithMessage(err, "Failed to open DB connection")
+	}
+	defer func() {
+		err := db.Close()
+		if err != nil {
+			fmt.Printf("Failed to close DB: %s\n", err)
+		}
+	}()
+	n, err := migrate.Exec(db, "postgres", migrations, migrate.Up)
+	if err != nil {
+		return errors.WithMessage(err, "Failed to run migrations")
+	}
+	fmt.Printf("%d new migrations migrated\n", n)
+	return nil
 }
