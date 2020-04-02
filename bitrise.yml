@@ -20,6 +20,17 @@ workflows:
                 set -ex
                 no_vendor_paths="$(go list ./... | grep -v vendor)"
                 envman add --key GOLIST_WITHOUT_VENDOR --value "$no_vendor_paths"
+  _setup_test_env:
+    steps:
+      - script:
+          title: GOLIST_WITHOUT_VENDOR
+          inputs:
+            - content: |
+                set -ex
+                docker-compose rm -f
+                docker-compose build
+                docker-compose up --no-start
+                docker-compose start db
   code-coverage:
     description: |
       Generates code coverage report
@@ -62,7 +73,7 @@ workflows:
                 docker-compose run --rm app bash -c 'go run db/main.go -dir db up'
   ci:
     before_run:
-      - setup
+      - _setup_test_env
     steps:
       - script:
           title: Run CI
