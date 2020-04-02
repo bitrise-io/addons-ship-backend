@@ -61,6 +61,8 @@ workflows:
                 docker-compose exec db psql -U $DB_USER -c "create database $DB_NAME;"
                 docker-compose run --rm app bash -c 'go run db/main.go -dir db up'
   ci:
+    before_run:
+      - setup
     steps:
       - script:
           title: Run CI
