@@ -10,18 +10,18 @@ import (
 	"github.com/pkg/errors"
 )
 
-func prepareAppVersionForIosPlatform(w http.ResponseWriter, r *http.Request, artifacts []bitrise.ArtifactListElementResponseModel, buildSlug string) (*models.AppVersion, error) {
+func prepareAppVersionForIosPlatform(w http.ResponseWriter, r *http.Request, artifacts []bitrise.ArtifactListElementResponseModel, buildSlug string) (*models.AppVersion, error, error) {
 	selectedArtifact, _, _, _, _ := selectIosArtifact(artifacts)
 	if selectedArtifact == nil || reflect.DeepEqual(*selectedArtifact, bitrise.ArtifactListElementResponseModel{}) {
-		return nil, errors.New("No iOS artifact found")
+		return nil, errors.New("No iOS artifact found"), nil
 	}
 
 	if selectedArtifact.ArtifactMeta == nil {
-		return nil, errors.New("No artifact meta data found for artifact")
+		return nil, nil, errors.New("No artifact meta data found for artifact")
 	}
 
 	if reflect.DeepEqual(selectedArtifact.ArtifactMeta.AppInfo, bitrise.AppInfo{}) {
-		return nil, errors.New("No artifact app info found for artifact")
+		return nil, nil, errors.New("No artifact app info found for artifact")
 	}
 	// if reflect.DeepEqual(selectedArtifact.ArtifactMeta.ProvisioningInfo, bitrise.ProvisioningInfo{}) {
 	// 	return nil, errors.New("No artifact provisioning info found for artifact")
@@ -47,7 +47,7 @@ func prepareAppVersionForIosPlatform(w http.ResponseWriter, r *http.Request, art
 	}
 	artifactInfoData, err := json.Marshal(artifactInfo)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, nil, errors.WithStack(err)
 	}
 
 	return &models.AppVersion{
@@ -56,7 +56,7 @@ func prepareAppVersionForIosPlatform(w http.ResponseWriter, r *http.Request, art
 		ArtifactInfoData: artifactInfoData,
 		Scheme:           selectedArtifact.ArtifactMeta.Scheme,
 		BuildNumber:      selectedArtifact.ArtifactMeta.AppInfo.BuildNumber,
-	}, nil
+	}, nil, nil
 }
 
 func hasIosArtifact(artifacts []bitrise.ArtifactListElementResponseModel) bool {

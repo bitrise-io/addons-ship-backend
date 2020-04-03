@@ -126,40 +126,44 @@ func BuildWebhookHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request
 			if err != nil && errors.Cause(err) != gorm.ErrRecordNotFound {
 				return errors.Wrap(err, "SQL Error")
 			}
-			appVersion, err := prepareAppVersionForIosPlatform(w, r, artifacts, params.BuildSlug)
+			appVersion, ignorableErr, err := prepareAppVersionForIosPlatform(w, r, artifacts, params.BuildSlug)
 			if err != nil {
 				return err
 			}
-			appVersion.LastUpdate = time.Now()
-			appVersion.AppID = authorizedAppID
-			appVersion.CommitMessage = buildDetails.CommitMessage
-			if latestAppVersion != nil {
-				appVersion.AppStoreInfoData = latestAppVersion.AppStoreInfoData
-			}
-			appVersion, verrs, err := env.AppVersionService.Create(appVersion)
-			if len(verrs) > 0 {
-				return httpresponse.RespondWithUnprocessableEntity(w, verrs)
-			}
-			if err != nil {
-				return errors.Wrap(err, "SQL Error")
-			}
-			iosVersionCreated = true
-			if latestAppVersion != nil {
-				err := env.WorkerService.EnqueueCopyUploadablesToNewAppVersion(latestAppVersion.ID.String(), appVersion.ID.String())
+			if ignorableErr == nil {
+				appVersion.LastUpdate = time.Now()
+				appVersion.AppID = authorizedAppID
+				appVersion.CommitMessage = buildDetails.CommitMessage
+				if latestAppVersion != nil {
+					appVersion.AppStoreInfoData = latestAppVersion.AppStoreInfoData
+				}
+				appVersion, verrs, err := env.AppVersionService.Create(appVersion)
+				if len(verrs) > 0 {
+					return httpresponse.RespondWithUnprocessableEntity(w, verrs)
+				}
 				if err != nil {
-					return errors.Wrap(err, "Worker Error")
+					return errors.Wrap(err, "SQL Error")
+				}
+				iosVersionCreated = true
+				if latestAppVersion != nil {
+					err := env.WorkerService.EnqueueCopyUploadablesToNewAppVersion(latestAppVersion.ID.String(), appVersion.ID.String())
+					if err != nil {
+						return errors.Wrap(err, "Worker Error")
+					}
+				} else {
+					env.AnalyticsClient.FirstVersionCreated(app.AppSlug, params.BuildSlug, "ios")
+				}
+
+				_, err = env.AppVersionEventService.Create(&models.AppVersionEvent{AppVersionID: appVersion.ID, Text: "New version was created"})
+				if err != nil {
+					return errors.Wrap(err, "SQL Error")
+				}
+
+				if err := sendNotification(env, appVersion, app, appDetails); err != nil {
+					return errors.WithStack(err)
 				}
 			} else {
-				env.AnalyticsClient.FirstVersionCreated(app.AppSlug, params.BuildSlug, "ios")
-			}
-
-			_, err = env.AppVersionEventService.Create(&models.AppVersionEvent{AppVersionID: appVersion.ID, Text: "New version was created"})
-			if err != nil {
-				return errors.Wrap(err, "SQL Error")
-			}
-
-			if err := sendNotification(env, appVersion, app, appDetails); err != nil {
-				return errors.WithStack(err)
+				env.Logger.Warn("iOS app version create skipped", zap.Error(ignorableErr))
 			}
 		}
 
