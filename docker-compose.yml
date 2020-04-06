@@ -3,7 +3,7 @@ services:
   db:
     image: postgres
     ports:
-      - '5433:5432'
+      - '5432:5432'
   redis:
     image: redis
   app:
@@ -15,7 +15,7 @@ services:
     ports:
       - '3003:3003'
     links:
-      - db:postgres
+      - postgres
       - redis
     environment:
       PORT: 3003
@@ -53,7 +53,7 @@ services:
       - .:/bitrise/src
     command: go run main.go
     links:
-      - db:postgres
+      - postgres
       - redis
     environment:
       WORKER: 'true'
