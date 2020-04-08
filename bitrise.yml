@@ -60,7 +60,26 @@ workflows:
                 docker-compose exec db psql -U $DB_USER -c "drop database if exists $DB_NAME;"
                 docker-compose exec db psql -U $DB_USER -c "create database $DB_NAME;"
                 docker-compose run --rm app bash -c 'go run db/main.go -dir db up'
+  _setup_env:
+    steps:
+      - script@1.1.5:
+          title: Setup server
+          inputs:
+            - content: |
+                #!/bin/bash
+                set -ex
+                docker prune image
+                docker-compose rm -f
+                docker-compose build
+                docker-compose up --no-start
+                docker-compose start db
+                docker-compose exec db bash -c "while !</dev/tcp/db/5432; do echo 'Waiting for db..' && sleep 1; done;"
+                docker-compose exec db psql -U $DB_USER -c "drop database if exists $DB_NAME;"
+                docker-compose exec db psql -U $DB_USER -c "create database $DB_NAME;"
+                docker-compose run --rm app bash -c 'go run db/main.go -dir db up'
   ci:
+    before_run:
+      - _setup_env
     steps:
       - script:
           title: Run CI
