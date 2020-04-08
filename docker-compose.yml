@@ -1,9 +1,11 @@
 version: '3'
 services:
-  postgres:
+  db:
     image: postgres:12.2
     ports:
-      - '5432:5432'
+      - '5433:5432'
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
   redis:
     image: redis
   app:
@@ -15,7 +17,7 @@ services:
     ports:
       - '3003:3003'
     links:
-      - postgres
+      - db:postgres
       - redis
     environment:
       PORT: 3003
@@ -53,7 +55,7 @@ services:
       - .:/bitrise/src
     command: go run main.go
     links:
-      - postgres
+      - db:postgres
       - redis
     environment:
       WORKER: 'true'
