@@ -68,7 +68,7 @@ workflows:
             - content: |
                 #!/bin/bash
                 set -ex
-                docker prune image
+                docker image prune
                 docker-compose rm -f
                 docker-compose build
                 docker-compose up --no-start
