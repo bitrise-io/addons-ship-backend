@@ -61,7 +61,7 @@ func prepareAppVersionForIosPlatform(w http.ResponseWriter, r *http.Request, art
 
 func hasIosArtifact(artifacts []bitrise.ArtifactListElementResponseModel) bool {
 	for _, artifact := range artifacts {
-		if artifact.IsIPA() || artifact.IsXCodeArchive() {
+		if artifact.IsXCodeArchive() {
 			return true
 		}
 	}
