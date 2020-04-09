@@ -714,8 +714,9 @@ func Test_BuildWebhookHandler(t *testing.T) {
 						AppContactService: &testAppContactService{},
 						WorkerService:     &testWorkerService{},
 					},
-					requestBody:         `{"build_slug":"test-build-slug","build_triggered_workflow":"ios-wf"}`,
-					expectedInternalErr: "No iOS artifact found",
+					requestBody:        `{"build_slug":"test-build-slug","build_triggered_workflow":"ios-wf"}`,
+					expectedStatusCode: http.StatusOK,
+					expectedResponse:   nil,
 				})
 			})
 
