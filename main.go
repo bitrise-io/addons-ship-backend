@@ -11,6 +11,7 @@ import (
 	"github.com/bitrise-io/addons-ship-backend/router"
 	"github.com/bitrise-io/addons-ship-backend/worker"
 	"github.com/bitrise-io/api-utils/logging"
+	_ "github.com/heroku/x/hmetrics/onload"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"

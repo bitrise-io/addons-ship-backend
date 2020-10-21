@@ -14,11 +14,11 @@ require (
 	github.com/go-yaml/yaml v2.1.0+incompatible
 	github.com/gocraft/work v0.5.1
 	github.com/gomodule/redigo v2.0.0+incompatible
+	github.com/heroku/x v0.0.26
 	github.com/jinzhu/gorm v1.9.12
 	github.com/justinas/alice v1.2.0
 	github.com/lib/pq v1.3.0
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect
-	github.com/opentracing/opentracing-go v1.1.0 // indirect
 	github.com/philhofer/fwd v1.0.0 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/pressly/goose v2.6.0+incompatible
