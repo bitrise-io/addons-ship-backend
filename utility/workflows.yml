@@ -6,13 +6,13 @@ app:
 workflows:
   resign_archive_app_store:
     steps:
-      - activate-ssh-key@4.0.3:
+      - activate-ssh-key@4:
           run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
       - git::git@github.com:bitrise-io/addons-ship-metadata-downloader-ios.git@update:
           inputs:
             - bitrise_ship_data_source: '$CONFIG_JSON_URL'
-      - certificate-and-profile-installer@1.10.1: {}
-      - script@1.1.5:
+      - certificate-and-profile-installer@1.10: {}
+      - script@1.1:
           inputs:
             - content: |-
                 #!/usr/bin/env bash
@@ -21,7 +21,7 @@ workflows:
                 mkdir zip_tmp
                 unzip -o "$BITRISE_SHIP_ARTIFACT" -d ./zip_tmp
                 mv zip_tmp/*.xcarchive ./ship.xcarchive
-      - export-xcarchive@1.0.3:
+      - export-xcarchive@2.1:
           inputs:
             - export_method: app-store
             - archive_path: './ship.xcarchive'
@@ -37,10 +37,10 @@ workflows:
   resign_android:
     title: Re-sign Android artifact and deploy to store
     steps:
-      - activate-ssh-key@4.0.3:
+      - activate-ssh-key@4.0:
           run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
-      - git::git@github.com:bitrise-io/addons-ship-bg-worker-task-android-prepare.git@master:
-      - sign-apk:
+      - git::git@github.com:bitrise-io/addons-ship-bg-worker-task-android-prepare.git@master: {}
+      - sign-apk@1.7:
           run_if: true
           inputs:
             - android_app: '$APP_LIST'
@@ -48,7 +48,7 @@ workflows:
             - keystore_password: '$KEYSTORE_PASSWORD'
             - keystore_alias: '$KEYSTORE_ALIAS'
             - private_key_password: '$KEYSTORE_PRIVATE_KEY_PASSWORD'
-      - google-play-deploy:
+      - google-play-deploy@3.1:
           inputs:
             - service_account_json_key_path: '$SERVICE_ACCOUNT_JSON_URL'
             - package_name: '$PACKAGE_NAME'
