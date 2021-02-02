@@ -97,11 +97,8 @@ workflows:
             - content: |
                 #!/bin/bash
                 set -ex
-                # lint
-                while read -r line; do
-                  echo "-> Linting: $line"
-                  golint -set_exit_status $line
-                done <<< "$GOLIST_WITHOUT_VENDOR"
+                wget -O- -nv https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.35.2
+                ./bin/golangci-lint run
   test-with-docker:
     steps:
       - script@1.1.5:
