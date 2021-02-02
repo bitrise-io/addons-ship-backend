@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/bitrise-io/addons-ship-backend/bitrise"
 	"github.com/bitrise-io/addons-ship-backend/env"
 	"github.com/bitrise-io/addons-ship-backend/models"
 	"github.com/bitrise-io/api-utils/httprequest"
@@ -56,7 +57,7 @@ func AppSettingsPatchHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Req
 		return errors.Wrap(err, "SQL Error")
 	}
 
-	appSettingsToUpdate, updateWhiteList, err := prepareAppSettingsToUpdate(appSettingsToUpdate, params)
+	appSettingsToUpdate, updateWhiteList, err := prepareAppSettingsToUpdate(env.BitriseAPI, appSettingsToUpdate, params)
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -79,9 +80,20 @@ func AppSettingsPatchHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Req
 	})
 }
 
-func prepareAppSettingsToUpdate(appSettingsToUpdate *models.AppSettings, params AppSettingsPatchParams) (*models.AppSettings, []string, error) {
+func prepareAppSettingsToUpdate(api bitrise.APIInterface, appSettingsToUpdate *models.AppSettings, params AppSettingsPatchParams) (*models.AppSettings, []string, error) {
 	updateWhiteList := []string{}
 	if params.IosSettings.Valid() {
+		if len(params.IosSettings.SelectedAppStoreProvisioningProfiles) > 0 {
+			existingProvProfiles, err := api.GetProvisioningProfiles(appSettingsToUpdate.App.BitriseAPIToken, appSettingsToUpdate.App.AppSlug)
+			if err != nil {
+				return nil, []string{}, err
+			}
+			existingProvProfileSlugs := []string{}
+			for _, provProfile := range existingProvProfiles {
+				existingProvProfileSlugs = append(existingProvProfileSlugs, provProfile.Slug)
+			}
+			params.IosSettings.ValidateSelectedProvisioningProfileSlugs(existingProvProfileSlugs)
+		}
 		iosSettings, err := json.Marshal(params.IosSettings)
 		if err != nil {
 			return nil, nil, errors.WithStack(err)
