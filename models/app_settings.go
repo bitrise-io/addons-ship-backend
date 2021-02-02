@@ -23,6 +23,26 @@ func (s IosSettings) Valid() bool {
 	return !reflect.DeepEqual(s, IosSettings{})
 }
 
+// ValidateProvisioningProfileSlugs ...
+func (s *IosSettings) ValidateSelectedProvisioningProfileSlugs(provProfiles []string) {
+	if len(provProfiles) == 0 && len(s.SelectedAppStoreProvisioningProfiles) > 0 {
+		s.SelectedAppStoreProvisioningProfiles = []string{}
+		return
+	}
+	for _, slug := range s.SelectedAppStoreProvisioningProfiles {
+		valid := false
+		for _, provProfileSlug := range provProfiles {
+			if provProfileSlug == slug {
+				valid = true
+				break
+			}
+		}
+		if !valid {
+			s.SelectedAppStoreProvisioningProfiles = removeFromArray(s.SelectedAppStoreProvisioningProfiles, slug)
+		}
+	}
+}
+
 // AndroidSettings ...
 type AndroidSettings struct {
 	Track                  string `json:"track"`

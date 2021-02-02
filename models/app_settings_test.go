@@ -20,6 +20,20 @@ func Test_IosSettings(t *testing.T) {
 	})
 }
 
+func Test_IosSettings_ValidateSelectedProvisioningProfileSlugs(t *testing.T) {
+	t.Run("when selected slugs' list contains not existing", func(t *testing.T) {
+		iosSetting := models.IosSettings{SelectedAppStoreProvisioningProfiles: []string{"prov-1-slug", "prov-2-slug", "prov-3-slug"}}
+		iosSetting.ValidateSelectedProvisioningProfileSlugs([]string{"prov-1-slug", "prov-3-slug"})
+		require.Equal(t, []string{"prov-1-slug", "prov-3-slug"}, iosSetting.SelectedAppStoreProvisioningProfiles)
+	})
+
+	t.Run("when selected slugs' list contains only existing ones", func(t *testing.T) {
+		iosSetting := models.IosSettings{SelectedAppStoreProvisioningProfiles: []string{"prov-1-slug", "prov-2-slug"}}
+		iosSetting.ValidateSelectedProvisioningProfileSlugs([]string{"prov-1-slug", "prov-2-slug", "prov-3-slug"})
+		require.Equal(t, []string{"prov-1-slug", "prov-2-slug"}, iosSetting.SelectedAppStoreProvisioningProfiles)
+	})
+}
+
 func Test_AppSettings_IosSettings(t *testing.T) {
 	t.Run("when ios settings is valid", func(t *testing.T) {
 		testAppSettings := models.AppSettings{IosSettingsData: json.RawMessage(`{"app_sku":"2019061"}`)}
