@@ -8,7 +8,7 @@ import (
 	"github.com/gocraft/work"
 	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
-	"github.com/satori/go.uuid"
+	uuid "github.com/satori/go.uuid"
 	"go.uber.org/zap"
 )
 
@@ -44,10 +44,7 @@ func (c *Context) StoreLogToAWS(job *work.Job) error {
 		chunks = append(chunks, chunk)
 	}
 	sort.Slice(chunks, func(i, j int) bool {
-		if chunks[i].Pos < chunks[j].Pos {
-			return true
-		}
-		return false
+		return chunks[i].Pos < chunks[j].Pos
 	})
 
 	content := []byte{}
