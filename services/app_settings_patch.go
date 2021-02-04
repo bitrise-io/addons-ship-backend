@@ -11,6 +11,7 @@ import (
 	"github.com/bitrise-io/api-utils/httpresponse"
 	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
+	"github.com/thoas/go-funk"
 )
 
 // AppSettingsPatchParams ...
@@ -88,9 +89,12 @@ func prepareAppSettingsToUpdate(api bitrise.APIInterface, appSettingsToUpdate *m
 			if err != nil {
 				return nil, []string{}, err
 			}
-			existingProvProfileSlugs := []string{}
-			for _, provProfile := range existingProvProfiles {
-				existingProvProfileSlugs = append(existingProvProfileSlugs, provProfile.Slug)
+			existingProvProfileSlugsI := funk.Map(existingProvProfiles, func(provProfile bitrise.ProvisioningProfile) string {
+				return provProfile.Slug
+			})
+			existingProvProfileSlugs, ok := existingProvProfileSlugsI.([]string)
+			if !ok {
+				return nil, []string{}, errors.New("Failed to convert slice of prov profile slugs")
 			}
 			params.IosSettings.ValidateSelectedProvisioningProfileSlugs(existingProvProfileSlugs)
 		}

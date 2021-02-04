@@ -6,6 +6,7 @@ import (
 
 	"github.com/jinzhu/gorm"
 	uuid "github.com/satori/go.uuid"
+	"github.com/thoas/go-funk"
 )
 
 // IosSettings ...
@@ -38,7 +39,7 @@ func (s *IosSettings) ValidateSelectedProvisioningProfileSlugs(provProfiles []st
 			}
 		}
 		if !valid {
-			s.SelectedAppStoreProvisioningProfiles = removeFromArray(s.SelectedAppStoreProvisioningProfiles, slug)
+			s.SelectedAppStoreProvisioningProfiles = funk.SubtractString(s.SelectedAppStoreProvisioningProfiles, []string{slug})
 		}
 	}
 }
