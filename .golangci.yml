@@ -1,0 +1,8 @@
+issues:
+  exclude-rules:
+    - linters:
+        - staticcheck
+      text: "SA1012:"
+    - linters:
+        - staticcheck
+      text: "SA1016:"
