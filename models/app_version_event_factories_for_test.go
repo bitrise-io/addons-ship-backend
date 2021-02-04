@@ -8,6 +8,7 @@ import (
 	"github.com/c2fo/testify/require"
 )
 
+//nolint:unused,deadcode
 func createTestAppVersionEvent(t *testing.T, appVersionEvent *models.AppVersionEvent) *models.AppVersionEvent {
 	err := dataservices.GetDB().Create(appVersionEvent).Error
 	require.NoError(t, err)

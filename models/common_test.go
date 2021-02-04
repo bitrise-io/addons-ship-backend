@@ -12,12 +12,14 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+//nolint:unused,deadcode
 func panicIfErr(err error) {
 	if err != nil {
 		panic(err)
 	}
 }
 
+//nolint:unused,deadcode
 func recreateTestDB(t *testing.T) {
 	dataservices.Close()
 
@@ -48,6 +50,7 @@ func recreateTestDB(t *testing.T) {
 	runTestMigrations(t, db)
 }
 
+//nolint:unused,deadcode
 func recreateAndInitTestDB(t *testing.T) {
 	// create an empty database for tests
 	recreateTestDB(t)
@@ -57,16 +60,19 @@ func recreateAndInitTestDB(t *testing.T) {
 	panicIfErr(dataservices.InitializeConnection(dataservices.ConnectionParams{DBName: testDBName}, true))
 }
 
+//nolint:unused,deadcode
 func closeTestDB() {
 	// close test DB
 	dataservices.Close()
 }
 
+//nolint:unused,deadcode
 func exportEnvVarsForTests(t *testing.T) {
 	_, err := envutil.RevokableSetenv("APP_WEBHOOK_SECRET_ENCRYPT_KEY", "06042e86a7bd421c642c8c3e4ab13840")
 	require.NoError(t, err)
 }
 
+//nolint:unused,deadcode
 func prepareDB(t *testing.T) func() {
 	t.Log("prepare DB")
 	recreateAndInitTestDB(t)
@@ -74,6 +80,7 @@ func prepareDB(t *testing.T) func() {
 	return closeTestDB
 }
 
+//nolint:unused,deadcode
 func runTestMigrations(t *testing.T, db *gorm.DB) {
 	for _, migration := range []struct {
 		message string

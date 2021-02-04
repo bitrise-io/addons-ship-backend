@@ -39,6 +39,9 @@ func AppContactPutHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Reques
 	}
 
 	notificationPreferences, err := json.Marshal(params)
+	if err != nil {
+		return errors.Wrap(err, "Failed to marshal notification preferences")
+	}
 	appContact.NotificationPreferencesData = notificationPreferences
 	err = env.AppContactService.Update(appContact, []string{"NotificationPreferencesData"})
 	if err != nil {

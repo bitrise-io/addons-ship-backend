@@ -172,7 +172,6 @@ func (h *testAuthHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 type AuthenticationTestCase struct {
-	desc              string
 	requestHeaders    map[string]string
 	requestFormValues map[string]string
 	env               *env.AppEnv
