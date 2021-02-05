@@ -30,18 +30,8 @@ func (s *IosSettings) ValidateSelectedProvisioningProfileSlugs(provProfiles []st
 		s.SelectedAppStoreProvisioningProfiles = []string{}
 		return
 	}
-	for _, slug := range s.SelectedAppStoreProvisioningProfiles {
-		valid := false
-		for _, provProfileSlug := range provProfiles {
-			if provProfileSlug == slug {
-				valid = true
-				break
-			}
-		}
-		if !valid {
-			s.SelectedAppStoreProvisioningProfiles = funk.SubtractString(s.SelectedAppStoreProvisioningProfiles, []string{slug})
-		}
-	}
+
+	s.SelectedAppStoreProvisioningProfiles = funk.IntersectString(s.SelectedAppStoreProvisioningProfiles, provProfiles)
 }
 
 // AndroidSettings ...
