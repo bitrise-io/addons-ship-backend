@@ -28,6 +28,7 @@ require (
 	github.com/segmentio/backo-go v0.0.0-20200129164019-23eae7c10bd3 // indirect
 	github.com/simonmarton/common-colors v0.0.0-20191015143516-73bafb07f2ad
 	github.com/stretchr/testify v1.5.1
+	github.com/thoas/go-funk v0.7.0
 	github.com/tinylib/msgp v1.1.2 // indirect
 	github.com/xtgo/uuid v0.0.0-20140804021211-a0b114877d4c // indirect
 	go.uber.org/zap v1.14.1

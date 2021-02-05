@@ -153,8 +153,8 @@ func (s *ArtifactSelector) PublishAndShareInfo(appVersion *models.AppVersion) (P
 		PublishEnabled:                publishEnabled,
 		PublicInstallPageEnabled:      publicInstallPageEnabled,
 		PublicInstallPageArtifactSlug: publicInstallPageArtifactSlug,
-		Split:              split,
-		UniversalAvailable: universalAvailable,
+		Split:                         split,
+		UniversalAvailable:            universalAvailable,
 	}, nil
 }
 

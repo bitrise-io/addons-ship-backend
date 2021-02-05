@@ -6,6 +6,7 @@ import (
 
 	"github.com/jinzhu/gorm"
 	uuid "github.com/satori/go.uuid"
+	"github.com/thoas/go-funk"
 )
 
 // IosSettings ...
@@ -21,6 +22,16 @@ type IosSettings struct {
 // Valid ...
 func (s IosSettings) Valid() bool {
 	return !reflect.DeepEqual(s, IosSettings{})
+}
+
+// ValidateProvisioningProfileSlugs ...
+func (s *IosSettings) ValidateSelectedProvisioningProfileSlugs(provProfiles []string) {
+	if len(provProfiles) == 0 && len(s.SelectedAppStoreProvisioningProfiles) > 0 {
+		s.SelectedAppStoreProvisioningProfiles = []string{}
+		return
+	}
+
+	s.SelectedAppStoreProvisioningProfiles = funk.IntersectString(s.SelectedAppStoreProvisioningProfiles, provProfiles)
 }
 
 // AndroidSettings ...
