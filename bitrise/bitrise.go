@@ -136,7 +136,7 @@ func (a *API) GetArtifacts(authToken, appSlug, buildSlug string) ([]ArtifactList
 
 // GetArtifactPublicInstallPageURL ...
 func (a *API) GetArtifactPublicInstallPageURL(authToken, appSlug, buildSlug, artifactSlug string) (string, error) {
-	resp, err := a.doRequest(authToken, "GET", fmt.Sprintf("/apps/%s/builds/%s/artifacts/%s", appSlug, buildSlug, artifactSlug), nil)
+	resp, err := a.doRequest(authToken, "GET", fmt.Sprintf("apps/%s/builds/%s/artifacts/%s", appSlug, buildSlug, artifactSlug), nil)
 	if err != nil {
 		return "", errors.WithStack(err)
 	}
@@ -153,7 +153,7 @@ func (a *API) GetArtifactPublicInstallPageURL(authToken, appSlug, buildSlug, art
 
 // GetArtifact ...
 func (a *API) GetArtifact(authToken, appSlug, buildSlug, artifactSlug string) (*ArtifactShowResponseItemModel, error) {
-	resp, err := a.doRequest(authToken, "GET", fmt.Sprintf("/apps/%s/builds/%s/artifacts/%s", appSlug, buildSlug, artifactSlug), nil)
+	resp, err := a.doRequest(authToken, "GET", fmt.Sprintf("apps/%s/builds/%s/artifacts/%s", appSlug, buildSlug, artifactSlug), nil)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -170,7 +170,7 @@ func (a *API) GetArtifact(authToken, appSlug, buildSlug, artifactSlug string) (*
 
 // GetAppDetails ...
 func (a *API) GetAppDetails(authToken, appSlug string) (*AppDetails, error) {
-	resp, err := a.doRequest(authToken, "GET", "/apps/"+appSlug, nil)
+	resp, err := a.doRequest(authToken, "GET", "apps/"+appSlug, nil)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -187,7 +187,7 @@ func (a *API) GetAppDetails(authToken, appSlug string) (*AppDetails, error) {
 
 // GetBuildDetails ...
 func (a *API) GetBuildDetails(authToken, appSlug, buildSlug string) (*BuildDetails, error) {
-	resp, err := a.doRequest(authToken, "GET", fmt.Sprintf("/apps/%s/builds/%s", appSlug, buildSlug), nil)
+	resp, err := a.doRequest(authToken, "GET", fmt.Sprintf("apps/%s/builds/%s", appSlug, buildSlug), nil)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -204,7 +204,7 @@ func (a *API) GetBuildDetails(authToken, appSlug, buildSlug string) (*BuildDetai
 
 // GetProvisioningProfiles ...
 func (a *API) GetProvisioningProfiles(authToken, appSlug string) ([]ProvisioningProfile, error) {
-	resp, err := a.doRequest(authToken, "GET", fmt.Sprintf("/apps/%s/provisioning-profiles", appSlug), nil)
+	resp, err := a.doRequest(authToken, "GET", fmt.Sprintf("apps/%s/provisioning-profiles", appSlug), nil)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -221,7 +221,7 @@ func (a *API) GetProvisioningProfiles(authToken, appSlug string) ([]Provisioning
 
 // GetProvisioningProfile ...
 func (a *API) GetProvisioningProfile(authToken, appSlug, provProfileSlug string) (*ProvisioningProfile, error) {
-	resp, err := a.doRequest(authToken, "GET", fmt.Sprintf("/apps/%s/provisioning-profiles/%s", appSlug, provProfileSlug), nil)
+	resp, err := a.doRequest(authToken, "GET", fmt.Sprintf("apps/%s/provisioning-profiles/%s", appSlug, provProfileSlug), nil)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -238,7 +238,7 @@ func (a *API) GetProvisioningProfile(authToken, appSlug, provProfileSlug string)
 
 // GetCodeSigningIdentities ...
 func (a *API) GetCodeSigningIdentities(authToken, appSlug string) ([]CodeSigningIdentity, error) {
-	resp, err := a.doRequest(authToken, "GET", fmt.Sprintf("/apps/%s/build-certificates", appSlug), nil)
+	resp, err := a.doRequest(authToken, "GET", fmt.Sprintf("apps/%s/build-certificates", appSlug), nil)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -255,7 +255,7 @@ func (a *API) GetCodeSigningIdentities(authToken, appSlug string) ([]CodeSigning
 
 // GetCodeSigningIdentity ...
 func (a *API) GetCodeSigningIdentity(authToken, appSlug, codeSigningSlug string) (*CodeSigningIdentity, error) {
-	resp, err := a.doRequest(authToken, "GET", fmt.Sprintf("/apps/%s/build-certificates/%s", appSlug, codeSigningSlug), nil)
+	resp, err := a.doRequest(authToken, "GET", fmt.Sprintf("apps/%s/build-certificates/%s", appSlug, codeSigningSlug), nil)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -272,7 +272,7 @@ func (a *API) GetCodeSigningIdentity(authToken, appSlug, codeSigningSlug string)
 
 // GetAndroidKeystoreFiles ...
 func (a *API) GetAndroidKeystoreFiles(authToken, appSlug string) ([]AndroidKeystoreFile, error) {
-	resp, err := a.doRequest(authToken, "GET", fmt.Sprintf("/apps/%s/android-keystore-files", appSlug), nil)
+	resp, err := a.doRequest(authToken, "GET", fmt.Sprintf("apps/%s/android-keystore-files", appSlug), nil)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -289,7 +289,7 @@ func (a *API) GetAndroidKeystoreFiles(authToken, appSlug string) ([]AndroidKeyst
 
 // GetAndroidKeystoreFile ...
 func (a *API) GetAndroidKeystoreFile(authToken, appSlug, keystoreSlug string) (*AndroidKeystoreFile, error) {
-	resp, err := a.doRequest(authToken, "GET", fmt.Sprintf("/apps/%s/generic-project-files/%s", appSlug, keystoreSlug), nil)
+	resp, err := a.doRequest(authToken, "GET", fmt.Sprintf("apps/%s/generic-project-files/%s", appSlug, keystoreSlug), nil)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -306,7 +306,7 @@ func (a *API) GetAndroidKeystoreFile(authToken, appSlug, keystoreSlug string) (*
 
 // GetServiceAccountFiles ...
 func (a *API) GetServiceAccountFiles(authToken, appSlug string) ([]GenericProjectFile, error) {
-	resp, err := a.doRequest(authToken, "GET", fmt.Sprintf("/apps/%s/generic-project-files", appSlug), nil)
+	resp, err := a.doRequest(authToken, "GET", fmt.Sprintf("apps/%s/generic-project-files", appSlug), nil)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -330,7 +330,7 @@ func (a *API) GetServiceAccountFiles(authToken, appSlug string) ([]GenericProjec
 
 // GetServiceAccountFile ...
 func (a *API) GetServiceAccountFile(authToken, appSlug, serviceJSONSLug string) (*GenericProjectFile, error) {
-	resp, err := a.doRequest(authToken, "GET", fmt.Sprintf("/apps/%s/generic-project-files/%s", appSlug, serviceJSONSLug), nil)
+	resp, err := a.doRequest(authToken, "GET", fmt.Sprintf("apps/%s/generic-project-files/%s", appSlug, serviceJSONSLug), nil)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -413,7 +413,7 @@ func (a *API) RegisterWebhook(authToken, appSlug, secret, callbackURL string) er
 }
 
 func (a *API) listArtifacts(authToken, appSlug, buildSlug, next string) (*artifactListResponseModel, error) {
-	path := fmt.Sprintf("/apps/%s/builds/%s/artifacts", appSlug, buildSlug)
+	path := fmt.Sprintf("apps/%s/builds/%s/artifacts", appSlug, buildSlug)
 	if next != "" {
 		path = fmt.Sprintf("%s?next=%s", path, next)
 	}
