@@ -67,13 +67,24 @@ func ProvisionHandler(env *env.AppEnv, w http.ResponseWriter, r *http.Request) e
 		if err != nil {
 			return errors.WithStack(err)
 		}
+	case err == nil:
+		var verrs []error
+		var err error
+		app.APIToken = crypto.SecureRandomHash(50)
+		verrs, err = env.AppService.Update(app, []string{"APIToken"})
+		if len(verrs) > 0 {
+			return httpresponse.RespondWithUnprocessableEntity(w, verrs)
+		}
+		if err != nil {
+			return errors.Wrap(err, "SQL Error")
+		}
 	case err != nil:
 		return errors.Wrap(err, "SQL Error")
 	}
 
 	envs := []Env{
-		Env{Key: "ADDON_SHIP_API_URL", Value: env.AddonHostURL},
-		Env{Key: "ADDON_SHIP_API_TOKEN", Value: app.APIToken},
+		{Key: "ADDON_SHIP_API_URL", Value: env.AddonHostURL},
+		{Key: "ADDON_SHIP_API_TOKEN", Value: app.APIToken},
 	}
 	return httpresponse.RespondWithSuccess(w, ProvisionPostResponse{Envs: envs})
 }
