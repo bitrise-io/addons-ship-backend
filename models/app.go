@@ -16,7 +16,7 @@ type App struct {
 	AppSlug           string         `json:"app_slug"`
 	Plan              string         `json:"plan"`
 	BitriseAPIToken   string         `json:"-"`
-	APIToken          string         `json:"-"`
+	APIToken          string         `db:"api_token" json:"-"`
 	EncryptedSecret   []byte         `json:"-"`
 	EncryptedSecretIV []byte         `json:"-"`
 	HeaderColor1      string         `db:"header_color_1" gorm:"column:header_color_1" json:"header_color_1"`

@@ -28,34 +28,24 @@ func Test_ProvisionHandler(t *testing.T) {
 		requestBody: `{}`,
 	})
 
-	t.Run("ok", func(t *testing.T) {
-		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
-			env: &env.AppEnv{
-				AppService: &testAppService{
-					findFn: func(app *models.App) (*models.App, error) {
-						return app, nil
-					},
-				},
-				BitriseAPI: &testBitriseAPI{},
-			},
-			requestBody:        `{}`,
-			expectedStatusCode: http.StatusOK,
-			expectedResponse: services.ProvisionPostResponse{
-				Envs: []services.Env{
-					services.Env{Key: "ADDON_SHIP_API_URL"},
-					services.Env{Key: "ADDON_SHIP_API_TOKEN"},
-				},
-			},
-		})
-	})
-
 	t.Run("ok when app exists", func(t *testing.T) {
 		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
 			env: &env.AppEnv{
+				AddonHostURL: "http://ship.addon.url",
 				AppService: &testAppService{
 					findFn: func(app *models.App) (*models.App, error) {
 						require.Equal(t, "test-app-slug", app.AppSlug)
+						app.APIToken = "existing-token"
 						return app, nil
+					},
+					updateFn: func(app *models.App, whitelist []string) ([]error, error) {
+						require.Equal(t, []string{"APIToken"}, whitelist)
+						require.NotEmpty(t, app.APIToken)
+						require.NotEqual(t, app.APIToken, "existing-token")
+
+						// overwrite random token so we can make response expectations
+						app.APIToken = "new-random-token"
+						return nil, nil
 					},
 				},
 				BitriseAPI: &testBitriseAPI{},
@@ -64,8 +54,8 @@ func Test_ProvisionHandler(t *testing.T) {
 			expectedStatusCode: http.StatusOK,
 			expectedResponse: services.ProvisionPostResponse{
 				Envs: []services.Env{
-					services.Env{Key: "ADDON_SHIP_API_URL"},
-					services.Env{Key: "ADDON_SHIP_API_TOKEN"},
+					{Key: "ADDON_SHIP_API_URL", Value: "http://ship.addon.url"},
+					{Key: "ADDON_SHIP_API_TOKEN", Value: "new-random-token"},
 				},
 			},
 		})
@@ -113,8 +103,8 @@ func Test_ProvisionHandler(t *testing.T) {
 			expectedStatusCode: http.StatusOK,
 			expectedResponse: services.ProvisionPostResponse{
 				Envs: []services.Env{
-					services.Env{Key: "ADDON_SHIP_API_URL", Value: "http://ship.addon.url"},
-					services.Env{Key: "ADDON_SHIP_API_TOKEN", Value: "test-api-token"},
+					{Key: "ADDON_SHIP_API_URL", Value: "http://ship.addon.url"},
+					{Key: "ADDON_SHIP_API_TOKEN", Value: "test-api-token"},
 				},
 			},
 		})
@@ -138,7 +128,7 @@ func Test_ProvisionHandler(t *testing.T) {
 		})
 	})
 
-	t.Run("when database error happest at find", func(t *testing.T) {
+	t.Run("when database error happens at find", func(t *testing.T) {
 		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
 			env: &env.AppEnv{
 				AppService: &testAppService{

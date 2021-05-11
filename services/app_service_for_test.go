@@ -5,7 +5,7 @@ import "github.com/bitrise-io/addons-ship-backend/models"
 type testAppService struct {
 	createFn func(*models.App) (*models.App, error)
 	findFn   func(*models.App) (*models.App, error)
-	updateFn func(*models.App) ([]error, error)
+	updateFn func(*models.App, []string) ([]error, error)
 	deleteFn func(*models.App) error
 }
 
@@ -25,7 +25,7 @@ func (a *testAppService) Find(app *models.App) (*models.App, error) {
 
 func (a *testAppService) Update(app *models.App, whitelist []string) (validationErrors []error, dbErr error) {
 	if a.updateFn != nil {
-		return a.updateFn(app)
+		return a.updateFn(app, whitelist)
 	}
 	panic("You have to override Update function in tests")
 }
