@@ -128,7 +128,7 @@ func Test_ProvisionHandler(t *testing.T) {
 		})
 	})
 
-	t.Run("when database error happest at find", func(t *testing.T) {
+	t.Run("when database error happens at find", func(t *testing.T) {
 		performControllerTest(t, httpMethod, url, handler, ControllerTestCase{
 			env: &env.AppEnv{
 				AppService: &testAppService{
