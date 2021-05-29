@@ -20,10 +20,18 @@ func (a *AppService) Create(app *App) (*App, error) {
 
 // Find ...
 func (a *AppService) Find(app *App) (*App, error) {
-	err := a.DB.Preload("AppVersions").Where(app).First(app).Error
+	err := a.DB.Where(app).First(app).Error
 	if err != nil {
 		return nil, err
 	}
+
+	var appVersions []AppVersion
+	err = a.DB.Where("app_id = ?", app.ID).Order("created_at DESC").Limit(100).Find(&appVersions).Error
+	if err != nil {
+		return nil, err
+	}
+
+	app.AppVersions = appVersions
 	return app, nil
 }
 
