@@ -1,0 +1,13 @@
+---
+# We have to use this hack because knative 0.7 doesn't support sidecar pods and fieldRef
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: start-script
+  namespace: addons-ship-backend
+data:
+  entrypoint.sh: |-
+    #!/bin/bash
+      cloud_sql_proxy -instances="${INSTANCE_CONNECTION_NAME}"=tcp:5432 -credential_file=/secrets/cloudsql/service-account-creds.json &
+      sleep 1
+      /bin/app

@@ -1,0 +1,211 @@
+---
+apiVersion: serving.knative.dev/v1alpha1
+kind: Service
+metadata:
+  name: addons-ship-backend
+  namespace: addons-ship-backend
+spec:
+  template:
+    metadata:
+      annotations:
+        # Knative concurrency-based autoscaling (default).
+        autoscaling.knative.dev/class: kpa.autoscaling.knative.dev
+        autoscaling.knative.dev/metric: concurrency
+        # # Disable scale to zero with a minScale of 1.
+        autoscaling.knative.dev/minScale: "1"
+        # Limit scaling to 100 pods.
+        autoscaling.knative.dev/maxScale: "100"
+      name: addons-ship-backend-{{getenvRequired "TAG"}}
+    spec:
+      containers:
+        - name:  addons-ship-backend
+          image: us.gcr.io/{{getenvRequired "GCP_PROJECT_ID"}}/addons-ship-backend:{{getenvRequired "TAG"}}
+          ports:
+            - containerPort: 3003
+          env:
+            - name: DB_HOST
+              value: 127.0.0.1
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: addons-ship-backend-db-secret
+                  key:  POSTGRES_DBNAME
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: addons-ship-backend-db-secret
+                  key:  POSTGRES_USER
+            - name: DB_PWD
+              valueFrom:
+                secretKeyRef:
+                  name: addons-ship-backend-db-secret
+                  key:  POSTGRES_PASSW
+            - name: DB_SSL_MODE
+              value: disable
+            - name: AWS_BUCKET
+              value: {{getenvRequired "$AWS_BUCKET"}}
+            - name: AWS_REGION
+              value: {{getenvRequired "$AWS_REGION"}}
+            - name: AWS_MAIL_REGION
+              value: {{getenvRequired "$AWS_MAIL_REGION"}}
+            - name: AWS_ACCESS_KEY_ID
+              value: {{getenvRequired "$AWS_ACCESS_KEY_ID"}}
+            - name: AWS_SECRET_ACCESS_KEY
+              value: {{getenvRequired "$AWS_SECRET_ACCESS_KEY"}}
+            - name: ADDON_ACCESS_TOKEN
+              value: development-token
+            - name: ADDON_SSO_SECRET_TOKEN
+              value: development-sso-token
+            - name: ADDON_HOST_URL
+              value: {{getenvRequired "$ADDON_HOST_URL"}}
+            - name: BITRISE_DEN_SERVER_ADMIN_SECRET_HEADER_KEY
+              value: {{getenvRequired "$BITRISE_DEN_SERVER_ADMIN_SECRET_HEADER_KEY"}}
+            - name: BITRISE_DEN_SERVER_ADMIN_SECRET
+              value: {{getenvRequired "$BITRISE_DEN_SERVER_ADMIN_SECRET"}}
+            - name: BITRISE_DEN_WEBHOOK_SECRET
+              value: {{getenvRequired "$BITRISE_DEN_WEBHOOK_SECRET"}}
+            - name: BITRISE_API_ROOT_URL
+              value: {{getenvRequired "$BITRISE_API_ROOT_URL"}}
+            - name: JWT_PUBLIC_KEY
+              value: {{getenvRequired "$JWT_PUBLIC_KEY"}}
+            - name: JWT_PRIVATE_KEY
+              value: {{getenvRequired "$JWT_PRIVATE_KEY"}}
+            - name: EMAIL_CONFIRM_LANDING_URL
+              value: {{getenvRequired "$EMAIL_CONFIRM_LANDING_URL"}}
+            - name: APP_WEBHOOK_SECRET_ENCRYPT_KEY
+              value: {{getenvRequired "$APP_WEBHOOK_SECRET_ENCRYPT_KEY"}}
+            - name: REDIS_URL
+              value: {{getenvRequired "$REDIS_URL"}}
+            - name: MAIL_TO_SEND
+              value: {{getenvRequired "$MAIL_TO_SEND"}}
+            - name: TARGET_EMAIL
+              value: {{getenvRequired "$TARGET_EMAIL"}}
+            - name: ADDON_FRONTEND_HOST_URL
+              value: {{getenvRequired "$ADDON_FRONTEND_HOST_URL"}}
+            - name: ADDON_AUTH_SET_COOKIE_DOMAIN
+              value: {{getenvRequired "$ADDON_AUTH_SET_COOKIE_DOMAIN"}}
+
+          command:
+            - /bin/entrypoint.sh
+
+          volumeMounts:
+            - name: service-account-creds
+              mountPath: /secrets/cloudsql
+              readOnly: true
+            - name: configmap-volume
+              mountPath: /bin/entrypoint.sh
+              readOnly: true
+              subPath: entrypoint.sh
+
+      volumes:
+        - name: service-account-creds
+          secret:
+            secretName: service-account-creds
+        - name: configmap-volume
+          configMap:
+            defaultMode: 0700
+            name: start-script
+---
+apiVersion: serving.knative.dev/v1alpha1
+kind: Service
+metadata:
+  name: addons-ship-backend-worker
+  namespace: addons-ship-backend
+spec:
+  template:
+    metadata:
+      annotations:
+        # Knative concurrency-based autoscaling (default).
+        autoscaling.knative.dev/class: kpa.autoscaling.knative.dev
+        autoscaling.knative.dev/metric: concurrency
+        # # Disable scale to zero with a minScale of 1.
+        autoscaling.knative.dev/minScale: "1"
+        # Limit scaling to 2 pods.
+        autoscaling.knative.dev/maxScale: "2"
+      name: addons-ship-backend-worker-{{getenvRequired "TAG"}}
+    spec:
+      containers:
+        - name:  addons-ship-backend-worker
+          image: us.gcr.io/{{getenvRequired "GCP_PROJECT_ID"}}/addons-ship-backend:{{getenvRequired "TAG"}}
+          env:
+            - name: WORKER
+              value: "true"
+            - name: DB_HOST
+              value: 127.0.0.1
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: addons-ship-backend-db-secret
+                  key:  POSTGRES_DBNAME
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: addons-ship-backend-db-secret
+                  key:  POSTGRES_USER
+            - name: DB_PWD
+              valueFrom:
+                secretKeyRef:
+                  name: addons-ship-backend-db-secret
+                  key:  POSTGRES_PASSW
+            - name: DB_SSL_MODE
+              value: disable
+            - name: AWS_BUCKET
+              value: {{getenvRequired "$AWS_BUCKET"}}
+            - name: AWS_REGION
+              value: {{getenvRequired "$AWS_REGION"}}
+            - name: AWS_MAIL_REGION
+              value: {{getenvRequired "$AWS_MAIL_REGION"}}
+            - name: AWS_ACCESS_KEY_ID
+              value: {{getenvRequired "$AWS_ACCESS_KEY_ID"}}
+            - name: AWS_SECRET_ACCESS_KEY
+              value: {{getenvRequired "$AWS_SECRET_ACCESS_KEY"}}
+            - name: ADDON_ACCESS_TOKEN
+              value: development-token
+            - name: ADDON_SSO_SECRET_TOKEN
+              value: development-sso-token
+            - name: ADDON_HOST_URL
+              value: {{getenvRequired "$ADDON_HOST_URL"}}
+            - name: BITRISE_DEN_SERVER_ADMIN_SECRET_HEADER_KEY
+              value: {{getenvRequired "$BITRISE_DEN_SERVER_ADMIN_SECRET_HEADER_KEY"}}
+            - name: BITRISE_DEN_SERVER_ADMIN_SECRET
+              value: {{getenvRequired "$BITRISE_DEN_SERVER_ADMIN_SECRET"}}
+            - name: BITRISE_DEN_WEBHOOK_SECRET
+              value: {{getenvRequired "$BITRISE_DEN_WEBHOOK_SECRET"}}
+            - name: BITRISE_API_ROOT_URL
+              value: {{getenvRequired "$BITRISE_API_ROOT_URL"}}
+            - name: JWT_PUBLIC_KEY
+              value: {{getenvRequired "$JWT_PUBLIC_KEY"}}
+            - name: JWT_PRIVATE_KEY
+              value: {{getenvRequired "$JWT_PRIVATE_KEY"}}
+            - name: EMAIL_CONFIRM_LANDING_URL
+              value: {{getenvRequired "$EMAIL_CONFIRM_LANDING_URL"}}
+            - name: APP_WEBHOOK_SECRET_ENCRYPT_KEY
+              value: {{getenvRequired "$APP_WEBHOOK_SECRET_ENCRYPT_KEY"}}
+            - name: REDIS_URL
+              value: {{getenvRequired "$REDIS_URL"}}
+            - name: ADDON_FRONTEND_HOST_URL
+              value: {{getenvRequired "$ADDON_FRONTEND_HOST_URL"}}
+            - name: ADDON_AUTH_SET_COOKIE_DOMAIN
+              value: {{getenvRequired "$ADDON_AUTH_SET_COOKIE_DOMAIN"}}
+
+          command:
+            - /bin/entrypoint.sh
+
+          volumeMounts:
+            - name: service-account-creds
+              mountPath: /secrets/cloudsql
+              readOnly: true
+            - name: configmap-volume
+              mountPath: /bin/entrypoint.sh
+              readOnly: true
+              subPath: entrypoint.sh
+
+      volumes:
+        - name: service-account-creds
+          secret:
+            secretName: service-account-creds
+        - name: configmap-volume
+          configMap:
+            defaultMode: 0700
+            name: start-script
+...
